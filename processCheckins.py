@@ -10,7 +10,7 @@ pp = pprint.PrettyPrinter(indent=4)
 THRESHOLD = 200
 count = 1
 
-filename = 'network_data/tmp.txt'
+filename = 'network_data/brightkite_totalCheckins.txt'
 format = "%Y-%m-%dT%H:%M:%SZ"
 
 lis = []
@@ -49,6 +49,9 @@ def find_nearest_poi(row):
     location_id = row.location_id
     lat = row.lat
     lon = row.lon
+
+    if lat == 0.0 or lon == 0.0:
+        return []
     
     try:
         return obj_cache[location_id]
@@ -73,16 +76,31 @@ def find_nearest_poi(row):
             obj_cache[location_id] = []
         return vector
 
+process = False
+if process == True:
+    get_data(filename)
 
-get_data(filename)
-df = get_dataframe(filename+".pickle")
+    df = get_dataframe(filename+".pickle")    
+    df = df.dropna()
+    df = df.sort_values('timestamp')
 
-df['lat'] = df.lat.apply(lambda x : float(x))
-df['lon'] = df.lon.apply(lambda x : float(x))
-df['timestamp'] = df.timestamp.apply(lambda x : datetime.strptime(x,format))
-df['date'] = df['timestamp'].apply(lambda x : x.date())
-df['timestamp'] = df.timestamp.apply(lambda x: totimestamp(x))
-df = df.sort_values('location_id')
+    print(df.head())
+    df['timestamp'] = df.timestamp.apply(lambda x : datetime.strptime(str(x),format))
+    df['date'] = df['timestamp'].apply(lambda x : x.date())
+    df['timestamp'] = df.timestamp.apply(lambda x: totimestamp(x))
+
+    df['lat'] = df.lat.apply(lambda x : float(x))
+    df['lon'] = df.lon.apply(lambda x : float(x))
+
+    df = df.sort_values('location_id')
+    df.to_pickle(filename+".pickle")
+    print("Saved Data")
+
+else:
+    df = get_dataframe(filename+".pickle")
+    df = df.sort_values('location_id')
+    print("Loaded Data")
+
 
 
 for index, row in df.iterrows():
@@ -90,15 +108,17 @@ for index, row in df.iterrows():
     lis.append(row)
     count+=1
     
-    if count % 1000 == 0:
-        print("Completed = {completed}".format(completed=count)) 
-        break
-    
-    if len(obj_cache.keys()) > 100:
+    if count % (5*(10**4)) == 0:
+        df = pd.DataFrame(lis)
+        df.to_csv('processed_nw_data/part-{count}.csv'.format(count=count))
+        print("Completed = {completed}".format(completed=count))
+        lis = []
         obj_cache = {}
+    
+    if len(obj_cache.keys()) > 1000:
+        df = pd.DataFrame(lis)
+        df.to_csv('processed_nw_data/part-{count}.csv'.format(count=count))
         print("Completed = {completed} : Reset object cache".format(completed=count))
+        lis = []
+        obj_cache = {}
 
-df = pd.DataFrame(lis)
-df.to_csv(filename+'.final.csv')
-
-print(df.info())
