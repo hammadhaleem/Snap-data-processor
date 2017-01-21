@@ -87,7 +87,7 @@ def loads(filename):
                 chars_written += len(temp_string)
                 print(written, count, chars_written, file_name)
 
-                writer_file = open('/media/hammad/6d8a039b-641f-4685-b301-5289e3e218ed/mapDataOutput/' + file_name + ".xml", 'w+')
+                writer_file = open('mapDataOutput/' + file_name + ".xml", 'w+')
                 writer_file.write(temp_string)
                 writer_file.close()
 
@@ -97,8 +97,8 @@ def loads(filename):
             count += 1
 
 def main_process():
-    # loads('/media/hammad/6d8a039b-641f-4685-b301-5289e3e218ed/data.usa.xml')
-    for file in os.listdir('/media/hammad/6d8a039b-641f-4685-b301-5289e3e218ed/mapDataOutput/'):
-        create_json('/media/hammad/6d8a039b-641f-4685-b301-5289e3e218ed/mapDataOutput/' + file)
+    loads('data.usa.xml')
+    for file in os.listdir('mapdataPOI/'):
+        create_json('mapdataPOI/' + file)
 
 main_process()
