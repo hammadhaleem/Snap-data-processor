@@ -7,7 +7,7 @@ import pprint
 
 pp = pprint.PrettyPrinter(indent=4)
 
-THRESHOLD = 200
+THRESHOLD = 50
 count = 1
 
 filename = 'network_data/brightkite_totalCheckins.txt'
@@ -66,7 +66,14 @@ def find_nearest_poi(row):
                 for item in data:
                     d = distance(lat1=lat, lon1=lon, lat2=float(item['lat']), lon2=float(item['lon']))
                     if d <= THRESHOLD:
-                        vector.append(item)
+                        item = {
+                            'lat' : item['lat'],
+                            'lon' : item['lon'],
+                            'distance' : d,
+                            'address' : str([str(list(x.keys())[0]+":"+x[list(x.keys())[0]]) for x in item['point']])
+                        }
+
+                        vector.append(str(item))
 
                 obj_cache[location_id] = str(vector)
             except Exception as e:
@@ -98,7 +105,7 @@ if process == True:
 
 else:
     df = get_dataframe(filename+".pickle")
-    df = df.sort_values('location_id')
+    df = df.sort_values('location_id',ascending=True)
     print("Loaded Data")
 
 
@@ -115,10 +122,21 @@ for index, row in df.iterrows():
         lis = []
         obj_cache = {}
     
-    if len(obj_cache.keys()) > 1000:
+    if len(obj_cache.keys()) > 10000:
         df = pd.DataFrame(lis)
-        df.to_csv('processed_nw_data/part-{count}.csv'.format(count=count))
+        df.to_csv('processed_nw_data/part-reset-{count}.csv'.format(count=count))
         print("Completed = {completed} : Reset object cache".format(completed=count))
         lis = []
         obj_cache = {}
 
+
+
+def get_amenity(row):
+    for elem in row:
+        elem = ast.literal_eval(elem)
+        address = ast.literal_eval(elem['address'])
+        for item in address:
+            item = item.split(":")
+            if item[0] == 'amenity':
+                return item[1]
+    return None

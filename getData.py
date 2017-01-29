@@ -97,7 +97,7 @@ def loads(filename):
             count += 1
 
 def main_process():
-    loads('data.usa.xml')
+    # loads('/media/hammad/6d8a039b-641f-4685-b301-5289e3e218ed/data.usa.xml')
     for file in os.listdir('mapdataPOI/'):
         create_json('mapdataPOI/' + file)
 
