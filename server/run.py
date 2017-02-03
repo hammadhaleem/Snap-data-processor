@@ -1,4 +1,5 @@
 from server import app
+from . import  app
 import argparse
 
 if __name__ == '__main__':
