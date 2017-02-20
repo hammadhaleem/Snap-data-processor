@@ -1,16 +1,18 @@
-# Import flask and template operators
-# import logging
 import os
-# import sys
 
 from flask import Flask, render_template
 from flask_babel import Babel
 from flask_bcrypt import Bcrypt
 from flask_cache import Cache
 
+from flask_pymongo import PyMongo
+
 app = Flask(__name__)
-# app.logger.addHandler(logging.StreamHandler(sys.stdout))
-# app.logger.setLevel(logging.DEBUG)
+
+app.config['MONGO_DBNAME'] = 'yelp_comparative_analytics'
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/yelp_comparative_analytics'
+
+mongo_connection = PyMongo(app)
 
 bcrypt = Bcrypt()
 
