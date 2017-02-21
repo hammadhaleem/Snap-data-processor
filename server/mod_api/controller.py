@@ -55,8 +55,11 @@ def business_information_city(city=None):
     yelp_business_information = mongo_connection.db.yelp_business_information
 
     output = []
-    for business in yelp_business_information.find({'city': city}, {"business_id": 1}):
-        output.append({'business_id': business['business_id']})
+    for business in yelp_business_information.find({'city': city},
+                                                   {"business_id": 1, 'longitude': 1, 'review_count': 1, 'name': 1,
+                                                    'latitude': 1, 'stars': 1}):
+        output.append({"business_id": business['business_id'], 'longitude': business['longitude'], 'review_count': business['review_count'], 'name': business['name'],
+             'latitude': business['latitude'], 'stars': business['stars']})
     return jsonify(output)
 
 
@@ -172,4 +175,4 @@ def business_graph_two(business_id1, business_id2):
             'flag': 2
         })
 
-    return jsonify(nodes = list_output, edges=edge_output)
+    return jsonify(nodes=list_output, edges=edge_output)
