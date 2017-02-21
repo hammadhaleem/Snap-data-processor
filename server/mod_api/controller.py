@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from bson.json_util import dumps
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
 from server.mod_api.utils import get_user_information_from_mongo, \
@@ -28,23 +28,51 @@ def api_index():
 
 @mod_api.route('/get_business_information/')
 @mod_api.route('/get_business_information/<business_id>')
-def business_information(business_id=None):
+@mod_api.route('/get_business_information/<business_id>/<next_page>')
+def business_information(business_id=None, next_page=None):
     yelp_business_information = mongo_connection.db.yelp_business_information
 
-    if business_id is None:
+    if business_id is None or business_id == "ALL":
+
+        if next_page is None:
+            next_page = 0
+        else:
+            next_page = int(next_page)
+
         output = []
         cache_key = "business_id_none_cached"
 
         yelp_business_information_return = cache.get(cache_key)
 
         if yelp_business_information_return is None:
-            for business in yelp_business_information.find({}, {"business_id": 1}):
-                output.append({'business_id': business['business_id']})
+            for business in yelp_business_information.find({}, {
+                "business_id": 1,
+                'longitude': 1,
+                'review_count': 1,
+                'name': 1,
+                'latitude': 1,
+                'stars': 1
+            }):
+                output.append({
+                    "business_id": business['business_id'],
+                    'longitude': business['longitude'],
+                    'review_count': business['review_count'],
+                    'name': business['name'],
+                    'latitude': business['latitude'],
+                    'stars': business['stars']})
 
             cache.set(cache_key, output, timeout=300)
-            return jsonify(output)
+
+            return jsonify(business=output[next_page: next_page + 100],
+                           next=url_for('api.business_information', business_id='ALL', next_page=next_page + 100),
+                           total=len(output))
         else:
-            return jsonify(yelp_business_information_return)
+
+            output = yelp_business_information_return
+            return jsonify(business=output[next_page: next_page + 100],
+                           next=url_for('api.business_information', business_id='ALL', next_page=next_page + 100),
+                           total=len(output)
+                           )
     else:
         user = dumps(yelp_business_information.find({'business_id': business_id}))
         return user
@@ -107,7 +135,6 @@ def business_graph(business_id=None):
         return jsonify(nodes=list_output, edges=edge_output)
     else:
         return jsonify(data=None)
-
 
 
 @mod_api.route('/get_social_graph_common/<business_id1>/<business_id2>')
