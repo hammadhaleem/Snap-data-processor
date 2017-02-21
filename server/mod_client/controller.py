@@ -40,3 +40,11 @@ def getVenueOfOneCity():
     # print(city_name)
     #####TO be done here######
     return  json.dumps(tmp)
+
+'''
+http://localhost:5002/api/get_business_information_city/Las%20Vegas
+
+http://localhost:5002/api/get_business_information/dFmaYj3_cZpmEaL4WSOkPg
+
+http://localhost:5002/api/get_business_graph/dFmaYj3_cZpmEaL4WSOkPg
+'''

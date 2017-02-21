@@ -22,7 +22,8 @@ def api_index():
         'get_business_information_city': '<city>',
         'get_business_graph': '<business_id>',
         'get_user_information': '<user_id>',
-        'get_social_graph_of_two_business': "<business_id1 > , <business_id2>"
+        'get_social_graph_of_two_business': "<business_id1 > , <business_id2>",
+        'get_social_graph_common' : "<business_id1 > , <business_id2>"
     })
 
 
@@ -126,11 +127,12 @@ def business_graph(business_id=None):
 
         edge_output = []
         for elem in friends_edges:
-            edge_output.append({
-                'start': elem[0],
-                'end': elem[1],
-                'flag': 0
-            })
+            if elem[0] in user_list and elem[1] in user_list:
+                edge_output.append({
+                    'start': elem[0],
+                    'end': elem[1],
+                    'flag': 0
+                })
 
         return jsonify(nodes=list_output, edges=edge_output)
     else:
