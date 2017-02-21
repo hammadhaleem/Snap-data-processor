@@ -1,4 +1,4 @@
-from server import mongo_connection
+from server import mongo_connection, cache
 import json
 
 
@@ -41,3 +41,21 @@ def get_users_for_business(business_id):
 
     user_list = list(set(user_list))
     return user_list
+
+
+def get_business_graph(business_id):
+    business_id_list = cache.get(str(business_id) + "_graph_user_list")
+    if business_id_list is not None:
+        user_list = business_id_list
+    else:
+        user_list = get_users_for_business(business_id)
+        cache.set(str(business_id) + "_graph_user_list", user_list, timeout=300)
+
+    business_id_edges = cache.get(str(business_id) + "_graph_user_edges")
+    if business_id_edges is not None:
+        friends_edges = business_id_edges
+    else:
+        friends_edges = get_user_friends(user_list)
+        cache.set(str(business_id) + "_graph_user_edges", friends_edges, timeout=300)
+
+    return user_list, friends_edges
