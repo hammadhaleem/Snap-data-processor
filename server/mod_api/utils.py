@@ -1,4 +1,17 @@
 from server import mongo_connection
+import json
+
+
+def get_user_information_from_mongo(user_id):
+    yelp_users = mongo_connection.db.yelp_users
+
+    output = []
+    for user in yelp_users.find({'user_id': user_id}, {'_id': 0}):
+        for key in user.keys():
+            if type(user[key]) is list:
+                user[key] = json.dumps(user[key])
+        output.append(user)
+    return output[0]
 
 
 def get_user_friends(user_list):

@@ -4,8 +4,9 @@ from flask import Blueprint, jsonify
 
 from server import app, mongo_connection, cache
 from bson.json_util import dumps
+import json
 
-from server.mod_api.utils import get_user_friends, get_users_for_business
+from server.mod_api.utils import get_user_friends, get_users_for_business, get_user_information_from_mongo
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
@@ -18,9 +19,10 @@ app.url_map.strict_slashes = False
 @mod_api.route('/index')
 def api_index():
     return jsonify(data={
-        'get_common_users': '<business_id>',
         'get_business_information': '<None, business_id>',
-        'get_business_information_city': '<city>'
+        'get_business_information_city': '<city>',
+        'get_business_graph': '<business_id>',
+        'get_user_information': '<user_id>'
     })
 
 
@@ -45,7 +47,6 @@ def business_information(business_id=None):
             return jsonify(yelp_business_information_return)
     else:
         user = dumps(yelp_business_information.find({'business_id': business_id}))
-
         return user
 
 
@@ -56,6 +57,17 @@ def business_information_city(city=None):
     output = []
     for business in yelp_business_information.find({'city': city}, {"business_id": 1}):
         output.append({'business_id': business['business_id']})
+    return jsonify(output)
+
+
+@mod_api.route('/get_user_information/<user_id>')
+def get_user_information(user_id=None):
+    user_information = cache.get(str(user_id) + "_user_information")
+    if user_information is not None:
+        output = user_information
+    else:
+        output = get_user_information_from_mongo(user_id)
+        cache.set(str(user_id) + "_user_information", output, timeout=30)
     return jsonify(output)
 
 
@@ -88,7 +100,7 @@ def business_graph(business_id=None):
         for elem in friends_edges:
             edge_output.append({
                 'start': elem[0],
-                'end' : elem[1],
+                'end': elem[1],
                 'flag': 0
             })
 
