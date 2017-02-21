@@ -7,7 +7,8 @@ from flask_cache import Cache
 
 from flask_pymongo import PyMongo
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
+
 
 app.config['MONGO_DBNAME'] = 'yelp_comparative_analytics'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/yelp_comparative_analytics'

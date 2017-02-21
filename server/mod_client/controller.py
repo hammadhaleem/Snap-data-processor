@@ -1,15 +1,42 @@
 from __future__ import print_function
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template
+from flask import request
 
+import json
 from server import app
 
 # Define the blueprint: 'dashboards', set its url prefix: app.url/dashboards
-mod_client = Blueprint('client', __name__, url_prefix='/client')
+mod_client = Blueprint('client', __name__, url_prefix='', static_url_path='')
 app.url_map.strict_slashes = False
 
 
 @mod_client.route('/')
-@mod_client.route('/index')
-def client_index():
-    return jsonify(data={})
+def index():
+    print('main directory!!!')
+    return app.send_static_file('index.html')
+
+
+@mod_client.route('/dynamic')
+def dynamic():
+    print('dynamic!!')
+    return render_template('index.html')
+
+
+@mod_client.route('/getGraph')
+def test():
+    with open('data/graph.json') as data_file:
+        data = json.load(data_file)
+        print('getGraph!')
+        return json.dumps(data)
+
+
+@mod_client.route('/getVenueOfOneCity', methods=['POST', 'GET'])
+def getVenueOfOneCity():
+    print('/getVenueOfOneCity')
+    data = request.get_json()
+    tmp = {'name':'hh'}
+    # city_name = data['name']
+    # print(city_name)
+    #####TO be done here######
+    return  json.dumps(tmp)
