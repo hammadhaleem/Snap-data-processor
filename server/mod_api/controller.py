@@ -109,6 +109,56 @@ def business_graph(business_id=None):
         return jsonify(data=None)
 
 
+
+@mod_api.route('/get_social_graph_common/<business_id1>/<business_id2>')
+def get_business_graph_two_common(business_id1, business_id2):
+    data1 = get_business_graph(business_id1)
+
+    data2 = get_business_graph(business_id2)
+
+    if data1 is None or data2 is None:
+        return None
+
+    user_list1, friends_edges1 = data1
+    user_list2, friends_edges2 = data2
+
+    sum_before = len(user_list1) + len(friends_edges1) + len(user_list2) + len(friends_edges2)
+
+    common_users = set(set(user_list1)).intersection(set(user_list2))
+    common_edges = set(set(friends_edges1)).intersection(set(friends_edges2))
+
+    user_list1 = set(user_list1) - common_users
+    friends_edges1 = set(friends_edges1) - common_edges
+
+    user_list2 = set(user_list2) - common_users
+    friends_edges2 = set(friends_edges2) - common_edges
+
+    sum_after = len(user_list1) + len(friends_edges1) + len(user_list2) + len(friends_edges2) + 2 * len(
+        common_users) + 2 * len(common_edges)
+
+    if sum_before != sum_after:
+        raise "Set error !"
+
+    edge_output = []
+    list_output = []
+
+    ''' Third business '''
+    for elem in list(common_users):
+        list_output.append({
+            'user_id': elem,
+            'flag': 2
+        })
+
+    for elem in list(common_edges):
+        edge_output.append({
+            'start': elem[0],
+            'end': elem[1],
+            'flag': 2
+        })
+
+    return jsonify(nodes=list_output, edges=edge_output)
+
+
 @mod_api.route('/get_social_graph_of_two_business/<business_id1>/<business_id2>')
 def business_graph_two(business_id1, business_id2):
     data1 = get_business_graph(business_id1)
