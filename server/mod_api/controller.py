@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
 from server.mod_api.utils import get_user_information_from_mongo, \
-    get_business_graph
+    get_business_graph, get_user_information_list
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
@@ -118,11 +118,12 @@ def business_graph(business_id=None):
     if business_id is not None:
         user_list, friends_edges = get_business_graph(business_id)
         list_output = []
-
+        user_dict = get_user_information_list(user_list)
         for elem in user_list:
             list_output.append({
                 'user_id': elem,
-                'flag': 0
+                'flag': 0,
+                'details' : user_dict[elem]
             })
 
         edge_output = []
@@ -171,11 +172,13 @@ def get_business_graph_two_common(business_id1, business_id2):
     edge_output = []
     list_output = []
 
+    user_dict = get_user_information_list(list(common_users))
     ''' Third business '''
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
-            'flag': 2
+            'flag': 2,
+            'details' : user_dict[elem]
         })
 
     for elem in list(common_edges):
@@ -218,15 +221,17 @@ def business_graph_two(business_id1, business_id2):
         raise "Set error !"
 
     ''' Create data for output ! '''
-
     list_output = []
     edge_output = []
 
+    user_dict = get_user_information_list(list(user_list1))
     '''  First business '''
     for elem in list(user_list1):
         list_output.append({
             'user_id': elem,
-            'flag': 0
+            'flag': 0,
+            'details' : user_dict[elem]
+
         })
 
     for elem in list(friends_edges1):
@@ -236,11 +241,14 @@ def business_graph_two(business_id1, business_id2):
             'flag': 0
         })
 
+
+    user_dict = get_user_information_list(list(user_list2))
     ''' Second business '''
     for elem in list(user_list2):
         list_output.append({
             'user_id': elem,
-            'flag': 1
+            'flag': 1,
+            'details' : user_dict[elem]
         })
 
     for elem in list(friends_edges2):
@@ -250,11 +258,14 @@ def business_graph_two(business_id1, business_id2):
             'flag': 1
         })
 
+
+    user_dict = get_user_information_list(list(common_users))
     ''' Third business '''
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
-            'flag': 2
+            'flag': 2,
+            'details' : user_dict[elem]
         })
 
     for elem in list(common_edges):

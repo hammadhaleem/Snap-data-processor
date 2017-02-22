@@ -14,6 +14,22 @@ def get_user_information_from_mongo(user_id):
     return output[0]
 
 
+def get_user_information_list(user_list):
+    users = mongo_connection.db.yelp_users.find({'user_id': {"$in": user_list}}, {'friends': 1, 'user_id': 1, 'name' : 1, 'review_count' : 1, 'average_stars' : 1})
+    user_dict = {}
+    for user in users :
+        infor = {
+            'friends_count' : len(user['friends']),
+            'user_id' : user['user_id'],
+            'name' : user['name'],
+            'review_count' : user['review_count'],
+            'average_stars' : user['average_stars']
+        }
+        user_dict[user['user_id']] = infor
+    return user_dict
+
+
+
 def get_user_friends(user_list):
     users = mongo_connection.db.yelp_users.find({'user_id': {"$in": user_list}}, {'friends': 1, 'user_id': 1})
     edges = []
