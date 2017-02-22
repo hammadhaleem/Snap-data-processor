@@ -47,4 +47,8 @@ http://localhost:5002/api/get_business_information_city/Las%20Vegas
 http://localhost:5002/api/get_business_information/dFmaYj3_cZpmEaL4WSOkPg
 
 http://localhost:5002/api/get_business_graph/dFmaYj3_cZpmEaL4WSOkPg
+
+Example tested by Yong:
+http://localhost:5002/api/get_social_graph_common/t6ZIBNrQjvtwor8W-u3sUg/6PqYwabO2g1r2ZB7eImOiw
+
 '''

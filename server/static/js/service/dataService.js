@@ -32,8 +32,8 @@ var dataService = new Vue({
             });
         },
         getSocialNetworkOfTwoBusiness: function (business1, business2) {
-            var url = '/api/get_social_graph_of_two_business/' + business1 + '/' + business2;
-            // var url = '/api/get_social_graph_common/' + business1 + '/' + business2;
+            // var url = '/api/get_social_graph_of_two_business/' + business1 + '/' + business2;
+            var url = '/api/get_social_graph_common/' + business1 + '/' + business2;
             this.$http.get(url).then(function (resp) {
                 console.log('Two business: ', resp.data);
 
