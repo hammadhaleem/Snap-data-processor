@@ -48,10 +48,11 @@ var navbar = new Vue({
                             d3.select(this).attr('fill', 'blue');
                             _this.selected_venues.add(d['business_id']);
                         }
-                        if(_this.selected_venues.size == 2){
+                        if (_this.selected_venues.size == 2) {
                             //get and show the common graph
                             var selected_venues_list = Array.from(_this.selected_venues);
                             dataService.getSocialNetworkOfTwoBusiness(selected_venues_list[0], selected_venues_list[1]);
+                            console.log('Two venues are selected: ', selected_venues_list[0], selected_venues_list[1]);
                         }
                     }
                     else {

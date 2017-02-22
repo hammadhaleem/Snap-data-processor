@@ -6,7 +6,8 @@ var pipService = new Vue({
         GREETING: 'greeting',
         GRAPHREADY: 'graphready',
         CHANGE_FORCE_LAYOUT_CONFIG: 'changeForceLayoutConfig',
-        BUSINESS_DATA_OF_ONE_CITY_READY: 'business_data_of_one_city_is_ready'
+        BUSINESS_DATA_OF_ONE_CITY_READY: 'business_data_of_one_city_is_ready',
+        SOCIAL_NETWORK_OF_BUSINESS_VENUE_IS_READY: 'social_network_of_business_venue_is_ready'
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -36,7 +37,6 @@ var pipService = new Vue({
             });
         },
 
-
         emitChangeForceLayoutConfig: function (msg) {
             this.$emit(this.CHANGE_FORCE_LAYOUT_CONFIG, msg);
         },
@@ -45,5 +45,15 @@ var pipService = new Vue({
                 callback(msg);
             });
         },
+
+        emitSocialNetworkOfBusinessVenueIsReady: function (msg) {
+            this.$emit(this.SOCIAL_NETWORK_OF_BUSINESS_VENUE_IS_READY, msg);
+        },
+        onSocialNetworkOfBusinessVenueIsReady: function (callback) {
+            this.$on(this.SOCIAL_NETWORK_OF_BUSINESS_VENUE_IS_READY, function (msg) {
+                callback(msg);
+            });
+        },
+
     }
 })

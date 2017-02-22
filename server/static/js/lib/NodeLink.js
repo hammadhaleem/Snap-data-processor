@@ -79,7 +79,6 @@ NodeLink.prototype.initRender = function(g){
 NodeLink.prototype.setData = function(graph){
     if(graph)
         this.graphData = graph;
-
 };
 NodeLink.prototype.setWidth = function(w){
     this.width = w;

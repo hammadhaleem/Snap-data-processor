@@ -36,7 +36,7 @@ var dataService = new Vue({
             var url = '/api/get_social_graph_common/' + business1 + '/' + business2;
             this.$http.get(url).then(function (resp) {
                 console.log('Two business: ', resp.data);
-
+                pipService.emitSocialNetworkOfBusinessVenueIsReady(resp.data);
             }, function (error) {
                 console.log('Error in getSocialNetworkOfTwoBusiness', error);
             });
