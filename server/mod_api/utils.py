@@ -1,3 +1,8 @@
+from __builtin__ import len
+from __builtin__ import list
+from __builtin__ import set
+from __builtin__ import str
+
 from server import mongo_connection, cache
 import json
 
@@ -27,7 +32,6 @@ def get_user_information_list(user_list):
         }
         user_dict[user['user_id']] = infor
     return user_dict
-
 
 
 def get_user_friends(user_list):
