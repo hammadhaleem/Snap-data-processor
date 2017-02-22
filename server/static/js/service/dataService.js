@@ -23,25 +23,29 @@ var dataService = new Vue({
             }
         },
         getVenueInfoOfOneCity: function (city) {
-            this.$http.post('/getVenueOfOneCity', {'name': city}).then(function(response){
-                this.business_of_one_city = JSON.parse(response.data);
-                console.log('business result: ', this.business_of_one_city);
+            var url = '/api/get_business_information_city/' + city;
+            this.$http.get(url).then(function (response) {
+                this.business_of_one_city = response.data;
+                pipService.emitBusinessDataIsReady(this.business_of_one_city);
             }, function (error) {
                 console.log('error exist: ', error);
             });
+        },
+        getSocialNetworkOfTwoBusiness: function (business1, business2) {
+            var url = '/api/get_social_graph_of_two_business/' + business1 + '/' + business2;
+            // var url = '/api/get_social_graph_common/' + business1 + '/' + business2;
+            this.$http.get(url).then(function (resp) {
+                console.log('Two business: ', resp.data);
 
-            // this.$http.get('/api/get_business_information_city/Tempe').then(function (response) {
-            //     this.business_of_one_city = JSON.parse(response.data);
-            //     console.log('business result: ', this.business_of_one_city);
-            // }, function (error) {
-            //     console.log('error exist: ', error);
-            // });
+            }, function (error) {
+                console.log('Error in getSocialNetworkOfTwoBusiness', error);
+            });
 
         }
     },
     created: function () {
         this.getGraphDataFromBackend();
-        this.getVenueInfoOfOneCity('Tempe');
+        // this.getVenueInfoOfOneCity('Tempe');
     },
     watch: {
         graphData: {

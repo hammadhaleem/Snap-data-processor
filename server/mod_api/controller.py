@@ -23,7 +23,7 @@ def api_index():
         'get_business_graph': '<business_id>',
         'get_user_information': '<user_id>',
         'get_social_graph_of_two_business': "<business_id1 > , <business_id2>",
-        'get_social_graph_common' : "<business_id1 > , <business_id2>"
+        'get_social_graph_common': "<business_id1 > , <business_id2>"
     })
 
 
