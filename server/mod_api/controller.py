@@ -123,7 +123,7 @@ def business_graph(business_id=None):
             list_output.append({
                 'user_id': elem,
                 'flag': 0,
-                'details' : user_dict[elem]
+                'details': user_dict[elem]
             })
 
         edge_output = []
@@ -143,7 +143,6 @@ def business_graph(business_id=None):
 @mod_api.route('/get_social_graph_common/<business_id1>/<business_id2>')
 def get_business_graph_two_common(business_id1, business_id2):
     data1 = get_business_graph(business_id1)
-
     data2 = get_business_graph(business_id2)
 
     if data1 is None or data2 is None:
@@ -163,8 +162,8 @@ def get_business_graph_two_common(business_id1, business_id2):
     user_list2 = set(user_list2) - common_users
     friends_edges2 = set(friends_edges2) - common_edges
 
-    sum_after = len(user_list1) + len(friends_edges1) + len(user_list2) + len(friends_edges2) + 2 * len(
-        common_users) + 2 * len(common_edges)
+    sum_after = len(user_list1) + len(friends_edges1) + len(user_list2) + len(friends_edges2) \
+                + 2 * len(common_users) + 2 * len(common_edges)
 
     if sum_before != sum_after:
         raise "Set error !"
@@ -173,20 +172,25 @@ def get_business_graph_two_common(business_id1, business_id2):
     list_output = []
 
     user_dict = get_user_information_list(list(common_users))
+    all_users = list(common_users)
+
     ''' Third business '''
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
             'flag': 2,
-            'details' : user_dict[elem]
+            'details': user_dict[elem]
         })
 
     for elem in list(common_edges):
-        edge_output.append({
-            'start': elem[0],
-            'end': elem[1],
-            'flag': 2
-        })
+        if elem[0] in common_users and elem[1] in common_users:
+            edge_output.append({
+                'start': elem[0],
+                'end': elem[1],
+                'flag': 2,
+                'source': all_users.index(elem[0]),
+                'target': all_users.index(elem[1])
+            })
 
     return jsonify(nodes=list_output, edges=edge_output)
 
@@ -214,8 +218,8 @@ def business_graph_two(business_id1, business_id2):
     user_list2 = set(user_list2) - common_users
     friends_edges2 = set(friends_edges2) - common_edges
 
-    sum_after = len(user_list1) + len(friends_edges1) + len(user_list2) + len(friends_edges2) + 2 * len(
-        common_users) + 2 * len(common_edges)
+    sum_after = len(user_list1) + len(friends_edges1) + len(user_list2) \
+                + len(friends_edges2) + 2 * len(common_users) + 2 * len(common_edges)
 
     if sum_before != sum_after:
         raise "Set error !"
@@ -224,55 +228,45 @@ def business_graph_two(business_id1, business_id2):
     list_output = []
     edge_output = []
 
-    user_dict = get_user_information_list(list(user_list1))
+    all_users = list(set(list(user_list1) + list(user_list2) + list(common_users)))
+    user_dict = get_user_information_list(list(all_users))
+
     '''  First business '''
     for elem in list(user_list1):
         list_output.append({
             'user_id': elem,
             'flag': 0,
-            'details' : user_dict[elem]
-
+            'details': user_dict[elem],
+            'index': all_users.index(elem)
         })
 
-    for elem in list(friends_edges1):
-        edge_output.append({
-            'start': elem[0],
-            'end': elem[1],
-            'flag': 0
-        })
-
-
-    user_dict = get_user_information_list(list(user_list2))
     ''' Second business '''
+
     for elem in list(user_list2):
         list_output.append({
             'user_id': elem,
             'flag': 1,
-            'details' : user_dict[elem]
+            'details': user_dict[elem],
+            'index': all_users.index(elem)
         })
 
-    for elem in list(friends_edges2):
-        edge_output.append({
-            'start': elem[0],
-            'end': elem[1],
-            'flag': 1
-        })
-
-
-    user_dict = get_user_information_list(list(common_users))
-    ''' Third business '''
+    ''' Common business '''
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
             'flag': 2,
-            'details' : user_dict[elem]
+            'details': user_dict[elem],
+            'index': all_users.index(elem)
         })
 
     for elem in list(common_edges):
-        edge_output.append({
-            'start': elem[0],
-            'end': elem[1],
-            'flag': 2
-        })
+        if elem[0] in common_users and elem[1] in common_users:
+            edge_output.append({
+                'start': elem[0],
+                'end': elem[1],
+                'flag': 2,
+                'source': all_users.index(elem[0]),
+                'target': all_users.index(elem[1])
+            })
 
     return jsonify(nodes=list_output, edges=edge_output)
