@@ -182,8 +182,9 @@ def get_business_graph_two_common(business_id1, business_id2):
             'details': user_dict[elem]
         })
 
+    done = []
     for elem in list(common_edges):
-        if elem[0] in common_users and elem[1] in common_users:
+        if elem[0] in common_users and elem[1] in common_users and elem[1] not in done:
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
@@ -191,6 +192,9 @@ def get_business_graph_two_common(business_id1, business_id2):
                 'source': all_users.index(elem[0]),
                 'target': all_users.index(elem[1])
             })
+
+            done.append(elem[0])
+            done.append(elem[1])
 
     return jsonify(nodes=list_output, edges=edge_output)
 
@@ -259,8 +263,9 @@ def business_graph_two(business_id1, business_id2):
             'index': all_users.index(elem)
         })
 
+    done = []
     for elem in list(common_edges):
-        if elem[0] in common_users and elem[1] in common_users:
+        if elem[0] in common_users and elem[1] in common_users and elem[1] not in done:
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
@@ -268,5 +273,8 @@ def business_graph_two(business_id1, business_id2):
                 'source': all_users.index(elem[0]),
                 'target': all_users.index(elem[1])
             })
+
+            done.append(elem[0])
+            done.append(elem[1])
 
     return jsonify(nodes=list_output, edges=edge_output)
