@@ -1,5 +1,9 @@
 from __future__ import print_function
 
+from __builtin__ import len
+from __builtin__ import list
+from __builtin__ import set
+from __builtin__ import str
 from bson.json_util import dumps
 from flask import Blueprint, jsonify, url_for
 
@@ -171,20 +175,21 @@ def get_business_graph_two_common(business_id1, business_id2):
     edge_output = []
     list_output = []
 
-    user_dict = get_user_information_list(list(common_users))
-    all_users = list(common_users)
+    all_users = list(set(list(user_list1) + list(user_list2) + list(common_users)))
+    user_dict = get_user_information_list(list(all_users))
 
     ''' Third business '''
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
             'flag': 2,
-            'details': user_dict[elem]
+            'details': user_dict[elem],
+            'index': all_users.index(elem)
         })
 
     done = []
     for elem in list(common_edges):
-        if elem[0] in common_users and elem[1] in common_users and elem[1] not in done:
+        if elem[0] in common_users and elem[1] in common_users and elem not in done:
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
@@ -193,10 +198,10 @@ def get_business_graph_two_common(business_id1, business_id2):
                 'target': all_users.index(elem[1])
             })
 
-            done.append(elem[0])
-            done.append(elem[1])
+            done.append((elem[0], elem[1]))
+            done.append((elem[1], elem[0]))
 
-    return jsonify(nodes=list_output, edges=edge_output)
+    return jsonify(nodes=list_output, links=edge_output)
 
 
 @mod_api.route('/get_social_graph_of_two_business/<business_id1>/<business_id2>')
@@ -214,6 +219,7 @@ def business_graph_two(business_id1, business_id2):
     sum_before = len(user_list1) + len(friends_edges1) + len(user_list2) + len(friends_edges2)
 
     common_users = set(set(user_list1)).intersection(set(user_list2))
+
     common_edges = set(set(friends_edges1)).intersection(set(friends_edges2))
 
     user_list1 = set(user_list1) - common_users
@@ -233,7 +239,7 @@ def business_graph_two(business_id1, business_id2):
     edge_output = []
 
     all_users = list(set(list(user_list1) + list(user_list2) + list(common_users)))
-    user_dict = get_user_information_list(list(all_users))
+    user_dict = get_user_information_list(all_users)
 
     '''  First business '''
     for elem in list(user_list1):
@@ -263,9 +269,38 @@ def business_graph_two(business_id1, business_id2):
             'index': all_users.index(elem)
         })
 
+
+    ## Remove duplicates and add edges
+
     done = []
+    for elem in list(friends_edges1):
+        if elem[0] in user_list1 and elem[1] in user_list1 and elem not in done :
+            edge_output.append({
+                'start': elem[0],
+                'end': elem[1],
+                'flag': 0,
+                'source': all_users.index(elem[0]),
+                'target': all_users.index(elem[1])
+            })
+
+            done.append((elem[0], elem[1]))
+            done.append((elem[1], elem[0]))
+
+    for elem in list(friends_edges2):
+        if elem[0] in user_list2 and elem[1] in user_list2:
+            edge_output.append({
+                'start': elem[0],
+                'end': elem[1],
+                'flag': 1,
+                'source': all_users.index(elem[0]),
+                'target': all_users.index(elem[1])
+            })
+
+            done.append((elem[0], elem[1]))
+            done.append((elem[1], elem[0]))
+
     for elem in list(common_edges):
-        if elem[0] in common_users and elem[1] in common_users and elem[1] not in done:
+        if elem[0] in common_users and elem[1] in common_users:
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
@@ -274,7 +309,7 @@ def business_graph_two(business_id1, business_id2):
                 'target': all_users.index(elem[1])
             })
 
-            done.append(elem[0])
-            done.append(elem[1])
+            done.append((elem[0], elem[1]))
+            done.append((elem[1], elem[0]))
 
-    return jsonify(nodes=list_output, edges=edge_output)
+    return jsonify(nodes=list_output, links=edge_output)
