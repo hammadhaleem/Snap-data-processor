@@ -68,8 +68,9 @@ var graph_view = new Vue({
         });
 
         pipService.onSocialNetworkOfBusinessVenueIsReady(function (social_network) {
-            d3.select(_this.$el).select('svg').selectAll('g').remove();//remove the whole graph
-
+            d3.select(_this.$el).select('svg').remove();//remove the whole graph
+            _this.graphData = social_network;
+            _this.initDrawNodeLink(_this.graphData);
         });
 
     }

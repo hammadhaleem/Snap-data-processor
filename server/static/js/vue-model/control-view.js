@@ -7,8 +7,8 @@ var controlModel = new Vue({
     data: {
         features: [
             {name: "LinkDistance", 'type': 'range', 'value': 50, 'min': 1, 'max': 500, 'step': 1},
-            {name: "Charge", 'type': 'range', 'value': 120, 'min': 1, 'max': 800, 'step': 1},
-            {name: "Gravity", 'type': 'range', 'value': 0.1, 'min': 0, 'max': 1, 'step': 0.001}
+            {name: "Charge", 'type': 'range', 'value': 36, 'min': 1, 'max': 800, 'step': 1},
+            {name: "Gravity", 'type': 'range', 'value': 0.12, 'min': 0, 'max': 1, 'step': 0.001}
         ]
     },
     watch: {

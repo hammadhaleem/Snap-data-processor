@@ -31,12 +31,12 @@ var navbar = new Vue({
                 })
                 .attr('r', radius)
                 .attr('opacity', function (d, i) {
-                    if (d.review_count < 10)
+                    if (d.review_count < 30)
                         return 0.1;
-                    else if (d.review_count >= 100)
+                    else if (d.review_count >= 300)
                         return 1.0;
                     else
-                        return d.review_count / 100;
+                        return d.review_count / 300;
                 })
                 .attr('fill', '#f03')
                 .on('click', function (d, i) {
@@ -60,6 +60,12 @@ var navbar = new Vue({
                         _this.selected_venues.delete(d['business_id']);
                     }
                 });
+            svg_group.selectAll('circle')
+                .append('title')
+                .text(function (d, i) {
+                    return 'Name: ' + d['name'] + '\n' + 'Review Count: ' + d['review_count'] + '\n'
+                        + 'Stars: ' + d['stars'] + '\n' + 'Business ID: ' + d['business_id'];
+                })
 
             mymap.on('zoom', update);
             update();
@@ -86,9 +92,9 @@ var navbar = new Vue({
     mounted: function () {
         var _this = this;
         console.log('Map view is mounted!');
-        dataService.getVenueInfoOfOneCity(_this.locations[1].city);
+        dataService.getVenueInfoOfOneCity(_this.locations[0].city);
         pipService.onBusinessDataIsReady(function (msg) {
-            _this.drawGraph(dataService.business_of_one_city, _this.locations[1].focus_location);
+            _this.drawGraph(dataService.business_of_one_city, _this.locations[0].focus_location);
         });
     }
 });

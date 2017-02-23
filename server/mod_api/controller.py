@@ -126,7 +126,7 @@ def business_graph(business_id=None):
         for elem in user_list:
             list_output.append({
                 'user_id': elem,
-                'flag': 0,
+                'group': 0,
                 'details': user_dict[elem]
             })
 
@@ -136,7 +136,7 @@ def business_graph(business_id=None):
                 edge_output.append({
                     'start': elem[0],
                     'end': elem[1],
-                    'flag': 0
+                    'group': 0
                 })
 
         return jsonify(nodes=list_output, edges=edge_output)
@@ -182,7 +182,7 @@ def get_business_graph_two_common(business_id1, business_id2):
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
-            'flag': 2,
+            'group': 2,
             'details': user_dict[elem],
             'index': all_users.index(elem)
         })
@@ -193,7 +193,7 @@ def get_business_graph_two_common(business_id1, business_id2):
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
-                'flag': 2,
+                'group': 2,
                 'source': all_users.index(elem[0]),
                 'target': all_users.index(elem[1])
             })
@@ -243,7 +243,7 @@ def business_graph_two(business_id1, business_id2):
     for elem in list(user_list1):
         list_output.append({
             'user_id': elem,
-            'flag': 0,
+            'group': 0,
             'details': user_dict[elem],
             'index': all_users.index(elem)
         })
@@ -253,7 +253,7 @@ def business_graph_two(business_id1, business_id2):
     for elem in list(user_list2):
         list_output.append({
             'user_id': elem,
-            'flag': 1,
+            'group': 1,
             'details': user_dict[elem],
             'index': all_users.index(elem)
         })
@@ -262,7 +262,7 @@ def business_graph_two(business_id1, business_id2):
     for elem in list(common_users):
         list_output.append({
             'user_id': elem,
-            'flag': 2,
+            'group': 2,
             'details': user_dict[elem],
             'index': all_users.index(elem)
         })
@@ -276,7 +276,7 @@ def business_graph_two(business_id1, business_id2):
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
-                'flag': 0,
+                'group': 0,
                 'source': all_users.index(elem[0]),
                 'target': all_users.index(elem[1])
             })
@@ -289,7 +289,7 @@ def business_graph_two(business_id1, business_id2):
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
-                'flag': 1,
+                'group': 1,
                 'source': all_users.index(elem[0]),
                 'target': all_users.index(elem[1])
             })
@@ -302,7 +302,7 @@ def business_graph_two(business_id1, business_id2):
             edge_output.append({
                 'start': elem[0],
                 'end': elem[1],
-                'flag': 2,
+                'group': 2,
                 'source': all_users.index(elem[0]),
                 'target': all_users.index(elem[1])
             })

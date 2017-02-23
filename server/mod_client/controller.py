@@ -51,4 +51,8 @@ http://localhost:5002/api/get_business_graph/dFmaYj3_cZpmEaL4WSOkPg
 Example tested by Yong:
 http://localhost:5002/api/get_social_graph_common/t6ZIBNrQjvtwor8W-u3sUg/6PqYwabO2g1r2ZB7eImOiw
 
+In Las Vegas:
+Two Interested places: Neon Museum ("g83WbX_recywc4DEIZ-xug") and Mob Museum ("w-As0KSwy8pqMClOea-NLQ")
+
+
 '''
