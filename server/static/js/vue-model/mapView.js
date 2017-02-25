@@ -80,7 +80,6 @@ var navbar = new Vue({
                 var zoom_scale = Math.pow(2, init_zoom_level - mymap.getZoom());
                 circles.attr('r', radius / zoom_scale);
             }
-
         },
     },
 
