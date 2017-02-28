@@ -16,8 +16,6 @@ mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
 
 
-# http://www.bogotobogo.com/python/MongoDB_PyMongo/python_MongoDB_RESTAPI_with_Flask.php
-
 
 @mod_api.route('/')
 @mod_api.route('/index')
@@ -32,7 +30,18 @@ def api_index():
         'get_cities': "<None>",
         'get_types': '<None>',
         'get_business_information_city_type': "<city> / <type>",
-        'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>'
+        'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>',
+        'examples': [
+            'http://localhost:5002/api/get_business_information_city/tempe',
+            'http://localhost:5002/api/get_business_information_city_type/tempe/health',
+            'http://localhost:5002/api/get_business_information_lat_lon/-111/33/-112/34',
+            'http://localhost:5002/api/get_business_information_lat_lon/-111.952229/33.422129/-111.926308/33.407227',
+            'http://localhost:5002/api/get_cities',
+            'http://localhost:5002/api/get_types'
+        ], 'helper': [
+            'http://www.birdtheme.org/useful/v3tool.html',
+            'http://www.bogotobogo.com/python/MongoDB_PyMongo/python_MongoDB_RESTAPI_with_Flask.php'
+        ]
     })
 
 
