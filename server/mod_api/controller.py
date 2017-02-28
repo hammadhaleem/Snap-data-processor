@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import collections
 from __builtin__ import len
 from __builtin__ import list
 from __builtin__ import set
@@ -27,15 +28,72 @@ def api_index():
         'get_business_graph': '<business_id>',
         'get_user_information': '<user_id>',
         'get_social_graph_of_two_business': "<business_id1 > , <business_id2>",
-        'get_social_graph_common': "<business_id1 > , <business_id2>"
+        'get_social_graph_common': "<business_id1 > , <business_id2>",
+        'get_cities': "<None>",
+        'get_types': '<None>',
+        'get_business_information_city_type': "<city> / <type>"
     })
+
+
+@mod_api.route('/get_cities')
+def get_cities():
+    cities = mongo_connection.db
+
+    pipeline = [
+        {"$group": {"_id": "$city", "count": {"$sum": 1}}}
+    ]
+
+    cities = cities.yelp_business_information_processed.aggregate(pipeline)
+    dicti = {}
+    for elem in cities:
+        print(elem.keys())
+        dicti[elem[u'_id']] = int(elem[u'count'])
+
+    return jsonify(cities=dicti)
+
+
+@mod_api.route('/get_types')
+def get_types():
+    types = mongo_connection.db.yelp_business_information_processed
+    types = types.distinct('type')
+    return jsonify(types=types)
+
+
+@mod_api.route('/get_business_information_city_type/<city>/<type>')
+def business_information_city_type(city, type):
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    data_query = yelp_business_information.find(
+        {'city': city, 'type': type},
+        {"business_id": 1,
+         'longitude': 1,
+         'review_count': 1,
+         'name': 1,
+         'latitude': 1,
+         'stars': 1,
+         'city': 1,
+         'tags': 1
+         })
+
+    output = []
+    for business in data_query:
+        output.append({
+            "business_id": business['business_id'],
+            'longitude': business['longitude'],
+            'review_count': business['review_count'],
+            'name': business['name'],
+            'latitude': business['latitude'],
+            'stars': business['stars'],
+            'city': business['city'],
+            'tags': business['tags']
+        })
+    return jsonify(output)
 
 
 @mod_api.route('/get_business_information/')
 @mod_api.route('/get_business_information/<business_id>')
 @mod_api.route('/get_business_information/<business_id>/<next_page>')
 def business_information(business_id=None, next_page=None):
-    yelp_business_information = mongo_connection.db.yelp_business_information
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed
 
     if business_id is None or business_id == "ALL":
 
@@ -56,7 +114,9 @@ def business_information(business_id=None, next_page=None):
                 'review_count': 1,
                 'name': 1,
                 'latitude': 1,
-                'stars': 1
+                'stars': 1,
+                'city': 1,
+                'tags': 1
             }):
                 output.append({
                     "business_id": business['business_id'],
@@ -64,7 +124,10 @@ def business_information(business_id=None, next_page=None):
                     'review_count': business['review_count'],
                     'name': business['name'],
                     'latitude': business['latitude'],
-                    'stars': business['stars']})
+                    'stars': business['stars'],
+                    'city': business['city'],
+                    'tags': business['tags']
+                })
 
             cache.set(cache_key, output, timeout=300)
 
@@ -85,7 +148,7 @@ def business_information(business_id=None, next_page=None):
 
 @mod_api.route('/get_business_information_city/<city>')
 def business_information_city(city=None):
-    yelp_business_information = mongo_connection.db.yelp_business_information
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed
 
     output = []
     for business in yelp_business_information.find({'city': city}, {
@@ -94,7 +157,10 @@ def business_information_city(city=None):
         'review_count': 1,
         'name': 1,
         'latitude': 1,
-        'stars': 1
+        'stars': 1,
+        'city': 1,
+        'tags': 1,
+        'type' : 1
     }):
         output.append({
             "business_id": business['business_id'],
@@ -102,7 +168,10 @@ def business_information_city(city=None):
             'review_count': business['review_count'],
             'name': business['name'],
             'latitude': business['latitude'],
-            'stars': business['stars']})
+            'stars': business['stars'],
+            'city': business['city'],
+            'tags': business['tags'],
+            'type': business['type']})
     return jsonify(output)
 
 

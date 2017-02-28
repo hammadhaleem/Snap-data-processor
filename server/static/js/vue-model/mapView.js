@@ -6,8 +6,8 @@ var navbar = new Vue({
     el: '#mapView',
     delimiters: ['{{', '}}'],
     data: {
-        locations: [{'city': 'Tempe', 'focus_location': [33.4215513185, -111.916703354]},
-            {'city': 'Las Vegas', 'focus_location': [36.2162287, -115.2446964]}],
+        locations: [{'city': 'tempe', 'focus_location': [33.4215513185, -111.916703354]},
+            {'city': 'las_vegas', 'focus_location': [36.2162287, -115.2446964]}],
         selected_venues: null, //selected venues
     },
     methods: {
