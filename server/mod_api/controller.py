@@ -31,7 +31,8 @@ def api_index():
         'get_social_graph_common': "<business_id1 > , <business_id2>",
         'get_cities': "<None>",
         'get_types': '<None>',
-        'get_business_information_city_type': "<city> / <type>"
+        'get_business_information_city_type': "<city> / <type>",
+        'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>'
     })
 
 
@@ -87,6 +88,58 @@ def business_information_city_type(city, type):
             'tags': business['tags']
         })
     return jsonify(output)
+
+
+@mod_api.route('/get_business_information_lat_lon/<lat1>/<lon1>/<lat2>/<lon2>')
+def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
+    ''' Example queries
+
+        http://0.0.0.0:5002/api/get_business_information_lat_lon/-111/33/-112/34
+        http://0.0.0.0:5002/api/get_business_information_lat_lon/-111.952229/33.422129/-111.926308/33.407227
+
+        http://www.birdtheme.org/useful/v3tool.html
+
+    '''
+    lat1 = float(lat1)
+    lat2 = float(lat2)
+    lon1 = float(lon1)
+    lon2 = float(lon2)
+
+    polygon = []
+    polygon.append((lat1, lon1))
+    polygon.append((lat1, lon2))
+    polygon.append((lat2, lon2))
+    polygon.append((lat2, lon1))
+    polygon.append((lat1, lon1))
+
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    query = {
+        'geometry': {
+            '$geoWithin': {
+                '$geometry': {
+                    'type': "Polygon",
+                    'coordinates': [polygon]
+                }
+            }
+        }
+    }
+    data_query = list(yelp_business_information.find(query))
+
+    output = []
+    for business in data_query:
+        output.append({
+            "business_id": business['business_id'],
+            'longitude': business['longitude'],
+            'review_count': business['review_count'],
+            'name': business['name'],
+            'latitude': business['latitude'],
+            'stars': business['stars'],
+            'city': business['city'],
+            'tags': business['tags']
+        })
+
+    print(query)
+    return jsonify(polygon=polygon, data=output)
 
 
 @mod_api.route('/get_business_information/')
@@ -160,7 +213,7 @@ def business_information_city(city=None):
         'stars': 1,
         'city': 1,
         'tags': 1,
-        'type' : 1
+        'type': 1
     }):
         output.append({
             "business_id": business['business_id'],
