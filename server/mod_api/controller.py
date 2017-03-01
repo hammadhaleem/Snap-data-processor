@@ -450,7 +450,7 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
     yelp_business_information = mongo_connection.db.yelp_business_information_processed
 
     business_data = list(yelp_business_information.find({'business_id': business_id}, {
-        "business_id": 1,
+        'business_id': 1,
         'longitude': 1,
         'review_count': 1,
         'name': 1,
@@ -474,7 +474,17 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
         ,
         'type': business_data['type']
     }
-    data_query = list(yelp_business_information.find(query))
+    data_query = list(yelp_business_information.find(query, {
+        'business_id': 1,
+        'longitude': 1,
+        'review_count': 1,
+        'name': 1,
+        'latitude': 1,
+        'stars': 1,
+        'city': 1,
+        'tags': 1,
+        'type': 1
+    }))
 
     for elem in data_query:
         elem.pop("_id")
