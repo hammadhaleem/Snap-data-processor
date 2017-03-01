@@ -10,11 +10,10 @@ from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
 from server.mod_api.utils import get_user_information_from_mongo, \
-    get_business_graph, get_user_information_list
+    get_business_graph, get_user_information_list, haversine
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
-
 
 
 @mod_api.route('/')
@@ -31,6 +30,7 @@ def api_index():
         'get_types': '<None>',
         'get_business_information_city_type': "<city> / <type>",
         'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>',
+        'get_competition_graph': "business_id , distance",
         'examples': [
             'http://localhost:5002/api/get_business_information_city/tempe',
             'http://localhost:5002/api/get_business_information_city_type/tempe/health',
@@ -54,12 +54,11 @@ def get_cities():
     ]
 
     cities = cities.yelp_business_information_processed.aggregate(pipeline)
-    dicti = {}
+    dict_tmp = {}
     for elem in cities:
-        print(elem.keys())
-        dicti[elem[u'_id']] = int(elem[u'count'])
+        dict_tmp[elem[u'_id']] = int(elem[u'count'])
 
-    return jsonify(cities=dicti)
+    return jsonify(cities=dict_tmp)
 
 
 @mod_api.route('/get_types')
@@ -97,58 +96,6 @@ def business_information_city_type(city, type):
             'tags': business['tags']
         })
     return jsonify(output)
-
-
-@mod_api.route('/get_business_information_lat_lon/<lat1>/<lon1>/<lat2>/<lon2>')
-def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
-    ''' Example queries
-
-        http://0.0.0.0:5002/api/get_business_information_lat_lon/-111/33/-112/34
-        http://0.0.0.0:5002/api/get_business_information_lat_lon/-111.952229/33.422129/-111.926308/33.407227
-
-        http://www.birdtheme.org/useful/v3tool.html
-
-    '''
-    lat1 = float(lat1)
-    lat2 = float(lat2)
-    lon1 = float(lon1)
-    lon2 = float(lon2)
-
-    polygon = []
-    polygon.append((lat1, lon1))
-    polygon.append((lat1, lon2))
-    polygon.append((lat2, lon2))
-    polygon.append((lat2, lon1))
-    polygon.append((lat1, lon1))
-
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
-    query = {
-        'geometry': {
-            '$geoWithin': {
-                '$geometry': {
-                    'type': "Polygon",
-                    'coordinates': [polygon]
-                }
-            }
-        }
-    }
-    data_query = list(yelp_business_information.find(query))
-
-    output = []
-    for business in data_query:
-        output.append({
-            "business_id": business['business_id'],
-            'longitude': business['longitude'],
-            'review_count': business['review_count'],
-            'name': business['name'],
-            'latitude': business['latitude'],
-            'stars': business['stars'],
-            'city': business['city'],
-            'tags': business['tags']
-        })
-
-    print(query)
-    return jsonify(polygon=polygon, data=output)
 
 
 @mod_api.route('/get_business_information/')
@@ -442,3 +389,113 @@ def business_graph_two(business_id1, business_id2):
             done.append((elem[1], elem[0]))
 
     return jsonify(nodes=list_output, links=edge_output)
+
+
+@mod_api.route('/get_business_information_lat_lon/<lat1>/<lon1>/<lat2>/<lon2>')
+def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
+    ''' Example queries
+
+        http://0.0.0.0:5002/api/get_business_information_lat_lon/-111/33/-112/34
+        http://0.0.0.0:5002/api/get_business_information_lat_lon/-111.952229/33.422129/-111.926308/33.407227
+
+        http://www.birdtheme.org/useful/v3tool.html
+
+    '''
+    lat1 = float(lat1)
+    lat2 = float(lat2)
+    lon1 = float(lon1)
+    lon2 = float(lon2)
+
+    polygon = []
+    polygon.append((lat1, lon1))
+    polygon.append((lat1, lon2))
+    polygon.append((lat2, lon2))
+    polygon.append((lat2, lon1))
+    polygon.append((lat1, lon1))
+
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    query = {
+        'geometry': {
+            '$geoWithin': {
+                '$geometry': {
+                    'type': "Polygon",
+                    'coordinates': [polygon]
+                }
+            }
+        }
+    }
+    data_query = list(yelp_business_information.find(query))
+
+    output = []
+    for business in data_query:
+        output.append({
+            "business_id": business['business_id'],
+            'longitude': business['longitude'],
+            'review_count': business['review_count'],
+            'name': business['name'],
+            'latitude': business['latitude'],
+            'stars': business['stars'],
+            'city': business['city'],
+            'tags': business['tags']
+        })
+
+    return jsonify(polygon=polygon, data=output)
+
+
+@mod_api.route('/get_competition_graph/<business_id>/')
+@mod_api.route('/get_competition_graph/<business_id>/<distance_meters>')
+def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000):
+    distance_meters = float(distance_meters) + 10.0
+
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+
+    business_data = list(yelp_business_information.find({'business_id': business_id}, {
+        "business_id": 1,
+        'longitude': 1,
+        'review_count': 1,
+        'name': 1,
+        'latitude': 1,
+        'stars': 1,
+        'city': 1,
+        'tags': 1,
+        'type': 1
+    }))[0]
+
+    business_data.pop('_id')
+
+    query = {
+        'geometry':
+            {'$near':
+                {
+                    '$geometry': {'type': "Point", 'coordinates': [business_data['longitude'], business_data['latitude']]},
+                    '$maxDistance': distance_meters
+                }
+            }
+        ,
+        'type': business_data['type']
+    }
+    data_query = list(yelp_business_information.find(query))
+
+    for elem in data_query:
+        elem.pop("_id")
+        elem['distance_meters'] = haversine(
+            elem['longitude'],
+            elem['latitude'],
+            business_data['longitude'],
+            business_data['latitude']
+        )
+
+    yelp_social_ = mongo_connection.db.yelp_business_graph_type
+    connections = list(
+        yelp_social_.find({
+            'source': business_id,
+            'distance_meters': {
+                '$lte': float(distance_meters)
+            },
+            'type': business_data['type']
+        }))
+    map(lambda d: d.pop('_id'), connections)
+
+    print((len(data_query), len(connections)))
+
+    return jsonify(all=data_query, data=business_data, common_graph=connections)

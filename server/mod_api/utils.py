@@ -5,6 +5,23 @@ from __builtin__ import str
 
 from server import mongo_connection, cache
 import json
+from math import radians, cos, sin, asin, sqrt
+
+
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    km = 6367 * c
+    return km * 1000
 
 
 def get_user_information_from_mongo(user_id):
@@ -20,15 +37,17 @@ def get_user_information_from_mongo(user_id):
 
 
 def get_user_information_list(user_list):
-    users = mongo_connection.db.yelp_users.find({'user_id': {"$in": user_list}}, {'friends': 1, 'user_id': 1, 'name' : 1, 'review_count' : 1, 'average_stars' : 1})
+    users = mongo_connection.db.yelp_users.find({'user_id': {"$in": user_list}},
+                                                {'friends': 1, 'user_id': 1, 'name': 1, 'review_count': 1,
+                                                 'average_stars': 1})
     user_dict = {}
-    for user in users :
+    for user in users:
         infor = {
-            'friends_count' : len(user['friends']),
-            'user_id' : user['user_id'],
-            'name' : user['name'],
-            'review_count' : user['review_count'],
-            'average_stars' : user['average_stars']
+            'friends_count': len(user['friends']),
+            'user_id': user['user_id'],
+            'name': user['name'],
+            'review_count': user['review_count'],
+            'average_stars': user['average_stars']
         }
         user_dict[user['user_id']] = infor
     return user_dict
