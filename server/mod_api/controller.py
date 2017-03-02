@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import collections
 from __builtin__ import len
 from __builtin__ import list
 from __builtin__ import set
@@ -32,12 +31,18 @@ def api_index():
         'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>',
         'get_competition_graph': "business_id , distance",
         'examples': [
+            'http://localhost:5002/api/get_business_information_city/las_vegas',
             'http://localhost:5002/api/get_business_information_city/tempe',
             'http://localhost:5002/api/get_business_information_city_type/tempe/health',
+            'http://localhost:5002/api/get_business_information_city_type/las_vegas/restaurants',
             'http://localhost:5002/api/get_business_information_lat_lon/-111/33/-112/34',
             'http://localhost:5002/api/get_business_information_lat_lon/-111.952229/33.422129/-111.926308/33.407227',
+            'http://localhost:5002/api/get_competition_graph/nEE4k6PJkRGuV3nWoVUGRw/500',
+            'http://localhost:5002/api/get_competition_graph/nEE4k6PJkRGuV3nWoVUGRw/1000',
+            'http://localhost:5002/api/get_competition_graph/zUHIDqm_UKdnSygmWKtyRg/500',
+            'http://localhost:5002/api/get_competition_graph/zUHIDqm_UKdnSygmWKtyRg/1000',
             'http://localhost:5002/api/get_cities',
-            'http://localhost:5002/api/get_types'
+            'http://localhost:5002/api/get_types',
         ], 'helper': [
             'http://www.birdtheme.org/useful/v3tool.html',
             'http://www.bogotobogo.com/python/MongoDB_PyMongo/python_MongoDB_RESTAPI_with_Flask.php'
@@ -79,8 +84,7 @@ def business_information_city_type(city, type):
          'name': 1,
          'latitude': 1,
          'stars': 1,
-         'city': 1,
-         'tags': 1
+         'city': 1
          })
 
     output = []
@@ -92,8 +96,7 @@ def business_information_city_type(city, type):
             'name': business['name'],
             'latitude': business['latitude'],
             'stars': business['stars'],
-            'city': business['city'],
-            'tags': business['tags']
+            'city': business['city']
         })
     return jsonify(output)
 
@@ -124,8 +127,7 @@ def business_information(business_id=None, next_page=None):
                 'name': 1,
                 'latitude': 1,
                 'stars': 1,
-                'city': 1,
-                'tags': 1
+                'city': 1
             }):
                 output.append({
                     "business_id": business['business_id'],
@@ -134,8 +136,7 @@ def business_information(business_id=None, next_page=None):
                     'name': business['name'],
                     'latitude': business['latitude'],
                     'stars': business['stars'],
-                    'city': business['city'],
-                    'tags': business['tags']
+                    'city': business['city']
                 })
 
             cache.set(cache_key, output, timeout=300)
@@ -168,7 +169,6 @@ def business_information_city(city=None):
         'latitude': 1,
         'stars': 1,
         'city': 1,
-        'tags': 1,
         'type': 1
     }):
         output.append({
@@ -179,7 +179,6 @@ def business_information_city(city=None):
             'latitude': business['latitude'],
             'stars': business['stars'],
             'city': business['city'],
-            'tags': business['tags'],
             'type': business['type']})
     return jsonify(output)
 
@@ -435,8 +434,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
             'name': business['name'],
             'latitude': business['latitude'],
             'stars': business['stars'],
-            'city': business['city'],
-            'tags': business['tags']
+            'city': business['city']
         })
 
     return jsonify(polygon=polygon, data=output)
@@ -445,7 +443,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
 @mod_api.route('/get_competition_graph/<business_id>/')
 @mod_api.route('/get_competition_graph/<business_id>/<distance_meters>')
 def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000):
-    distance_meters = float(distance_meters) + 10.0
+    distance_meters = float(distance_meters)
 
     yelp_business_information = mongo_connection.db.yelp_business_information_processed
 
@@ -457,7 +455,6 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
         'latitude': 1,
         'stars': 1,
         'city': 1,
-        'tags': 1,
         'type': 1
     }))[0]
 
@@ -482,7 +479,6 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
         'latitude': 1,
         'stars': 1,
         'city': 1,
-        'tags': 1,
         'type': 1
     }))
 
