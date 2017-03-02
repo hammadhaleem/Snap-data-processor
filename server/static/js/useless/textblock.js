@@ -165,6 +165,45 @@ d3.myGlyph = function () {
                 .style('fill', 'black');
 
 
+            // //drag event that works on a transparent circle
+            // var active_class_name = 'active_d3_item';
+            // var drag = d3.behavior.drag()
+            //     .on('dragstart', function (item, j) {
+            //         console.log('drag start!');
+            //         d3.select(this.parentNode).classed(active_class_name, true);
+            //     })
+            //     .on('dragend', function (item, j) {
+            //         console.log('drag end!');
+            //         d3.select(this.parentNode).classed(active_class_name, false);
+            //     })
+            //     .on('drag', function (item, j) { //item is still a row of glyph_items
+            //         console.log('item: ', item);
+            //         var cur_x = d3.transform(d3.select(this.parentNode).attr('transform')).translate[0],
+            //             cur_y = d3.transform(d3.select(this.parentNode).attr('transform')).translate[1];
+            //         var x = cur_x + d3.event.x;
+            //         var y = cur_y + d3.event.y;
+            //         console.log('x, y vs d3.event.dx, d3.event.dy, d3.event.x, d3.event.y:', x, y, d3.event.dx, d3.event.dy, d3.event.x, d3.event.y);
+            //
+            //         //move current group
+            //         d3.select(this.parentNode).attr('transform', function () {
+            //             return 'translate(' + x + ',' + y + ')';
+            //         });
+            //
+            //         //move the links between glyphs
+            //         var cur_id = item.id;
+            //         d3.selectAll('line.' + 'start_' + cur_id)
+            //             .attr('x1', x)
+            //             .attr('y1', y);
+            //         d3.selectAll('line.' + 'end_' + cur_id)
+            //             .attr('x2', x)
+            //             .attr('y2', y);
+            //     });
+            //
+            // element.append('circle')
+            //     .attr('r', outer_radius)
+            //     .style('opacity', 0.1)
+            //     .call(drag);
+
             //drag event can work on groups
             var active_class_name = 'active_d3_item';
             var drag = d3.behavior.drag()

@@ -139,6 +139,54 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .attr('d', triangle)
                 .style('fill', 'black');
 
+            // //drag event that works on a transparent circle
+            // var active_class_name = 'active_d3_item';
+            // var drag = d3.behavior.drag()
+            //     .origin(function () {
+            //         var cur_x = d3.transform(d3.select(this.parentNode).attr('transform')).translate[0],
+            //             cur_y = d3.transform(d3.select(this.parentNode).attr('transform')).translate[1];
+            //         return {'x': cur_x, 'y': cur_y};
+            //     })
+            //     .on('dragstart', function (item, j) {
+            //         console.log('drag start!    ', d3.mouse(this)[0], d3.mouse(this)[1]);
+            //         d3.select(this.parentNode).classed(active_class_name, true);
+            //         outer_leaflet_map.dragging.disable();
+            //
+            //     })
+            //     .on('dragend', function (item, j) {
+            //         console.log('drag end!');
+            //         d3.select(this.parentNode).classed(active_class_name, false);
+            //         outer_leaflet_map.dragging.enable();
+            //     })
+            //     .on('drag', function (item, j) { //item is still a row of glyph_items
+            //         console.log('item: ', item);
+            //         var cur_x = d3.transform(d3.select(this.parentNode).attr('transform')).translate[0],
+            //             cur_y = d3.transform(d3.select(this.parentNode).attr('transform')).translate[1];
+            //         // var x = cur_x + d3.event.dx;
+            //         // var y = cur_y + d3.event.dy;
+            //         var x = cur_x + d3.mouse(this)[0];
+            //         var y = cur_y + d3.mouse(this)[1];
+            //         // console.log('x, y: ', x, y, d3.mouse(this));
+            //
+            //         //move current group
+            //         d3.select(this.parentNode).attr('transform', function () {
+            //             return 'translate(' + x + ',' + y + ')';
+            //         });
+            //
+            //         //move the links between glyphs
+            //         var cur_id = item.id;
+            //         d3.selectAll('line.' + 'start_' + cur_id)
+            //             .attr('x1', x)
+            //             .attr('y1', y);
+            //         d3.selectAll('line.' + 'end_' + cur_id)
+            //             .attr('x2', x)
+            //             .attr('y2', y);
+            //     });
+            //
+            // element.append('circle')
+            //     .attr('r', outer_radius)
+            //     .style('opacity', 0.9)
+            //     .call(drag);
 
             //drag event can work on groups
             var active_class_name = 'active_d3_item';
@@ -174,8 +222,12 @@ d3.myGlyph = function (outer_leaflet_map) {
                         .attr('x2', x)
                         .attr('y2', y);
                 });
+            element.append('circle') //to make the whole area respond to dragging event!
+                .attr('r', outer_radius)
+                .style('opacity', 0.0);
 
             element.call(drag);
+
         });
     }
 
