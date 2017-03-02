@@ -491,7 +491,7 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
             business_data['latitude']
         )
 
-    yelp_social_ = mongo_connection.db.yelp_business_graph_type
+    yelp_social_ = mongo_connection.db.yelp_business_graph_type_all
     connections = list(
         yelp_social_.find({
             'source': business_id,
