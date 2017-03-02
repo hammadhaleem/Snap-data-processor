@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Visual Comparison of Commercial Entities</title>
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -20,8 +20,6 @@
         <div class="navbar-collapse collapse navbar-right">
             <ul class="nav navbar-nav">
                 <li v-for="item in buttons">
-                    <!-- must use v-bind to set assign value to the attributes-->
-                    <!--<a v-bind:href="item.link">{{ item.name }}</a>-->
                 </li>
             </ul>
         </div>
@@ -31,19 +29,41 @@
 <div class="container-fluid">
     <div class="row">
         <div id="control-view" class="col-sm-2 col-md-2 sidebar">
-            <section class="box" style="background-color: lightblue;margin-top: 1px">
-                <h1>Control Pannel</h1>
-                <div id="control-view">
-                    <div class="div-column">
-                        <div v-for="feature in features">
-                            <p>{{ feature.name }}</p>
-                            <input type="range" v-model="feature.value" v-bind:min="feature.min"
-                                   v-bind:max="feature.max" v-bind:step="feature.step"/>
-                            <span>{{ feature.value }}</span>
-                            <br>
-                        </div>
+            <section style="margin-top: 1px">
+                <h3 style="margin-top: 0px;background-color: #aaaaaa;">Control Pannel</h3>
+                <div id="control_pannel">
+                    <div>
+                        <span style="display: inline-block; width: 20%;">City:</span>
+                        <select v-model="selected_city" style="display: inline; width: 50%;">
+                            <option v-for="city in cities" v-bind:value="city">
+                                {{city}}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <span style="display: inline-block; width: 20%;">Type:</span>
+                        <select v-model="selected_type" style="display: inline; width: 50%;">
+                            <option v-for="type in types" v-bind:value="type">
+                                {{type}}
+                            </option>
+                        </select>
                     </div>
                 </div>
+
+                <!--<div id="control-view">-->
+                <!--<div class="div-column">-->
+                <!--<div v-for="feature in features">-->
+                <!--<p>{{ feature.name }}</p>-->
+                <!--<input type="range" v-model="feature.value" v-bind:min="feature.min"-->
+                <!--v-bind:max="feature.max" v-bind:step="feature.step"/>-->
+                <!--<span>{{ feature.value }}</span>-->
+                <!--<br>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--</div>-->
+            </section>
+            <section>
+                <h3 style="margin-top: 0px;background-color: #aaaaaa;">Search&Table View</h3>
             </section>
         </div>
         <div id="mapView" class="col-sm-5 col-md-5 sidebar">
@@ -64,11 +84,12 @@
 <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <script src="js/vue2.js"></script>
 <script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
- <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 
 
 <script src="js/marked.min.js"></script>
 <script src="js/lib/NodeLink.js"></script>
+<script src="js/lib/venueGlyph.js"></script>
 
 
 <script src="js/service/pipService.js"></script>

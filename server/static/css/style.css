@@ -11,12 +11,12 @@ html, body {
     box-sizing: border-box;
 }
 
-.box {
-    width: 100%;
-    height: 300px;
-    border-top: 1px solid #222;
-    /*padding-top: 20px;*/
-}
+/*.box {*/
+    /*width: 100%;*/
+    /*height: 300px;*/
+    /*border-top: 1px solid #222;*/
+    /*!*padding-top: 20px;*!*/
+/*}*/
 
 #editor {
     margin: 0;
@@ -128,14 +128,18 @@ label {
 }
 
 
-
 /***************************Added by Yong***************************/
 #mapView section{
     width: 770px;
-    height: 770px;
+    height: 450px;
 }
 
 #mapViewRealMap svg{
     pointer-events: visible; /*!!!!Leaflet set ponter-events as None, which makes all the events on svg cannot be fired!!*/
+}
+
+div#control_pannel{
+    height:200px;
+    /*border:1px solid #808080;*/
 }
 /***************************Added by Yong***************************/

@@ -4,12 +4,17 @@
 
 var controlModel = new Vue({
     el: '#control-view',
+    delimiters:["{{", "}}"],
     data: {
         features: [
             {name: "LinkDistance", 'type': 'range', 'value': 50, 'min': 1, 'max': 500, 'step': 1},
             {name: "Charge", 'type': 'range', 'value': 36, 'min': 1, 'max': 800, 'step': 1},
             {name: "Gravity", 'type': 'range', 'value': 0.12, 'min': 0, 'max': 1, 'step': 0.001}
-        ]
+        ],
+        cities:['Las Vegas', 'Tempe', 'Phoenix'],
+        selected_city: 'Las Vegas',
+        types:['Restaurant', 'Gas Station', 'Gym', 'Book Store'],
+        selected_type: 'Restaurant'
     },
     watch: {
         features: {
