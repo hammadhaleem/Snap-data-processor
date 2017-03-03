@@ -99,16 +99,16 @@ for business_1 in raw:
                         business_1['business_id'],
                         business_2['business_id']
                     )
-
-                    lis.append({
-                        'source': business_1['business_id'],
-                        'destination': business_2['business_id'],
-                        'common_users': common_friends,
-                        'distance_meters': dist * 1000,
-                        'city_1': business_1['city'],
-                        'city_2': business_2['city'],
-                        'type': business_2['type']
-                    })
+                    if common_friends > 0 :
+                        lis.append({
+                            'source': business_1['business_id'],
+                            'destination': business_2['business_id'],
+                            'common_users': common_friends,
+                            'distance_meters': dist * 1000,
+                            'city_1': business_1['city'],
+                            'city_2': business_2['city'],
+                            'type': business_2['type']
+                        })
 
             if len(lis) > 100000:
                 print(count, len(lis))
