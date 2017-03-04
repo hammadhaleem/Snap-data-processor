@@ -132,18 +132,23 @@ while count <= total:
     open("data/word_dict.json", "w+").write(json.dumps(word_dictionary))
 
     gp_cy = grouped_reviews.copy()
-
     print("[Info] Processing " + str(len(grouped_reviews)) + " businesses")
+
     gp_cy['tfidf'] = gp_cy.split_text.apply(lambda x: get_tfidf(x))
+    print("[Info] count = {count} stage = {stage}".format(count=count, stage='tfidf'))
+
     gp_cy['sequence_2'] = gp_cy.split_text.apply(lambda x: get_sequences(x, 2))
+    print("[Info] count = {count} stage = {stage}".format(count=count, stage='sequence_2'))
 
     # gp_cy['sequence_3'] = gp_cy.split_text.apply(lambda x: get_sequences(x, 3))
+
     gp_cy['frequent_item_2'] = gp_cy.split_text.apply(lambda x: frequent_itemset(x, 2))
+    print("[Info] count = {count} stage = {stage}".format(count=count, stage='frequent_item_2'))
 
     # gp_cy['frequent_item_3'] = gp_cy.split_text.apply(lambda x: frequent_itemset(x, 3))
-    # print("6")
+
     gp_cy['association_rules'] = gp_cy.frequent_item_2.apply(lambda x: get_association_rules(x))
-    # print("7")
+    print("[Info] count = {count} stage = {stage}".format(count=count, stage='association_rules'))
 
     gp_cy.to_csv('data/final_df_' + str(count) + '.csv')
 
