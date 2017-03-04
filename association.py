@@ -83,17 +83,28 @@ def get_sequences(seqs, size):
     return freq_seqs
 
 
-def get_association_rules(seqs):
+def get_association_rules(seqs, min_support=2):
     transactions = list(seqs)
+
+    # print transactions
     relim_input = itemmining.get_relim_input(transactions)
-    item_sets = itemmining.relim(relim_input, min_support=2)
-    rules = assocrules.mine_assoc_rules(item_sets, min_support=2, min_confidence=0.5)
+    item_sets = itemmining.relim(relim_input, min_support=min_support)
+    rules = assocrules.mine_assoc_rules(item_sets, min_support=min_support, min_confidence=0.5)
+    # print(rules)
+
     return rules
+
+
+def from_set_(report):
+    lis = []
+    for keys in report.keys():
+        lis.append([list(set(keys)), report[keys]])
+    return lis
 
 
 def frequent_itemset(transactions, support=2):
     relim_input = itemmining.get_relim_input(transactions)
-    report = itemmining.relim(relim_input, min_support=2)
+    report = itemmining.relim(relim_input, min_support=support)
     return report
 
 
@@ -102,8 +113,7 @@ def get_tfidf(seq):
     for elem in seq:
         l.extend(elem)
 
-    count = Counter(l)
-    return count
+    return Counter(l)
 
 
 def to_mongo_db(df, collection_name):
@@ -112,17 +122,17 @@ def to_mongo_db(df, collection_name):
 
 
 count = 0
-tmp = 500
 total = len(reviews_df)
 
 business = sorted(list(reviews_df.business_id.unique()))
+df = None
+print("[Info] Started , business : " + str(len(business)))
 
-print("[Info] Started")
+lis = []
+for business_id, df in reviews_df.groupby('business_id'):
+    df = reviews_df[reviews_df['business_id'] == business_id].copy()
 
-while count <= total:
-    mask = reviews_df['business_id'].isin(business[count: count + tmp])
-
-    grouped_review = pd.DataFrame(reviews_df[mask].groupby('business_id').apply(lambda x: combine_text(x.text))).copy()
+    grouped_review = df.groupby('text').apply(lambda x: combine_text(x.text))
     grouped_review.columns = ['text']
     grouped_reviews = grouped_review.reset_index()
 
@@ -132,28 +142,30 @@ while count <= total:
     open("data/word_dict.json", "w+").write(json.dumps(word_dictionary))
 
     gp_cy = grouped_reviews.copy()
-    print("[Info] Processing " + str(len(grouped_reviews)) + " businesses")
 
     gp_cy['tfidf'] = gp_cy.split_text.apply(lambda x: get_tfidf(x))
-    print("[Info] count = {count} stage = {stage}".format(count=count, stage='tfidf'))
-
     gp_cy['sequence_2'] = gp_cy.split_text.apply(lambda x: get_sequences(x, 2))
-    print("[Info] count = {count} stage = {stage}".format(count=count, stage='sequence_2'))
-
-    # gp_cy['sequence_3'] = gp_cy.split_text.apply(lambda x: get_sequences(x, 3))
-
+    gp_cy['sequence_3'] = gp_cy.split_text.apply(lambda x: get_sequences(x, 3))
     gp_cy['frequent_item_2'] = gp_cy.split_text.apply(lambda x: frequent_itemset(x, 2))
-    print("[Info] count = {count} stage = {stage}".format(count=count, stage='frequent_item_2'))
+    gp_cy['frequent_item_3'] = gp_cy.split_text.apply(lambda x: frequent_itemset(x, 3))
 
-    # gp_cy['frequent_item_3'] = gp_cy.split_text.apply(lambda x: frequent_itemset(x, 3))
+    # gp_cy['association_rules'] = gp_cy.sequence_3.apply(lambda x: get_association_rules(x))
 
-    gp_cy['association_rules'] = gp_cy.frequent_item_2.apply(lambda x: get_association_rules(x))
-    print("[Info] count = {count} stage = {stage}".format(count=count, stage='association_rules'))
+    gp_cy['frequent_item_2'] = gp_cy.frequent_item_2.apply(lambda x: from_set_(x))
+    gp_cy['frequent_item_3'] = gp_cy.frequent_item_3.apply(lambda x: from_set_(x))
 
-    gp_cy.to_csv('data/final_df_' + str(count) + '.csv')
+    gp_cy['sequence_3'] = gp_cy.sequence_3.apply(lambda x: list(x))
+    gp_cy['sequence_2'] = gp_cy.sequence_2.apply(lambda x: list(x))
+    gp_cy['business_id'] = business_id
+    if count % 1000 == 1:
+        print("[Info] count = {count} stage = {stage}".format(count=count, stage='ALL ') + 'Total ' + str(total - count) + " done " + str(len(lis)))
 
-    # to_mongo_db(gp_cy, 'yelp_reviews_associations')
+    count += 1
 
-    count += tmp
+    gp_cy = gp_cy.reset_index()
+    lis.append(gp_cy.T.to_dict())
 
-    print('[Info] Total ' + str(total - count) + " done " + str(count))
+    if len(lis) > 1000:
+        open("data/tmp" + str(count) + ".json", "w+").write(json.dumps(lis))
+
+open("data/tmp" + str(count) + ".json", "w+").write(json.dumps(lis))
