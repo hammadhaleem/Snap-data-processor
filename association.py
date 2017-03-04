@@ -22,7 +22,7 @@ word_net_lemmer = WordNetLemmatizer()
 client = MongoClient()
 db = client.yelp_comparative_analytics
 
-raw = list(db.yelp_reviews.find({}))
+raw = list(db.yelp_reviews.find({}).limit(100))
 print("[Info] Total elements " + str(len(raw)))
 
 reviews_df = pd.DataFrame(raw)
@@ -158,14 +158,16 @@ for business_id, df in reviews_df.groupby('business_id'):
     gp_cy['sequence_2'] = gp_cy.sequence_2.apply(lambda x: list(x))
     gp_cy['business_id'] = business_id
     if count % 1000 == 1:
-        print("[Info] count = {count} stage = {stage}".format(count=count, stage='ALL ') + 'Total ' + str(total - count) + " done " + str(len(lis)))
+        print("[Info] count = {count} stage = {stage}".format(count=count, stage='ALL ') + 'Total ' + str(
+            total - count) + " done " + str(len(lis)))
 
+    if df is None:
+        df = gp_cy
+    else:
+        df = pd.concat([gp_cy, df])
     count += 1
 
-    gp_cy = gp_cy.reset_index()
-    lis.append(gp_cy.T.to_dict())
+    if len(df) > 1000:
+        df.to_csv('data/review_proceesed_'+str(count)+".json")
 
-    if len(lis) > 1000:
-        open("data/tmp" + str(count) + ".json", "w+").write(json.dumps(lis))
-
-open("data/tmp" + str(count) + ".json", "w+").write(json.dumps(lis))
+df.to_csv('data/review_proceesed_' + str(count) + ".json")
