@@ -43,8 +43,10 @@ var dataService = new Vue({
 
         },
         getBusinessAndLinksOfSelectedRegion: function (p_start, p_end) {
-            var url = '/api/get_business_information_lat_lon/' + p_start.lat + '/' + p_start.lng + '/'
+            var url = '/api/get_business_graph_box/' + p_start.lat + '/' + p_start.lng + '/'
                         + p_end.lat + '/' + p_end.lng;
+            // var url = '/api/get_business_graph_box/' + p_start.lng + '/' + p_start.lat + '/'
+            //     + p_end.lng + '/' + p_end.lat;
             this.$http.get(url).then(function (resp) {
                 console.log('responded data: ', resp.data);
                 pipService.emitBusinessAndLinksOfSelectedRegionIsReady(resp.data);
