@@ -36,7 +36,6 @@ def api_index():
             'http://localhost:5002/api/get_business_information_city/tempe',
             'http://localhost:5002/api/get_business_information_city_type/tempe/health',
             'http://localhost:5002/api/get_business_information_city_type/las_vegas/restaurants',
-            'http://localhost:5002/api/get_business_information_lat_lon/-111/33/-112/34',
             'http://localhost:5002/api/get_business_information_lat_lon/-111.952229/33.422129/-111.926308/33.407227',
             'http://localhost:5002/api/get_competition_graph/nEE4k6PJkRGuV3nWoVUGRw/500',
             'http://localhost:5002/api/get_competition_graph/nEE4k6PJkRGuV3nWoVUGRw/1000',
@@ -506,6 +505,24 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
     print((len(data_query), len(connections)))
 
     return jsonify(all=data_query, data=business_data, common_graph=connections)
+
+@mod_api.route('/get_business_graph_box/<lat1>/<lon1>/<lat2>/<lon2>')
+def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
+    """ Example queries
+
+        /api/get_business_graph_box/tempe/health/-111.94647721946242/33.42943568280503/-111.93797998130323/33.417615716327546/
+
+    """
+    lat1 = float(lat1)
+    lat2 = float(lat2)
+    lon1 = float(lon1)
+    lon2 = float(lon2)
+
+    polygon = [(lat1, lon1), (lat1, lon2), (lat2, lon2), (lat2, lon1), (lat1, lon1)]
+
+    nodes, link = graph_in_box(city=None, type=None, polygon=polygon)
+    return jsonify(nodes=nodes, links=link)
+
 
 
 @mod_api.route('/get_business_graph_box/<city>/<type>/<lat1>/<lon1>/<lat2>/<lon2>')
