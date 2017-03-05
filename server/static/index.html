@@ -48,19 +48,17 @@
                             </option>
                         </select>
                     </div>
+                    <div>
+                        <span style="display: inline-block; width: 40%;">Area Selection: </span>
+                        <input type="checkbox" v-model="area_selection" v-on:change="onAreaSelectionChange" style="width: 30%">
+                    </div>
+                    <div>
+                        <button v-on:click="onSubmitSelectionArea">Submit Selection</button>
+                        <button v-on:click="onClearSelectionArea">Clear Selection</button>
+                    </div>
+
                 </div>
 
-                <!--<div id="control-view">-->
-                <!--<div class="div-column">-->
-                <!--<div v-for="feature in features">-->
-                <!--<p>{{ feature.name }}</p>-->
-                <!--<input type="range" v-model="feature.value" v-bind:min="feature.min"-->
-                <!--v-bind:max="feature.max" v-bind:step="feature.step"/>-->
-                <!--<span>{{ feature.value }}</span>-->
-                <!--<br>-->
-                <!--</div>-->
-                <!--</div>-->
-                <!--</div>-->
             </section>
             <section>
                 <h3 style="margin-top: 0px;background-color: #aaaaaa;">Search&Table View</h3>
@@ -86,15 +84,12 @@
 <script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 
-
 <script src="js/marked.min.js"></script>
 <script src="js/lib/NodeLink.js"></script>
 <script src="js/lib/venueGlyph.js"></script>
 
-
 <script src="js/service/pipService.js"></script>
 <script src="js/service/dataService.js"></script>
-
 
 <!--<script src="js/vue-model/navbar.js"></script>-->
 <script src="js/vue-model/graphView.js"></script>

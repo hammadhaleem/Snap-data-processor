@@ -7,7 +7,11 @@ var pipService = new Vue({
         GRAPHREADY: 'graphready',
         CHANGE_FORCE_LAYOUT_CONFIG: 'changeForceLayoutConfig',
         BUSINESS_DATA_OF_ONE_CITY_READY: 'business_data_of_one_city_is_ready',
-        SOCIAL_NETWORK_OF_BUSINESS_VENUE_IS_READY: 'social_network_of_business_venue_is_ready'
+        SOCIAL_NETWORK_OF_BUSINESS_VENUE_IS_READY: 'social_network_of_business_venue_is_ready',
+        START_AREA_SELECTION_ON_MAP: 'start_area_selection_on_map',
+        SUBMIT_SELECTION_AREA_IS_READY: 'submit_selection_area_is_ready',
+        CLEAR_SUBMIT_SELECTION_AREA_IS_READY: 'clear_submit_selection_area_is_ready',
+        BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY: 'business_and_links_of_selected_region_is_ready'
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -55,5 +59,40 @@ var pipService = new Vue({
             });
         },
 
+        emitStartAreaSelection: function (msg) {
+            this.$emit(this.START_AREA_SELECTION_ON_MAP, msg);
+        },
+        onStartAreaSelection: function (callback) {
+            this.$on(this.START_AREA_SELECTION_ON_MAP, function (msg) {
+                callback(msg);
+            });
+        },
+
+        emitSubmitSelectionArea: function (msg) {
+            this.$emit(this.SUBMIT_SELECTION_AREA_IS_READY, msg);
+        },
+        onSubmitSelectionArea: function (callback) {
+            this.$on(this.SUBMIT_SELECTION_AREA_IS_READY, function (msg) {
+                callback(msg);
+            });
+        },
+
+        emitClearSelectionArea: function (msg) {
+            this.$emit(this.CLEAR_SUBMIT_SELECTION_AREA_IS_READY, msg);
+        },
+        onClearSelectionArea: function (callback) {
+            this.$on(this.CLEAR_SUBMIT_SELECTION_AREA_IS_READY, function (msg) {
+                callback(msg);
+            });
+        },
+
+        emitBusinessAndLinksOfSelectedRegionIsReady: function (msg) {
+            this.$emit(this.BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY, msg);
+        },
+        onBusinessAndLinksOfSelectedRegionIsReady: function (callback) {
+            this.$on(this.BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY, function (msg) {
+                callback(msg);
+            });
+        },
     }
 })

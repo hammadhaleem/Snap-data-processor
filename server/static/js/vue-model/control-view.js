@@ -4,17 +4,34 @@
 
 var controlModel = new Vue({
     el: '#control-view',
-    delimiters:["{{", "}}"],
+    delimiters: ["{{", "}}"],
     data: {
         features: [
             {name: "LinkDistance", 'type': 'range', 'value': 50, 'min': 1, 'max': 500, 'step': 1},
             {name: "Charge", 'type': 'range', 'value': 36, 'min': 1, 'max': 800, 'step': 1},
             {name: "Gravity", 'type': 'range', 'value': 0.12, 'min': 0, 'max': 1, 'step': 0.001}
         ],
-        cities:['Las Vegas', 'Tempe', 'Phoenix'],
+        cities: ['All', 'Las Vegas', 'Tempe', 'Phoenix'],
         selected_city: 'Las Vegas',
-        types:['Restaurant', 'Gas Station', 'Gym', 'Book Store'],
-        selected_type: 'Restaurant'
+        types: ['All', 'Restaurant', 'Gas Station', 'Gym', 'Book Store'],
+        selected_type: 'Restaurant',
+        area_selection: false,
+        area_selection_flag: false, //since some posts say that event response and value change may not happen simultaneously
+    },
+    methods: {
+        onAreaSelectionChange: function () {
+            console.log('area_selection_flag is changed! ', this.area_selection);
+            this.area_selection_flag = !this.area_selection_flag;
+            pipService.emitStartAreaSelection(this.area_selection_flag);
+        },
+        onSubmitSelectionArea: function () {
+            console.log('onSubmitSelectionArea!');
+            pipService.emitSubmitSelectionArea('submit selection area!');
+        },
+        onClearSelectionArea: function () {
+            console.log('onClearSelectionArea!');
+            pipService.emitClearSelectionArea('clear selection area!');
+        }
     },
     watch: {
         features: {
@@ -34,10 +51,6 @@ var controlModel = new Vue({
             },
             deep: true
         },
-
-        test(){
-            console.log('changed');
-        }
     },
     created: function () {
         var _this = this;

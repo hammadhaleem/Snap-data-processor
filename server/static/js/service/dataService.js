@@ -41,6 +41,16 @@ var dataService = new Vue({
                 console.log('Error in getSocialNetworkOfTwoBusiness', error);
             });
 
+        },
+        getBusinessAndLinksOfSelectedRegion: function (p_start, p_end) {
+            var url = '/api/get_business_information_lat_lon/' + p_start.lat + '/' + p_start.lng + '/'
+                        + p_end.lat + '/' + p_end.lng;
+            this.$http.get(url).then(function (resp) {
+                console.log('responded data: ', resp.data);
+                pipService.emitBusinessAndLinksOfSelectedRegionIsReady(resp.data);
+            }, function (error) {
+                console.log('Error in loading business of selected region!', error);
+            });
         }
     },
     created: function () {

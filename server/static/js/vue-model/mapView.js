@@ -6,24 +6,33 @@ var navbar = new Vue({
     el: '#mapView',
     delimiters: ['{{', '}}'],
     data: {
+        my_map: undefined, //the map
         locations: [{'city': 'tempe', 'focus_location': [33.4230242165, -111.940247586]},
             {'city': 'las_vegas', 'focus_location': [36.2162287, -115.2446964]}],
         selected_venues: null, //selected venues
+        area_coordinate: {
+            'start': {'lat': '#', 'lng': '#'},
+            'end': {'lat': '#', 'lng': '#'}
+        }, //init it as non-number
+        area_selection_mode: false
     },
     methods: {
         drawGraph: function (locs, focus) {
             var init_zoom_level = 15, radius = 1.5;
-            var mymap = L.map('mapViewRealMap').setView(focus, init_zoom_level);
+            this.my_map = L.map('mapViewRealMap').setView(focus, init_zoom_level);
             L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
                 maxZoom: 20,
                 id: 'mapbox.streets'
-            }).addTo(mymap);
+            }).addTo(this.my_map);
 
-            // mymap.dragging.disable();
+            // // mymap.dragging.disable();
+            // this.my_map.on('click', function (e) {
+            //     console.log('clicked here: ', e, e.latlng);
+            // });
 
             var _this = this;
             var svgLayer = L.svg();
-            svgLayer.addTo(mymap);
+            svgLayer.addTo(this.my_map);
             var svg_group = d3.select('#mapViewRealMap').select('svg').select('g');
             var circle_handler = svg_group.selectAll('circle').data(locs);
             var circles = circle_handler.enter()
@@ -69,21 +78,40 @@ var navbar = new Vue({
                         + 'Stars: ' + d['stars'] + '\n' + 'Business ID: ' + d['business_id'];
                 });
 
-            mymap.on('zoom', update);
+            this.my_map.on('zoom', update);
             update();
 
             function update() {
-                console.log('zoom: ', mymap.getZoom(), mymap.getSize(2));
+                console.log('zoom: ', _this.my_map.getZoom(), _this.my_map.getSize(2));
+
+                //handle all the initial circles
                 circles.attr('transform', function (d) {
                     var latlng = new L.LatLng(d['latitude'], d['longitude']);
-                    return "translate(" + mymap.latLngToLayerPoint(latlng).x + ',' + mymap.latLngToLayerPoint(latlng).y + ')';
+                    return "translate(" + _this.my_map.latLngToLayerPoint(latlng).x + ',' + _this.my_map.latLngToLayerPoint(latlng).y + ')';
                 });
-
-                var zoom_scale = Math.pow(2, init_zoom_level - mymap.getZoom());
+                var zoom_scale = Math.pow(2, init_zoom_level - _this.my_map.getZoom());
                 circles.attr('r', radius / zoom_scale);
+
+                //handle the glyphs and their links
+
+
+                //handle the area selection rectangle
+                var brush_rect = d3.select('#brush_rect_id');
+                if (brush_rect[0][0] != null) {
+                    console.log('update brush_rect: ', _this.area_coordinate, brush_rect);
+                    var x = _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).x;
+                    var y = _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).y;
+                    var width = _this.my_map.latLngToLayerPoint(_this.area_coordinate.end).x - _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).x;
+                    var height = _this.my_map.latLngToLayerPoint(_this.area_coordinate.end).y - _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).y;
+
+                    d3.select('rect#brush_rect_id')
+                        .attr('x', x)
+                        .attr('y', y)
+                        .attr('width', width)
+                        .attr('height', height);
+                }
             }
 
-            return mymap;
         },
         drawLinkedGlyphs: function (my_map, svg, glyph_items, link_items) {
             var glyph = d3.myGlyph(my_map);
@@ -103,8 +131,20 @@ var navbar = new Vue({
                     return "translate(" + d.pos[0] + ',' + d.pos[1] + ')';
                 })
                 .call(glyph);
-        }
-
+        },
+        removeBrushRect: function () {
+            var svg = d3.select('#mapViewRealMap').select('svg');
+            var brush_rect = svg.select('#brush_rect_id');
+            if (brush_rect[0][0] != null) {
+                brush_rect.remove();
+            }
+        },
+        clearAreaCoordinate: function () {
+            this.area_coordinate = {
+                'start': {'lat': '#', 'lng': '#'},
+                'end': {'lat': '#', 'lng': '#'}
+            };
+        },
     },
 
     created: function () {
@@ -115,22 +155,151 @@ var navbar = new Vue({
     mounted: function () {
         var _this = this;
         console.log('Map view is mounted!');
+
         dataService.getVenueInfoOfOneCity(_this.locations[0].city);
         pipService.onBusinessDataIsReady(function (msg) {
-            var my_map = _this.drawGraph(dataService.business_of_one_city, _this.locations[0].focus_location);
-            var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
+            _this.drawGraph(dataService.business_of_one_city, _this.locations[0].focus_location);
 
+
+            //monitor the selection of a region
+            var area_selection_flag = false;
+            _this.my_map.on('mousedown', function (e) {
+                if (_this.area_selection_mode) {
+                    area_selection_flag = true;
+                    console.log('map mousedown here: ', e, e.latlng);
+                    _this.clearAreaCoordinate();
+                    _this.area_coordinate.start = e.latlng;
+
+                    //remove
+                    _this.removeBrushRect();
+                }
+            });
+            _this.my_map.on('mousemove', function (e) {
+                if (_this.area_selection_mode && area_selection_flag) {
+                    // console.log('map mouse move: ', e, e.latlng);
+                    _this.area_coordinate.end = e.latlng;
+                }
+            });
+            _this.my_map.on('mouseup', function (e) {
+                if (_this.area_selection_mode && area_selection_flag) {
+                    area_selection_flag = false;
+                    console.log('map mouse up: ', e, e.latlng);
+                    _this.area_coordinate.end = e.latlng;
+                }
+            });
+
+            //start drawing the glyphs
+            var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
             var glyph_items = [
                 {'id': 'aaaa', 'price': 2, 'rating': [10, 20, 42, 20, 50], 'avg_rate': 3.5, 'pos': [100, 100]},
                 {'id': 'bbbb', 'price': 1, 'rating': [4, 20, 12, 32, 190], 'avg_rate': 4.5, 'pos': [540, 340]},
                 {'id': 'cccc', 'price': 3, 'rating': [20, 10, 10, 20, 42], 'avg_rate': 3.0, 'pos': [490, 90]}
             ];
             var link_items = [
-                {'start_id': 'aaaa', 'end_id': 'bbbb', 'start': 0, 'end': 1, 'weight': 20, 'start_pos': [100, 100], 'end_pos': [540, 340]},
-                {'start_id': 'aaaa', 'end_id': 'cccc', 'start': 0, 'end': 2, 'weight': 40, 'start_pos': [100, 100], 'end_pos': [490, 90]},
-                {'start_id': 'bbbb', 'end_id': 'cccc', 'start': 1, 'end': 2, 'weight': 10, 'start_pos': [540, 340], 'end_pos': [490, 90]}
+                {
+                    'start_id': 'aaaa',
+                    'end_id': 'bbbb',
+                    'start': 0,
+                    'end': 1,
+                    'weight': 20,
+                    'start_pos': [100, 100],
+                    'end_pos': [540, 340]
+                },
+                {
+                    'start_id': 'aaaa',
+                    'end_id': 'cccc',
+                    'start': 0,
+                    'end': 2,
+                    'weight': 40,
+                    'start_pos': [100, 100],
+                    'end_pos': [490, 90]
+                },
+                {
+                    'start_id': 'bbbb',
+                    'end_id': 'cccc',
+                    'start': 1,
+                    'end': 2,
+                    'weight': 10,
+                    'start_pos': [540, 340],
+                    'end_pos': [490, 90]
+                }
             ];
-            _this.drawLinkedGlyphs(my_map, svg, glyph_items, link_items);
+            _this.drawLinkedGlyphs(_this.my_map, svg, glyph_items, link_items);
         });
+        pipService.onStartAreaSelection(function (msg) {
+            _this.area_selection_mode = msg;
+            var svg = d3.select('#mapViewRealMap').select('svg');
+
+            if (_this.area_selection_mode == true) {
+                _this.my_map.dragging.disable();
+                svg.classed('areaSelectionPointer', true);
+            }
+            else {
+                _this.my_map.dragging.enable();
+                svg.classed('areaSelectionPointer', false);
+
+                // //remove
+                // _this.clearAreaCoordinate();
+                // _this.removeBrushRect();
+            }
+
+        });
+
+        pipService.onSubmitSelectionArea(function (msg) {
+            //query data for a region
+            if(_this.area_coordinate.start.lat == _this.area_coordinate.end.lat &&
+                _this.area_coordinate.start.lng == _this.area_coordinate.end.lng ){
+                alert('You have not brush a region on map!');
+                return;
+            }
+
+            dataService.getBusinessAndLinksOfSelectedRegion(_this.area_coordinate.start, _this.area_coordinate.end);
+        });
+
+        pipService.onClearSelectionArea(function (msg) {
+            //clear selected area
+            _this.clearAreaCoordinate();
+            _this.removeBrushRect();
+        });
+
+        pipService.onBusinessAndLinksOfSelectedRegionIsReady(function (msg) {
+            //结果
+            console.log('msg result: ', msg);
+
+        });
+    },
+
+    watch: {
+        area_coordinate: {
+            handler: function (new_value, old_value) {
+                var svg = d3.select('#mapViewRealMap').select('svg');
+                if (new_value.start.lat != '#' && new_value.start.lng != '#' && new_value.end.lat != '#' && new_value.end.lng != '#') {
+                    var brush_rect = svg.select('#brush_rect_id');
+                    var x = this.my_map.latLngToLayerPoint(new_value.start).x;
+                    var y = this.my_map.latLngToLayerPoint(new_value.start).y;
+                    var width = this.my_map.latLngToLayerPoint(new_value.end).x - this.my_map.latLngToLayerPoint(new_value.start).x;
+                    var height = this.my_map.latLngToLayerPoint(new_value.end).y - this.my_map.latLngToLayerPoint(new_value.start).y;
+
+                    if (brush_rect[0][0] == null) {
+                        svg.append('rect')
+                            .attr('id', 'brush_rect_id')
+                            .attr('x', x)
+                            .attr('y', y)
+                            .attr('width', width)
+                            .attr('height', height)
+                            .style('fill', 'none')
+                            .style('stroke', 'red')
+                            .style('stroke-width', '2px');
+                    }
+                    else {
+                        svg.select('rect#brush_rect_id')
+                            .attr('width', width)
+                            .attr('height', height);
+                    }
+                }
+
+            },
+            deep: true
+        }
     }
 });

@@ -222,7 +222,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                         .attr('x2', x)
                         .attr('y2', y);
                 });
-            element.append('circle') //to make the whole area respond to dragging event!
+            element.append('circle') //Because of the bug of leaflet, we should make the whole area respond to dragging event!
                 .attr('r', outer_radius)
                 .style('opacity', 0.0);
 
