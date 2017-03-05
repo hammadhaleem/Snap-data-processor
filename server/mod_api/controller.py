@@ -8,6 +8,7 @@ from bson.json_util import dumps
 from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
+from server.mod_api.graph_get import graph_in_box
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine
 
@@ -40,7 +41,7 @@ def api_index():
             'http://localhost:5002/api/get_competition_graph/nEE4k6PJkRGuV3nWoVUGRw/500',
             'http://localhost:5002/api/get_competition_graph/nEE4k6PJkRGuV3nWoVUGRw/1000',
             'http://localhost:5002/api/get_competition_graph/zUHIDqm_UKdnSygmWKtyRg/500',
-            'http://localhost:5002/api/get_competition_graph/zUHIDqm_UKdnSygmWKtyRg/1000',
+            'http://localhost:5002/api/get_competition_graph/zUHID qm_UKdnSygmWKtyRg/1000',
             'http://localhost:5002/api/get_cities',
             'http://localhost:5002/api/get_types',
         ], 'helper': [
@@ -76,16 +77,15 @@ def get_types():
 @mod_api.route('/get_business_information_city_type/<city>/<type>')
 def business_information_city_type(city, type):
     yelp_business_information = mongo_connection.db.yelp_business_information_processed
-    data_query = yelp_business_information.find(
-        {'city': city, 'type': type},
-        {"business_id": 1,
-         'longitude': 1,
-         'review_count': 1,
-         'name': 1,
-         'latitude': 1,
-         'stars': 1,
-         'city': 1
-         })
+    data_query = yelp_business_information.find({'city': city, 'type': type},
+                                                {"business_id": 1,
+                                                 'longitude': 1,
+                                                 'review_count': 1,
+                                                 'name': 1,
+                                                 'latitude': 1,
+                                                 'stars': 1,
+                                                 'city': 1
+                                                 })
 
     output = []
     for business in data_query:
@@ -464,7 +464,8 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
         'geometry':
             {'$near':
                 {
-                    '$geometry': {'type': "Point", 'coordinates': [business_data['longitude'], business_data['latitude']]},
+                    '$geometry': {'type': "Point",
+                                  'coordinates': [business_data['longitude'], business_data['latitude']]},
                     '$maxDistance': distance_meters
                 }
             }
@@ -505,3 +506,22 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
     print((len(data_query), len(connections)))
 
     return jsonify(all=data_query, data=business_data, common_graph=connections)
+
+
+@mod_api.route('/get_business_graph_box/<lat1>/<lon1>/<lat2>/<lon2>')
+def get_business_graph_box(lat1, lon1, lat2, lon2):
+    """ Example queries
+
+        http://localhost:5002/api/get_business_graph_box/-111.952229/33.422129/-111.926308/33.407227
+        http://www.birdtheme.org/useful/v3tool.html
+
+    """
+    lat1 = float(lat1)
+    lat2 = float(lat2)
+    lon1 = float(lon1)
+    lon2 = float(lon2)
+
+    polygon = [(lat1, lon1), (lat1, lon2), (lat2, lon2), (lat2, lon1), (lat1, lon1)]
+
+    nodes, link = graph_in_box(polygon)
+    return jsonify(nodes=nodes, links=link)
