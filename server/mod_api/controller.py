@@ -508,12 +508,11 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
     return jsonify(all=data_query, data=business_data, common_graph=connections)
 
 
-@mod_api.route('/get_business_graph_box/<lat1>/<lon1>/<lat2>/<lon2>')
-def get_business_graph_box(lat1, lon1, lat2, lon2):
+@mod_api.route('/get_business_graph_box/<city>/<type>/<lat1>/<lon1>/<lat2>/<lon2>')
+def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
     """ Example queries
 
-        http://localhost:5002/api/get_business_graph_box/-111.952229/33.422129/-111.926308/33.407227
-        http://www.birdtheme.org/useful/v3tool.html
+        /api/get_business_graph_box/tempe/health/-111.94647721946242/33.42943568280503/-111.93797998130323/33.417615716327546/
 
     """
     lat1 = float(lat1)
@@ -523,5 +522,5 @@ def get_business_graph_box(lat1, lon1, lat2, lon2):
 
     polygon = [(lat1, lon1), (lat1, lon2), (lat2, lon2), (lat2, lon1), (lat1, lon1)]
 
-    nodes, link = graph_in_box(polygon)
+    nodes, link = graph_in_box(city, type, polygon)
     return jsonify(nodes=nodes, links=link)

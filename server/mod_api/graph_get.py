@@ -4,7 +4,7 @@ from __builtin__ import str
 from server import mongo_connection
 
 
-def graph_in_box(polygon):
+def graph_in_box(city, type, polygon):
     yelp_business_information = mongo_connection.db.yelp_business_information_processed
     query = {
         'geometry': {
@@ -13,8 +13,11 @@ def graph_in_box(polygon):
                     'type': "Polygon",
                     'coordinates': [polygon]
                 }
-            }
-        }
+            },
+        },
+        'city': city,
+        'type': type
+
     }
     data_query = list(yelp_business_information.find(query))
 
@@ -30,7 +33,8 @@ def graph_in_box(polygon):
             'stars': business['stars'],
             'city': business['city'],
             'rating': [None, None, None, None, None],
-            'price_range': 'dummy_dollar'
+            'price_range': 'dummy_dollar',
+            'type': business['type']
         }
 
     yelp_social_ = mongo_connection.db.yelp_business_graph_type_all
@@ -45,8 +49,8 @@ def graph_in_box(polygon):
     for elem in connections:
         dt = {}
 
-        start_pos = str(output[elem['source']]['latitude']) + "," + str(output[elem['source']]['latitude'])
-        end_pos = str(output[elem['destination']]['latitude']) + "," + str(output[elem['destination']]['latitude'])
+        start_pos = "[" + str(output[elem['source']]['latitude']) + "," + str(output[elem['source']]['longitude']) + "]"
+        end_pos = "[" + str(output[elem['destination']]['latitude']) + "," + str(output[elem['destination']]['longitude']) + "]"
 
         dt['start'] = elem['source']
         dt['end'] = elem['destination']
@@ -59,4 +63,5 @@ def graph_in_box(polygon):
     for key, values in output.items():
         nodes.append(values)
 
+    print(len(nodes), len(links))
     return nodes, links
