@@ -11,10 +11,12 @@ var controlModel = new Vue({
             {name: "Charge", 'type': 'range', 'value': 36, 'min': 1, 'max': 800, 'step': 1},
             {name: "Gravity", 'type': 'range', 'value': 0.12, 'min': 0, 'max': 1, 'step': 0.001}
         ],
-        cities: ['All', 'Las Vegas', 'Tempe', 'Phoenix'],
-        selected_city: 'Las Vegas',
-        types: ['All', 'Restaurant', 'Gas Station', 'Gym', 'Book Store'],
-        selected_type: 'Restaurant',
+        cities: ['Tempe', 'Las Vegas', 'Phoenix', 'Toronto'],
+        city_selection_focus: {'Tempe': [33.4230242165, -111.940247586], 'Las Vegas': [36.2162287, -115.2446964]},
+        selected_city: 'Tempe',
+        types: ['All', 'Restaurants', 'Shopping', 'Transportation', 'Entertainment', 'Hotel', 'Health', 'Services',
+            'Education', 'Pets', 'Media', 'Religious', 'Parks', 'Null'],
+        selected_type: 'All',
         area_selection: false,
         area_selection_flag: false, //since some posts say that event response and value change may not happen simultaneously
     },
@@ -31,6 +33,27 @@ var controlModel = new Vue({
         onClearSelectionArea: function () {
             console.log('onClearSelectionArea!');
             pipService.emitClearSelectionArea('clear selection area!');
+        },
+        formatCityAndTypeAndFocus: function () {
+            console.log('formatCityAndTypeAndFocus!');
+            var city = this.selected_city;
+            var focus = this.city_selection_focus[city];
+            var type = this.selected_type.charAt(0).toLowerCase() + this.selected_type.substr(1);
+
+            city = city.split(' ');
+            for (var i = 0; i < city.length; i++) {
+                city[i] = city[i].charAt(0).toLowerCase() + city[i].substr(1);
+            }
+            var city_str = city.join('_');
+
+            return {'city': city_str, 'type': type, 'focus': focus};
+        },
+        onCityOrTypeChanged: function () {
+            console.log('city or type is changed!');
+            var query_params = this.formatCityAndTypeAndFocus();
+            console.log('query_params: ', query_params);
+
+            pipService.emitCityOrTypeIsChanged(query_params);
         }
     },
     watch: {
@@ -56,5 +79,8 @@ var controlModel = new Vue({
         var _this = this;
         console.log('!!!!!!!emitChangeForceLayoutConfig -----');
         pipService.emitChangeForceLayoutConfig(this.features);
+    },
+    mounted: function () {
+        ;
     }
 });

@@ -34,7 +34,7 @@
                 <div id="control_pannel">
                     <div>
                         <span style="display: inline-block; width: 20%;">City:</span>
-                        <select v-model="selected_city" style="display: inline; width: 50%;">
+                        <select v-model="selected_city" style="display: inline; width: 50%;" v-on:change="onCityOrTypeChanged">
                             <option v-for="city in cities" v-bind:value="city">
                                 {{city}}
                             </option>
@@ -42,7 +42,7 @@
                     </div>
                     <div>
                         <span style="display: inline-block; width: 20%;">Type:</span>
-                        <select v-model="selected_type" style="display: inline; width: 50%;">
+                        <select v-model="selected_type" style="display: inline; width: 50%;" v-on:change="onCityOrTypeChanged">
                             <option v-for="type in types" v-bind:value="type">
                                 {{type}}
                             </option>

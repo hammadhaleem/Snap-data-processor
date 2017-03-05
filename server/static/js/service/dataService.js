@@ -4,7 +4,7 @@
 var dataService = new Vue({
     data: {
         graphData: null,
-        business_of_one_city: null
+        business_of_one_city_type: null
     },
     methods: {
         getGraphDataFromBackend: function () {
@@ -22,11 +22,15 @@ var dataService = new Vue({
                 return null;
             }
         },
-        getVenueInfoOfOneCity: function (city) {
+        getVenueInfoOfOneCityAndType: function (city, type) {
             var url = '/api/get_business_information_city/' + city;
+            if(type != 'all'){
+                url = '/api/get_business_information_city_type/' + city + '/' + type;
+            }
+
             this.$http.get(url).then(function (response) {
-                this.business_of_one_city = response.data;
-                pipService.emitBusinessDataIsReady(this.business_of_one_city);
+                this.business_of_one_city_type = response.data;
+                pipService.emitBusinessDataIsReady(this.business_of_one_city_type);
             }, function (error) {
                 console.log('error exist: ', error);
             });
@@ -42,11 +46,15 @@ var dataService = new Vue({
             });
 
         },
-        getBusinessAndLinksOfSelectedRegion: function (p_start, p_end) {
-            var url = '/api/get_business_graph_box/' + p_start.lat + '/' + p_start.lng + '/'
-                        + p_end.lat + '/' + p_end.lng;
-            // var url = '/api/get_business_graph_box/' + p_start.lng + '/' + p_start.lat + '/'
-            //     + p_end.lng + '/' + p_end.lat;
+        getBusinessAndLinksOfSelectedRegion: function (city, type, p_start, p_end) {
+            var url = '/api/get_business_graph_box/' + city + '/' + type + '/' + p_start.lng + '/' + p_start.lat + '/'
+                + p_end.lng + '/' + p_end.lat;
+            if(type == 'all'){ //待修改,等待Hammd的API
+                url = '/api/get_business_graph_box/' + city + '/' + 'restaurants' + '/' + p_start.lng + '/' + p_start.lat + '/'
+                + p_end.lng + '/' + p_end.lat;
+            }
+
+            console.log('query url: ', url);
             this.$http.get(url).then(function (resp) {
                 console.log('responded data: ', resp.data);
                 pipService.emitBusinessAndLinksOfSelectedRegionIsReady(resp.data);

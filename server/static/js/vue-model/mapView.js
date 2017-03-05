@@ -14,25 +14,45 @@ var navbar = new Vue({
             'start': {'lat': '#', 'lng': '#'},
             'end': {'lat': '#', 'lng': '#'}
         }, //init it as non-number
-        area_selection_mode: false
+        area_selection_mode: false,
+        focus_location: [33.4230242165, -111.940247586],
+        counter_of_mouse_event_adding: 0,
+        current_city: 'tempe',
+        current_type: 'all',
     },
     methods: {
+        drawInitMap: function () {
+            var init_zoom_level = 15;
+            this.my_map = L.map('mapViewRealMap');
+            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+                {
+                    maxZoom: 22,
+                    id: 'mapbox.streets'
+                }).addTo(this.my_map);
+            this.my_map.setView([33.4230242165, -111.940247586], init_zoom_level);
+
+        },
         drawGraph: function (locs, focus) {
             var init_zoom_level = 15, radius = 1.5;
-            this.my_map = L.map('mapViewRealMap').setView(focus, init_zoom_level);
-            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-                maxZoom: 20,
-                id: 'mapbox.streets'
-            }).addTo(this.my_map);
-
-            // // mymap.dragging.disable();
-            // this.my_map.on('click', function (e) {
-            //     console.log('clicked here: ', e, e.latlng);
-            // });
-
             var _this = this;
+            this.my_map.setView(focus, init_zoom_level);
+
+            var svg_handler = d3.select('#mapViewRealMap').select('svg');
+            if (svg_handler[0][0] != null) {
+                svg_handler.remove();
+            }
             var svgLayer = L.svg();
             svgLayer.addTo(this.my_map);
+
+            //check the area_selection_mode, and do corresponding mode-setting
+            if (_this.area_selection_mode == true) {
+                d3.select('#mapViewRealMap').select('svg').classed('areaSelectionPointer', true);
+            }
+            else {
+                d3.select('#mapViewRealMap').select('svg').classed('areaSelectionPointer', false);
+            }
+
+            //draw all the circles
             var svg_group = d3.select('#mapViewRealMap').select('svg').select('g');
             var circle_handler = svg_group.selectAll('circle').data(locs);
             var circles = circle_handler.enter()
@@ -111,7 +131,6 @@ var navbar = new Vue({
                         .attr('height', height);
                 }
             }
-
         },
         drawLinkedGlyphs: function (my_map, svg, glyph_items, link_items) {
             var glyph = d3.myGlyph(my_map);
@@ -156,37 +175,47 @@ var navbar = new Vue({
         var _this = this;
         console.log('Map view is mounted!');
 
-        dataService.getVenueInfoOfOneCity(_this.locations[0].city);
-        pipService.onBusinessDataIsReady(function (msg) {
-            _this.drawGraph(dataService.business_of_one_city, _this.locations[0].focus_location);
+        this.drawInitMap();//draw the initial map
+        pipService.onCityOrTypeIsChanged(function (msg) {
+            _this.current_city = msg.city, _this.current_type = msg.type, _this.focus_location = msg.focus;
+            dataService.getVenueInfoOfOneCityAndType(_this.current_city, _this.current_type);
+        });
 
+        // dataService.getVenueInfoOfOneCityAndType(_this.locations[0].city);
+        pipService.onBusinessDataIsReady(function (msg) {
+            // _this.drawGraph(dataService.business_of_one_city_type, _this.locations[0].focus_location);
+            _this.drawGraph(dataService.business_of_one_city_type, _this.focus_location);
 
             //monitor the selection of a region
-            var area_selection_flag = false;
-            _this.my_map.on('mousedown', function (e) {
-                if (_this.area_selection_mode) {
-                    area_selection_flag = true;
-                    console.log('map mousedown here: ', e, e.latlng);
-                    _this.clearAreaCoordinate();
-                    _this.area_coordinate.start = e.latlng;
+            if (_this.counter_of_mouse_event_adding < 1) {
+                _this.counter_of_mouse_event_adding++;
 
-                    //remove
-                    _this.removeBrushRect();
-                }
-            });
-            _this.my_map.on('mousemove', function (e) {
-                if (_this.area_selection_mode && area_selection_flag) {
-                    // console.log('map mouse move: ', e, e.latlng);
-                    _this.area_coordinate.end = e.latlng;
-                }
-            });
-            _this.my_map.on('mouseup', function (e) {
-                if (_this.area_selection_mode && area_selection_flag) {
-                    area_selection_flag = false;
-                    console.log('map mouse up: ', e, e.latlng);
-                    _this.area_coordinate.end = e.latlng;
-                }
-            });
+                var area_selection_flag = false;
+                _this.my_map.on('mousedown', function (e) {
+                    if (_this.area_selection_mode) {
+                        area_selection_flag = true;
+                        console.log('map mousedown here: ', e, e.latlng);
+                        _this.clearAreaCoordinate();
+                        _this.area_coordinate.start = e.latlng;
+
+                        //remove
+                        _this.removeBrushRect();
+                    }
+                });
+                _this.my_map.on('mousemove', function (e) {
+                    if (_this.area_selection_mode && area_selection_flag) {
+                        // console.log('map mouse move: ', e, e.latlng);
+                        _this.area_coordinate.end = e.latlng;
+                    }
+                });
+                _this.my_map.on('mouseup', function (e) {
+                    if (_this.area_selection_mode && area_selection_flag) {
+                        area_selection_flag = false;
+                        console.log('map mouse up: ', e, e.latlng);
+                        _this.area_coordinate.end = e.latlng;
+                    }
+                });
+            }
 
             //start drawing the glyphs
             var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
@@ -237,36 +266,34 @@ var navbar = new Vue({
             else {
                 _this.my_map.dragging.enable();
                 svg.classed('areaSelectionPointer', false);
-
-                // //remove
-                // _this.clearAreaCoordinate();
-                // _this.removeBrushRect();
             }
 
         });
-
         pipService.onSubmitSelectionArea(function (msg) {
             //query data for a region
-            if(_this.area_coordinate.start.lat == _this.area_coordinate.end.lat &&
-                _this.area_coordinate.start.lng == _this.area_coordinate.end.lng ){
+            if (_this.area_coordinate.start.lat == _this.area_coordinate.end.lat &&
+                _this.area_coordinate.start.lng == _this.area_coordinate.end.lng) {
                 alert('You have not brush a region on map!');
                 return;
             }
 
-            dataService.getBusinessAndLinksOfSelectedRegion(_this.area_coordinate.start, _this.area_coordinate.end);
+            dataService.getBusinessAndLinksOfSelectedRegion(_this.current_city, _this.current_type,
+                _this.area_coordinate.start, _this.area_coordinate.end);
         });
-
         pipService.onClearSelectionArea(function (msg) {
             //clear selected area
             _this.clearAreaCoordinate();
             _this.removeBrushRect();
         });
-
         pipService.onBusinessAndLinksOfSelectedRegionIsReady(function (msg) {
-            //结果
-            console.log('msg result: ', msg);
+            console.log('Result of loading the data of specific region and type: ', msg);
+
 
         });
+
+        //init the whole map as tempe
+        var msg = {'city': _this.current_city, 'type': _this.current_type, 'focus': _this.focus_location};
+        pipService.emitCityOrTypeIsChanged(msg);
     },
 
     watch: {

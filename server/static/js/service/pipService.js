@@ -11,7 +11,8 @@ var pipService = new Vue({
         START_AREA_SELECTION_ON_MAP: 'start_area_selection_on_map',
         SUBMIT_SELECTION_AREA_IS_READY: 'submit_selection_area_is_ready',
         CLEAR_SUBMIT_SELECTION_AREA_IS_READY: 'clear_submit_selection_area_is_ready',
-        BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY: 'business_and_links_of_selected_region_is_ready'
+        BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY: 'business_and_links_of_selected_region_is_ready',
+        CITY_OR_TYPE_IS_CHANGED: 'city_or_type_is_changed'
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -91,6 +92,15 @@ var pipService = new Vue({
         },
         onBusinessAndLinksOfSelectedRegionIsReady: function (callback) {
             this.$on(this.BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY, function (msg) {
+                callback(msg);
+            });
+        },
+
+        emitCityOrTypeIsChanged: function (msg) {
+            this.$emit(this.CITY_OR_TYPE_IS_CHANGED, msg);
+        },
+        onCityOrTypeIsChanged: function (callback) {
+            this.$on(this.CITY_OR_TYPE_IS_CHANGED, function (msg) {
                 callback(msg);
             });
         },
