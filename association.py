@@ -22,7 +22,7 @@ word_net_lemmer = WordNetLemmatizer()
 client = MongoClient()
 db = client.yelp_comparative_analytics
 
-raw = list(db.yelp_reviews.find({}).limit(100))
+raw = list(db.yelp_reviews.find({}))
 print("[Info] Total elements " + str(len(raw)))
 
 reviews_df = pd.DataFrame(raw)
@@ -139,7 +139,6 @@ for business_id, df in reviews_df.groupby('business_id'):
     grouped_reviews['split_text'] = grouped_reviews.text.apply(lambda x: for_each_elem(x))
     grouped_reviews['count'] = grouped_reviews.split_text.apply(lambda x: len(x))
 
-    open("data/word_dict.json", "w+").write(json.dumps(word_dictionary))
 
     gp_cy = grouped_reviews.copy()
 
@@ -151,15 +150,17 @@ for business_id, df in reviews_df.groupby('business_id'):
 
     # gp_cy['association_rules'] = gp_cy.sequence_3.apply(lambda x: get_association_rules(x))
 
-    gp_cy['frequent_item_2'] = gp_cy.frequent_item_2.apply(lambda x: from_set_(x))
-    gp_cy['frequent_item_3'] = gp_cy.frequent_item_3.apply(lambda x: from_set_(x))
-
-    gp_cy['sequence_3'] = gp_cy.sequence_3.apply(lambda x: list(x))
-    gp_cy['sequence_2'] = gp_cy.sequence_2.apply(lambda x: list(x))
+    # gp_cy['frequent_item_2'] = gp_cy.frequent_item_2.apply(lambda x: from_set_(x))
+    # gp_cy['frequent_item_3'] = gp_cy.frequent_item_3.apply(lambda x: from_set_(x))
+    #
+    # gp_cy['sequence_3'] = gp_cy.sequence_3.apply(lambda x: list(x))
+    # gp_cy['sequence_2'] = gp_cy.sequence_2.apply(lambda x: list(x))
     gp_cy['business_id'] = business_id
     if count % 1000 == 1:
         print("[Info] count = {count} stage = {stage}".format(count=count, stage='ALL ') + 'Total ' + str(
             total - count) + " done " + str(len(lis)))
+
+        open("data/word_dict.json", "w+").write(json.dumps(word_dictionary))
 
     if df is None:
         df = gp_cy
@@ -168,6 +169,9 @@ for business_id, df in reviews_df.groupby('business_id'):
     count += 1
 
     if len(df) > 1000:
-        df.to_csv('data/review_proceesed_'+str(count)+".json")
+        df.to_pickle('data/review_proceesed_'+str(count)+".json")
+        df = None
 
-df.to_csv('data/review_proceesed_' + str(count) + ".json")
+df.to_pickle('data/review_proceesed_'+str(count)+".json")
+
+open("data/word_dict.json", "w+").write(json.dumps(word_dictionary))
