@@ -83,20 +83,37 @@ def business_information_city_type(city, type):
                                                  'name': 1,
                                                  'latitude': 1,
                                                  'stars': 1,
-                                                 'city': 1
+                                                 'city': 1,
+                                                 'rating': 1,
+                                                 'price_range': 1,
+                                                 'type':1
                                                  })
 
     output = []
     for business in data_query:
-        output.append({
+        data_dict = {
             "business_id": business['business_id'],
             'longitude': business['longitude'],
             'review_count': business['review_count'],
             'name': business['name'],
             'latitude': business['latitude'],
             'stars': business['stars'],
-            'city': business['city']
-        })
+            'city': business['city'],
+            'type': business['type']
+        }
+
+        try:
+            data_dict['rating'] = business['review_distribution']
+        except Exception as e:
+            data_dict['rating'] = None
+
+        try:
+            data_dict['price_range'] = business['price_range']
+        except Exception as e:
+            data_dict['price_range'] = None
+
+        output.append(data_dict)
+
     return jsonify(output)
 
 
@@ -170,7 +187,8 @@ def business_information_city(city=None):
         'city': 1,
         'type': 1
     }):
-        output.append({
+
+        data_dict = {
             "business_id": business['business_id'],
             'longitude': business['longitude'],
             'review_count': business['review_count'],
@@ -178,7 +196,19 @@ def business_information_city(city=None):
             'latitude': business['latitude'],
             'stars': business['stars'],
             'city': business['city'],
-            'type': business['type']})
+            'type': business['type']}
+
+        try:
+            data_dict['rating'] = business['review_distribution']
+        except Exception as e:
+            data_dict['rating'] = None
+
+        try:
+            data_dict['price_range'] = business['price_range']
+        except Exception as e:
+            data_dict['price_range'] = None
+
+        output.append(data_dict)
     return jsonify(output)
 
 
@@ -426,7 +456,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
 
     output = []
     for business in data_query:
-        output.append({
+        data_dict = {
             "business_id": business['business_id'],
             'longitude': business['longitude'],
             'review_count': business['review_count'],
@@ -434,7 +464,19 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
             'latitude': business['latitude'],
             'stars': business['stars'],
             'city': business['city']
-        })
+        }
+
+        try:
+            data_dict['rating'] = business['review_distribution']
+        except Exception as e:
+            data_dict['rating'] = None
+
+        try:
+            data_dict['price_range'] = business['price_range']
+        except Exception as e:
+            data_dict['price_range'] = None
+
+        output.append(data_dict)
 
     return jsonify(polygon=polygon, data=output)
 
@@ -454,7 +496,9 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
         'latitude': 1,
         'stars': 1,
         'city': 1,
-        'type': 1
+        'type': 1,
+        'price_range': 1,
+        'rating': 1
     }))[0]
 
     business_data.pop('_id')
@@ -506,6 +550,7 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
 
     return jsonify(all=data_query, data=business_data, common_graph=connections)
 
+
 @mod_api.route('/get_business_graph_box/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
     """ Example queries
@@ -522,7 +567,6 @@ def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
 
     nodes, link = graph_in_box(city=None, type=None, polygon=polygon)
     return jsonify(nodes=nodes, links=link)
-
 
 
 @mod_api.route('/get_business_graph_box/<city>/<type>/<lat1>/<lon1>/<lat2>/<lon2>')

@@ -5,7 +5,7 @@ from server import mongo_connection
 
 
 def graph_in_box(city, type, polygon):
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
 
     if (city is None) or (type is None):
 
@@ -19,6 +19,7 @@ def graph_in_box(city, type, polygon):
                 },
             }
         }
+
     else:
         query = {
             'geometry': {
@@ -46,10 +47,18 @@ def graph_in_box(city, type, polygon):
             'latitude': business['latitude'],
             'stars': business['stars'],
             'city': business['city'],
-            'rating': [None, None, None, None, None],
-            'price_range': 'dummy_dollar',
             'type': business['type']
         }
+
+        try:
+            output[business['business_id']]['rating'] = business['review_distribution']
+        except Exception as e:
+            output[business['business_id']]['rating'] = None
+
+        try:
+            output[business['business_id']]['price_range'] = business['price_range']
+        except Exception as e:
+            output[business['business_id']]['price_range'] = None
 
     yelp_social_ = mongo_connection.db.yelp_business_graph_type_all
     connections = list(yelp_social_.find({
