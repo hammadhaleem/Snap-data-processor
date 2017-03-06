@@ -6,19 +6,33 @@ from server import mongo_connection
 
 def graph_in_box(city, type, polygon):
     yelp_business_information = mongo_connection.db.yelp_business_information_processed
-    query = {
-        'geometry': {
-            '$geoWithin': {
-                '$geometry': {
-                    'type': "Polygon",
-                    'coordinates': [polygon]
-                }
-            },
-        },
-        'city': city,
-        'type': type
 
-    }
+    if (city is None) or (type is None):
+
+        query = {
+            'geometry': {
+                '$geoWithin': {
+                    '$geometry': {
+                        'type': "Polygon",
+                        'coordinates': [polygon]
+                    }
+                },
+            }
+        }
+    else:
+        query = {
+            'geometry': {
+                '$geoWithin': {
+                    '$geometry': {
+                        'type': "Polygon",
+                        'coordinates': [polygon]
+                    }
+                },
+            },
+            'city': city,
+            'type': type
+
+        }
     data_query = list(yelp_business_information.find(query))
 
     business_ids = [x['business_id'] for x in data_query]
@@ -50,7 +64,8 @@ def graph_in_box(city, type, polygon):
         dt = {}
 
         start_pos = "[" + str(output[elem['source']]['latitude']) + "," + str(output[elem['source']]['longitude']) + "]"
-        end_pos = "[" + str(output[elem['destination']]['latitude']) + "," + str(output[elem['destination']]['longitude']) + "]"
+        end_pos = "[" + str(output[elem['destination']]['latitude']) + "," + str(
+            output[elem['destination']]['longitude']) + "]"
 
         dt['start'] = elem['source']
         dt['end'] = elem['destination']
