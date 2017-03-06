@@ -86,7 +86,8 @@ def business_information_city_type(city, type):
                                                  'city': 1,
                                                  'rating': 1,
                                                  'price_range': 1,
-                                                 'type':1
+                                                 'type':1,
+                                                 'review_distribution':1
                                                  })
 
     output = []
@@ -185,7 +186,9 @@ def business_information_city(city=None):
         'latitude': 1,
         'stars': 1,
         'city': 1,
-        'type': 1
+        'type': 1,
+        'price_range':1,
+        'review_distribution': 1
     }):
 
         data_dict = {
@@ -355,7 +358,6 @@ def business_graph_two(business_id1, business_id2):
         })
 
     ''' Second business '''
-
     for elem in list(user_list2):
         list_output.append({
             'user_id': elem,
