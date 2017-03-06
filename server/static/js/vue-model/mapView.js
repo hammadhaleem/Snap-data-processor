@@ -19,6 +19,8 @@ var navbar = new Vue({
         counter_of_mouse_event_adding: 0,
         current_city: 'tempe',
         current_type: 'all',
+        glyph_items: undefined, //the list for all  the glyphs
+        link_items: undefined //the list for all the links between glyphs
     },
     methods: {
         drawInitMap: function () {
@@ -30,15 +32,17 @@ var navbar = new Vue({
                     id: 'mapbox.streets'
                 }).addTo(this.my_map);
             this.my_map.setView([33.4230242165, -111.940247586], init_zoom_level);
-
         },
         drawGraph: function (locs, focus) {
             var init_zoom_level = 15, radius = 1.5;
             var _this = this;
             this.my_map.setView(focus, init_zoom_level);
 
+            //remove the whole svg
+            console.log('=================begin to draw graph================');
             var svg_handler = d3.select('#mapViewRealMap').select('svg');
             if (svg_handler[0][0] != null) {
+                console.log('################## removed!!!! ###########');
                 svg_handler.remove();
             }
             var svgLayer = L.svg();
@@ -102,7 +106,7 @@ var navbar = new Vue({
             update();
 
             function update() {
-                console.log('zoom: ', _this.my_map.getZoom(), _this.my_map.getSize(2));
+                console.log('zoom: ', _this.my_map.getZoom());
 
                 //handle all the initial circles
                 circles.attr('transform', function (d) {
@@ -113,7 +117,9 @@ var navbar = new Vue({
                 circles.attr('r', radius / zoom_scale);
 
                 //handle the glyphs and their links
-
+                if (_this.glyph_items != undefined && _this.link_items != undefined) {
+                    _this.drawLinkedGlyphs(_this.my_map, _this.glyph_items, _this.link_items);
+                }
 
                 //handle the area selection rectangle
                 var brush_rect = d3.select('#brush_rect_id');
@@ -130,11 +136,18 @@ var navbar = new Vue({
                         .attr('width', width)
                         .attr('height', height);
                 }
+
             }
         },
-        drawLinkedGlyphs: function (my_map, svg, glyph_items, link_items) {
+        drawLinkedGlyphs: function (my_map, glyph_items, link_items) {
+            //remove existing one if it exists
+            if (d3.select('#mapViewRealMap').select('svg').select('g.linked_glyphs')[0][0] != null) {
+                d3.select('#mapViewRealMap').select('svg').select('g.linked_glyphs').remove();
+            }
+            var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
+
             var glyph = d3.myGlyph(my_map);
-            var interLink = d3.myLink();
+            var interLink = d3.myLink(my_map);
             var draw_link = svg.selectAll('xx')
                 .data(link_items)
                 .enter()
@@ -147,7 +160,8 @@ var navbar = new Vue({
                 .enter()
                 .append('g')
                 .attr('transform', function (d, i) {
-                    return "translate(" + d.pos[0] + ',' + d.pos[1] + ')';
+                    var latlng = new L.LatLng(d['latitude'], d['longitude']);
+                    return "translate(" + my_map.latLngToLayerPoint(latlng).x + ',' + my_map.latLngToLayerPoint(latlng).y + ')'; //transformation
                 })
                 .call(glyph);
         },
@@ -164,6 +178,7 @@ var navbar = new Vue({
                 'end': {'lat': '#', 'lng': '#'}
             };
         },
+
     },
 
     created: function () {
@@ -183,7 +198,10 @@ var navbar = new Vue({
 
         // dataService.getVenueInfoOfOneCityAndType(_this.locations[0].city);
         pipService.onBusinessDataIsReady(function (msg) {
-            // _this.drawGraph(dataService.business_of_one_city_type, _this.locations[0].focus_location);
+            //remove the existing selected area and correponding glyphs
+            _this.glyph_items = undefined;
+            _this.link_items = undefined;
+
             _this.drawGraph(dataService.business_of_one_city_type, _this.focus_location);
 
             //monitor the selection of a region
@@ -217,43 +235,44 @@ var navbar = new Vue({
                 });
             }
 
-            //start drawing the glyphs
-            var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
-            var glyph_items = [
-                {'id': 'aaaa', 'price': 2, 'rating': [10, 20, 42, 20, 50], 'avg_rate': 3.5, 'pos': [100, 100]},
-                {'id': 'bbbb', 'price': 1, 'rating': [4, 20, 12, 32, 190], 'avg_rate': 4.5, 'pos': [540, 340]},
-                {'id': 'cccc', 'price': 3, 'rating': [20, 10, 10, 20, 42], 'avg_rate': 3.0, 'pos': [490, 90]}
-            ];
-            var link_items = [
-                {
-                    'start_id': 'aaaa',
-                    'end_id': 'bbbb',
-                    'start': 0,
-                    'end': 1,
-                    'weight': 20,
-                    'start_pos': [100, 100],
-                    'end_pos': [540, 340]
-                },
-                {
-                    'start_id': 'aaaa',
-                    'end_id': 'cccc',
-                    'start': 0,
-                    'end': 2,
-                    'weight': 40,
-                    'start_pos': [100, 100],
-                    'end_pos': [490, 90]
-                },
-                {
-                    'start_id': 'bbbb',
-                    'end_id': 'cccc',
-                    'start': 1,
-                    'end': 2,
-                    'weight': 10,
-                    'start_pos': [540, 340],
-                    'end_pos': [490, 90]
-                }
-            ];
-            _this.drawLinkedGlyphs(_this.my_map, svg, glyph_items, link_items);
+            // //start drawing the glyphs
+            // var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
+            // var glyph_items = [
+            //     {'id': 'aaaa', 'price': 2, 'rating': [10, 20, 42, 20, 50], 'avg_rate': 3.5, 'pos': [100, 100]},
+            //     {'id': 'bbbb', 'price': 1, 'rating': [4, 20, 12, 32, 190], 'avg_rate': 4.5, 'pos': [540, 340]},
+            //     {'id': 'cccc', 'price': 3, 'rating': [20, 10, 10, 20, 42], 'avg_rate': 3.0, 'pos': [490, 90]}
+            // ];
+            // var link_items = [
+            //     {
+            //         'start_id': 'aaaa',
+            //         'end_id': 'bbbb',
+            //         'start': 0,
+            //         'end': 1,
+            //         'weight': 20,
+            //         'start_pos': [100, 100],
+            //         'end_pos': [540, 340]
+            //     },
+            //     {
+            //         'start_id': 'aaaa',
+            //         'end_id': 'cccc',
+            //         'start': 0,
+            //         'end': 2,
+            //         'weight': 40,
+            //         'start_pos': [100, 100],
+            //         'end_pos': [490, 90]
+            //     },
+            //     {
+            //         'start_id': 'bbbb',
+            //         'end_id': 'cccc',
+            //         'start': 1,
+            //         'end': 2,
+            //         'weight': 10,
+            //         'start_pos': [540, 340],
+            //         'end_pos': [490, 90]
+            //     }
+            // ];
+
+            // _this.drawLinkedGlyphs(_this.my_map, svg, glyph_items, link_items);
         });
         pipService.onStartAreaSelection(function (msg) {
             _this.area_selection_mode = msg;
@@ -287,8 +306,9 @@ var navbar = new Vue({
         });
         pipService.onBusinessAndLinksOfSelectedRegionIsReady(function (msg) {
             console.log('Result of loading the data of specific region and type: ', msg);
-
-
+            _this.glyph_items = msg.nodes;
+            _this.link_items = msg.links;
+            _this.drawLinkedGlyphs(_this.my_map, _this.glyph_items, _this.link_items);
         });
 
         //init the whole map as tempe
