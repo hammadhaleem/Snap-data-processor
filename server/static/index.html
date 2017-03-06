@@ -53,7 +53,7 @@
                         <input type="checkbox" v-model="area_selection" v-on:change="onAreaSelectionChange" style="width: 30%">
                     </div>
                     <div>
-                        <button v-on:click="onSubmitSelectionArea">Submit Selection</button>
+                        <button v-on:click="onSubmitSelectionArea">{{area_selection_button_text}}</button>
                         <button v-on:click="onClearSelectionArea">Clear Selection</button>
                     </div>
 

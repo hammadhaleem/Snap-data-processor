@@ -19,6 +19,8 @@ var controlModel = new Vue({
         selected_type: 'All',
         area_selection: false,
         area_selection_flag: false, //since some posts say that event response and value change may not happen simultaneously
+        area_selection_button_mode: false, //false: you can brush a region to select now; true: you can re-load all the red circles now
+        area_selection_button_text: 'Submit Selection', // or 'Reload Dataset'
     },
     methods: {
         onAreaSelectionChange: function () {
@@ -28,7 +30,15 @@ var controlModel = new Vue({
         },
         onSubmitSelectionArea: function () {
             console.log('onSubmitSelectionArea!');
-            pipService.emitSubmitSelectionArea('submit selection area!');
+            this.area_selection_button_mode = !this.area_selection_button_mode;
+            if (this.area_selection_button_mode) {
+                this.area_selection_button_text = 'Reload Dataset';
+                pipService.emitSubmitSelectionArea('submit selection area!');
+            }
+            else{
+                this.area_selection_button_text = 'Submit Selection';
+                this.onCityOrTypeChanged();
+            }
         },
         onClearSelectionArea: function () {
             console.log('onClearSelectionArea!');

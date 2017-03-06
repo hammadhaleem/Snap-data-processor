@@ -29,7 +29,7 @@ d3.myLink = function (outer_leaflet_map) {
                 .attr(line_attributes)
                 .classed('start_' + d['start'] + ' end_' + d['end'], true)
                 .style('stroke', 'gray')
-                .style('stroke-width', d['weight']/(3 * zoom_scale)); //zoom scaling
+                .style('stroke-width', d['weight'] / (3 * zoom_scale)); //zoom scaling
 
         });
     }
@@ -52,7 +52,7 @@ d3.myGlyph = function (outer_leaflet_map) {
     function my(selection) {
         selection.each(function (d, i) {
             // console.log('d,i', d, i);
-            var element = d3.select(this);
+            var element = d3.select(this).attr('class', 'glyph_group');
 
             //calculate params
             var outer_radius = 0, inner_radius = min_r;
@@ -99,7 +99,7 @@ d3.myGlyph = function (outer_leaflet_map) {
             rect_size = rect_size / zoom_scale; //zoom scaling
             var padding_bar_to_circle = 3 / zoom_scale;//zoom scaling
             var g_price_bars = element.append('g')
-                .attr('class', '.price_bars')
+                .attr('class', 'price_bars')
                 .selectAll('rect')
                 .data(bars)
                 .enter()
@@ -124,7 +124,6 @@ d3.myGlyph = function (outer_leaflet_map) {
 
             //draw the arrow pointing to the price bars
             var arrow = [[0, -inner_radius / 2 - 1 / zoom_scale], [0, -(outer_radius + padding_bar_to_circle)]]; //need to scale the padding
-            // console.log('arrow: ', arrow);
             var line = d3.svg.line()
                 .x(function (d, j) {
                     return d[0];
@@ -242,9 +241,61 @@ d3.myGlyph = function (outer_leaflet_map) {
                 });
             element.append('circle') //Because of the bug of leaflet, we should make the whole area respond to dragging event!
                 .attr('r', outer_radius)
+                .attr('class', 'hidden_circle')
                 .style('opacity', 0.0);
 
-            element.call(drag);
+            //handle the event of dragging elements
+            element.on('touchmove', function () { //for distinguishing the click event and dragging event
+                d3.event.preventDefault();
+            }).call(drag);
+
+            //handle the event of clicking
+            //click circles to delete glyph
+            element.select('circle.hidden_circle')
+                .on('click', function (item, j) {
+                    if (d3.event.defaultPrevented == false) { //it is click event
+                        console.log('let us remove this glyph!');
+                        console.log('clicked glyph-circle: ', item, j);
+
+                        //remove the glyph
+                        d3.select(this.parentNode).remove();
+                        //remove the links
+                        var start_class = 'start_' + item['business_id'], end_class = 'end_' + item['business_id'];
+                        d3.selectAll('line.' + start_class).remove();
+                        d3.selectAll('line.' + end_class).remove();
+                    }
+                });
+
+            //click price rectangles to select a glyph
+            element.select('g.price_bars')
+                .selectAll('rect')
+                .on('click', function (item, j) {
+                    if (d3.event.defaultPrevented == false) { //it is click event
+                        console.log('let us select this glyph!');
+                        console.log('clicked glyph-price_rectangles: ', item, j);
+
+                        var glyph_group = this.parentNode.parentNode;
+                        if (d3.select(glyph_group).select('g.highlight_rectangles')[0][0] == null) { //we need to highlight it
+                            var highlight_group = d3.select(glyph_group).append('g').classed('highlight_rectangles', true);
+                            var r = d3.select(glyph_group).select('circle.hidden_circle').attr('r') + 5;
+                            var d = 'M' + (-r) + ' ' + (-r)
+                                    + ' L' + (r) + ' ' + (-r)
+                                    + ' L' + (r) + ' ' + (r)
+                                    + ' L' + (-r) + ' ' + (r)
+                                    + ' L' + (-r) + ' ' + (-r);
+                            highlight_group.append('path').attr('d', d)
+                                .attr('stroke', 'blue')
+                                .attr('stroke-width', '3px')
+                                .attr('fill', 'none');
+
+                            //写到这
+                        }
+                        else {
+                            d3.select(glyph_group).select('g.highlight_rectangles').remove(); //we need to remove it
+                        }
+                    }
+
+                })
 
         });
     }

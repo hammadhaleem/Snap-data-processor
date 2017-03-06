@@ -146,4 +146,9 @@ div#control_pannel{
 .areaSelectionPointer{
     cursor: crosshair;
 }
+
+.selected_glyph{
+    stroke: red;
+    stroke-width: 3px;
+}
 /***************************Added by Yong***************************/

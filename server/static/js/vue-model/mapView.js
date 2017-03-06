@@ -57,7 +57,7 @@ var navbar = new Vue({
             }
 
             //draw all the circles
-            var svg_group = d3.select('#mapViewRealMap').select('svg').select('g');
+            var svg_group = d3.select('#mapViewRealMap').select('svg').select('g').classed('venue_circles', true);
             var circle_handler = svg_group.selectAll('circle').data(locs);
             var circles = circle_handler.enter()
                 .append('circle')
@@ -124,7 +124,7 @@ var navbar = new Vue({
                 //handle the area selection rectangle
                 var brush_rect = d3.select('#brush_rect_id');
                 if (brush_rect[0][0] != null) {
-                    console.log('update brush_rect: ', _this.area_coordinate, brush_rect);
+                    // console.log('update brush_rect: ', _this.area_coordinate, brush_rect);
                     var x = _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).x;
                     var y = _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).y;
                     var width = _this.my_map.latLngToLayerPoint(_this.area_coordinate.end).x - _this.my_map.latLngToLayerPoint(_this.area_coordinate.start).x;
@@ -235,44 +235,6 @@ var navbar = new Vue({
                 });
             }
 
-            // //start drawing the glyphs
-            // var svg = d3.select('#mapViewRealMap').select('svg').append('g').attr('class', 'linked_glyphs');
-            // var glyph_items = [
-            //     {'id': 'aaaa', 'price': 2, 'rating': [10, 20, 42, 20, 50], 'avg_rate': 3.5, 'pos': [100, 100]},
-            //     {'id': 'bbbb', 'price': 1, 'rating': [4, 20, 12, 32, 190], 'avg_rate': 4.5, 'pos': [540, 340]},
-            //     {'id': 'cccc', 'price': 3, 'rating': [20, 10, 10, 20, 42], 'avg_rate': 3.0, 'pos': [490, 90]}
-            // ];
-            // var link_items = [
-            //     {
-            //         'start_id': 'aaaa',
-            //         'end_id': 'bbbb',
-            //         'start': 0,
-            //         'end': 1,
-            //         'weight': 20,
-            //         'start_pos': [100, 100],
-            //         'end_pos': [540, 340]
-            //     },
-            //     {
-            //         'start_id': 'aaaa',
-            //         'end_id': 'cccc',
-            //         'start': 0,
-            //         'end': 2,
-            //         'weight': 40,
-            //         'start_pos': [100, 100],
-            //         'end_pos': [490, 90]
-            //     },
-            //     {
-            //         'start_id': 'bbbb',
-            //         'end_id': 'cccc',
-            //         'start': 1,
-            //         'end': 2,
-            //         'weight': 10,
-            //         'start_pos': [540, 340],
-            //         'end_pos': [490, 90]
-            //     }
-            // ];
-
-            // _this.drawLinkedGlyphs(_this.my_map, svg, glyph_items, link_items);
         });
         pipService.onStartAreaSelection(function (msg) {
             _this.area_selection_mode = msg;
@@ -289,6 +251,9 @@ var navbar = new Vue({
 
         });
         pipService.onSubmitSelectionArea(function (msg) {
+            //remove existing red circles on the map
+            d3.select('#mapViewRealMap').select('g.venue_circles').selectAll('circle').remove();
+
             //query data for a region
             if (_this.area_coordinate.start.lat == _this.area_coordinate.end.lat &&
                 _this.area_coordinate.start.lng == _this.area_coordinate.end.lng) {
