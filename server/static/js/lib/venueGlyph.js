@@ -3,6 +3,8 @@
  */
 
 d3.myLink = function (outer_leaflet_map) {
+    var init_zoom_level = 15;
+    var zoom_scale = Math.pow(1.3, init_zoom_level - outer_leaflet_map.getZoom()); //zoom scaling
 
     function my(selection) {
         selection.each(function (d, i) {
@@ -27,7 +29,7 @@ d3.myLink = function (outer_leaflet_map) {
                 .attr(line_attributes)
                 .classed('start_' + d['start'] + ' end_' + d['end'], true)
                 .style('stroke', 'gray')
-                .style('stroke-width', d['weight']);
+                .style('stroke-width', d['weight']/(3 * zoom_scale)); //zoom scaling
 
         });
     }
@@ -54,14 +56,14 @@ d3.myGlyph = function (outer_leaflet_map) {
 
             //calculate params
             var outer_radius = 0, inner_radius = min_r;
-            inner_radius = inner_radius /zoom_scale; //zoom scaling
+            inner_radius = inner_radius / zoom_scale; //zoom scaling
             for (var k = 0; k < d.rating.length; k++) {
                 // outer_radius += d.rating[k]; //待修改
                 d.rating[k] = 40; //待修改
                 outer_radius += 40;
             }
             outer_radius = outer_radius_scale(outer_radius);
-            outer_radius = outer_radius/zoom_scale; //zoom scaling
+            outer_radius = outer_radius / zoom_scale; //zoom scaling
 
             //central circle
             element.append('circle')
@@ -94,8 +96,8 @@ d3.myGlyph = function (outer_leaflet_map) {
 
             //draw price bar
             var rect_size = 2, l_shift = 0, bars = [1, 1, 1, 1];
-            rect_size = rect_size/zoom_scale; //zoom scaling
-            var padding_bar_to_circle = 3/zoom_scale;//zoom scaling
+            rect_size = rect_size / zoom_scale; //zoom scaling
+            var padding_bar_to_circle = 3 / zoom_scale;//zoom scaling
             var g_price_bars = element.append('g')
                 .attr('class', '.price_bars')
                 .selectAll('rect')
@@ -121,7 +123,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .style('stroke-width', '2px');
 
             //draw the arrow pointing to the price bars
-            var arrow = [[0, -inner_radius / 2 - 1/zoom_scale ], [0, -(outer_radius + padding_bar_to_circle)]]; //need to scale the padding
+            var arrow = [[0, -inner_radius / 2 - 1 / zoom_scale], [0, -(outer_radius + padding_bar_to_circle)]]; //need to scale the padding
             // console.log('arrow: ', arrow);
             var line = d3.svg.line()
                 .x(function (d, j) {
