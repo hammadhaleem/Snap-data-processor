@@ -21,6 +21,13 @@ var controlModel = new Vue({
         area_selection_flag: false, //since some posts say that event response and value change may not happen simultaneously
         area_selection_button_mode: false, //false: you can brush a region to select now; true: you can re-load all the red circles now
         area_selection_button_text: 'Submit Selection', // or 'Reload Dataset'
+
+        //sliders
+        link_slider: {'max': 9999, 'min': 1, 'cur_min': 1, 'cur_max': 9999},
+        customer_slider: {'max': 9999, 'min': 1, 'cur_min': 1, 'cur_max': 9999},
+        price_slider: {'max': 5, 'min': 1, 'cur_min': 1, 'cur_max': 5},
+        rating_slider: {'max': 5, 'min': 1, 'cur_min': 1, 'cur_max': 5},
+
     },
     methods: {
         onAreaSelectionChange: function () {
@@ -35,7 +42,7 @@ var controlModel = new Vue({
                 this.area_selection_button_text = 'Reload Dataset';
                 pipService.emitSubmitSelectionArea('submit selection area!');
             }
-            else{
+            else {
                 this.area_selection_button_text = 'Submit Selection';
                 this.onCityOrTypeChanged();
             }
@@ -91,6 +98,42 @@ var controlModel = new Vue({
         pipService.emitChangeForceLayoutConfig(this.features);
     },
     mounted: function () {
-        ;
+        var _this = this;
+        //for sliders
+        pipService.onBusinessDataIsReady(function (msg) {
+            var customers = dataService.business_of_one_city_type.map(function (item) {
+                return item['review_count'];
+            });
+            var ratings = dataService.business_of_one_city_type.map(function (item) {
+                return item['stars'];
+            });
+            // var price = dataService.business_of_one_city_type.map(function (item) { //待补上
+            //     return item['price'];
+            // });
+
+            _this.customer_slider.max = Math.max.apply(null,customers);
+            _this.customer_slider.min = Math.min.apply(null, customers);
+            _this.customer_slider.cur_max = _this.customer_slider.max;
+            _this.customer_slider.cur_min = _this.customer_slider.min;
+
+            _this.rating_slider.max = Math.max.apply(null, ratings);
+            _this.rating_slider.min = Math.min.apply(null, ratings);
+            _this.rating_slider.cur_max = _this.rating_slider.max;
+            _this.rating_slider.cur_min = _this.rating_slider.min;
+
+            // _this.price_slider.max = Math.max.apply(null, price); //待补上
+            // _this.price_slider.min = Math.min.apply(null, price);
+            // _this.price_slider.cur_max = _this.price_slider.max;
+            // _this.price_slider.cur_min = _this.price_slider.min;
+
+            console.log('=================this.customer_slider, this.rating_slider: =========== ', _this.customer_slider, _this.rating_slider);
+        });
+
+        pipService.onBusinessAndLinksOfSelectedRegionIsReady(function (msg) {
+            var links = msg.links, nodes = msg.nodes;
+
+            //写到这
+
+        });
     }
 });

@@ -198,10 +198,9 @@ var navbar = new Vue({
 
         // dataService.getVenueInfoOfOneCityAndType(_this.locations[0].city);
         pipService.onBusinessDataIsReady(function (msg) {
-            //remove the existing selected area and correponding glyphs
+            //remove the existing selected area and corresponding glyphs
             _this.glyph_items = undefined;
             _this.link_items = undefined;
-
             _this.drawGraph(dataService.business_of_one_city_type, _this.focus_location);
 
             //monitor the selection of a region
@@ -234,7 +233,6 @@ var navbar = new Vue({
                     }
                 });
             }
-
         });
         pipService.onStartAreaSelection(function (msg) {
             _this.area_selection_mode = msg;
