@@ -2,9 +2,14 @@
  * Created by yiding on 2016/12/30.
  */
 
+// import vueSlider from '../lib/vuejs-slider.min.js'
+
 var controlModel = new Vue({
     el: '#control-view',
     delimiters: ["{{", "}}"],
+    // components: {
+    //     vueSlider
+    // },
     data: {
         features: [
             {name: "LinkDistance", 'type': 'range', 'value': 50, 'min': 1, 'max': 500, 'step': 1},
@@ -111,7 +116,7 @@ var controlModel = new Vue({
             //     return item['price'];
             // });
 
-            _this.customer_slider.max = Math.max.apply(null,customers);
+            _this.customer_slider.max = Math.max.apply(null, customers);
             _this.customer_slider.min = Math.min.apply(null, customers);
             _this.customer_slider.cur_max = _this.customer_slider.max;
             _this.customer_slider.cur_min = _this.customer_slider.min;
@@ -130,9 +135,48 @@ var controlModel = new Vue({
         });
 
         pipService.onBusinessAndLinksOfSelectedRegionIsReady(function (msg) {
-            var links = msg.links, nodes = msg.nodes;
+            var links = msg.links.map(function (item) {
+                if (item['weight'] == null || isNaN(item['weight']) == true) { //not number
+                    return 0;
+                }
+                else { //number
+                    return item['weight'];
+                }
+            });
+            var customers = msg.nodes.map(function (item) {
+                return item['review_count'];
+            });
+            var ratings = msg.nodes.map(function (item) {
+                return item['stars'];
+            });
+            var price = msg.nodes.map(function (item) {
+                if (item['price_range'] == null || isNaN(item['price_range']) == true) { //not number
+                    return 1;
+                }
+                else { //number
+                    return item['price_range'];
+                }
+            });
 
-            //写到这
+            _this.link_slider.max = Math.max.apply(null, links);
+            _this.link_slider.min = Math.min.apply(null, links);
+            _this.link_slider.cur_max = _this.link_slider.max;
+            _this.link_slider.cur_min = _this.link_slider.min;
+
+            _this.customer_slider.max = Math.max.apply(null, customers);
+            _this.customer_slider.min = Math.min.apply(null, customers);
+            _this.customer_slider.cur_max = _this.customer_slider.max;
+            _this.customer_slider.cur_min = _this.customer_slider.min;
+
+            _this.rating_slider.max = Math.max.apply(null, ratings);
+            _this.rating_slider.min = Math.min.apply(null, ratings);
+            _this.rating_slider.cur_max = _this.rating_slider.max;
+            _this.rating_slider.cur_min = _this.rating_slider.min;
+
+            _this.price_slider.max = Math.max.apply(null, price);
+            _this.price_slider.min = Math.min.apply(null, price);
+            _this.price_slider.cur_max = _this.price_slider.max;
+            _this.price_slider.cur_min = _this.price_slider.min;
 
         });
     }

@@ -56,6 +56,11 @@
                         <button v-on:click="onSubmitSelectionArea">{{area_selection_button_text}}</button>
                         <button v-on:click="onClearSelectionArea">Clear Selection</button>
                     </div>
+                    <div>
+                        <span>Common Customers: </span>
+                        <span>{{link_slider.cur_min}}</span>
+                        <input type="range" v-model="link_slider.cur_min" v-bind:min="link_slider.min" v-bind:max="link_slider.max">
+                    </div>
 
                 </div>
 
@@ -84,6 +89,8 @@
 <script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 
+<!--<script src="js/lib/vuejs-slider.min.js"></script>-->
+
 <script src="js/marked.min.js"></script>
 <script src="js/lib/NodeLink.js"></script>
 <script src="js/lib/venueGlyph.js"></script>
@@ -91,7 +98,6 @@
 <script src="js/service/pipService.js"></script>
 <script src="js/service/dataService.js"></script>
 
-<!--<script src="js/vue-model/navbar.js"></script>-->
 <script src="js/vue-model/graphView.js"></script>
 <script src="js/vue-model/control-view.js"></script>
 <script src="js/vue-model/mapView.js"></script>
