@@ -12,7 +12,8 @@ var pipService = new Vue({
         SUBMIT_SELECTION_AREA_IS_READY: 'submit_selection_area_is_ready',
         CLEAR_SUBMIT_SELECTION_AREA_IS_READY: 'clear_submit_selection_area_is_ready',
         BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY: 'business_and_links_of_selected_region_is_ready',
-        CITY_OR_TYPE_IS_CHANGED: 'city_or_type_is_changed'
+        CITY_OR_TYPE_IS_CHANGED: 'city_or_type_is_changed',
+        FILTERING_SLIDER_IS_CHANGED: 'filtering_slider_is_changed',
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -104,5 +105,15 @@ var pipService = new Vue({
                 callback(msg);
             });
         },
+
+        emitFilteringSliderIsChanged: function (msg) {
+            this.$emit(this.FILTERING_SLIDER_IS_CHANGED, msg);
+        },
+        onFilteringSliderIsChanged: function (callback) {
+            this.$on(this.FILTERING_SLIDER_IS_CHANGED, function (msg) {
+                callback(msg);
+            });
+        },
+
     }
 })

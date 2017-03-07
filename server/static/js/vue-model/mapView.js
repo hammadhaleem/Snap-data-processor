@@ -274,6 +274,97 @@ var navbar = new Vue({
             _this.drawLinkedGlyphs(_this.my_map, _this.glyph_items, _this.link_items);
         });
 
+        //monitor the case when sliders are changed
+        pipService.onFilteringSliderIsChanged(function (msg) {
+            console.log('======================slider msg:================= ', msg);
+
+            function checkSingleGlyphFlag(d, msg) {
+                var flag = d.price_range >= msg[0].cur_min && d.price_range <= msg[0].cur_max &&
+                    d.review_count >= msg[1].cur_min && d.review_count <= msg[1].cur_max &&
+                    d.stars >= msg[2].cur_min && d.stars <= msg[2].cur_max;
+                return flag;
+            }
+
+            //venue circles
+            var venue_circles_g = d3.select('#mapViewRealMap').select('svg').select('g.venue_circles');
+            if (venue_circles_g[0][0] != null) {
+                //写到这 msg = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
+                venue_circles_g.selectAll('circle')
+                    .filter(function (d, i) {
+                        if (d.price_range == null || d.review_count == null || d.stars == null) {
+                            console.log('circle returned!');
+                            return false;
+                        }
+                        var flag = checkSingleGlyphFlag(d, msg);
+
+                        console.log('circle returned! flag: ', flag);
+
+                        return flag;
+                    })
+                    .attr('opacity', 1.0);
+                venue_circles_g.selectAll('circle')
+                    .filter(function (d, i) {
+                        if (d.price_range == null || d.rating == null || d.stars == null) {
+                            return true;
+                        }
+                        var flag = checkSingleGlyphFlag(d, msg);
+                        return !flag;
+                    })
+                    .attr('opacity', 1.0); //待修改: 0.0
+            }
+
+            //glyphs and links
+            var glyph_link_g = d3.select('#mapViewRealMap').select('svg').select('g.linked_glyphs');
+            if (glyph_link_g[0][0] != null) {
+
+                //links
+                glyph_link_g.selectAll('g.interLink')
+                    .filter(function (d, i) {
+                        var flag = d.weight <= msg[3].cur_max && d.weight >= msg[3].cur_min;
+                        return flag;
+                    })
+                    .attr('opacity', 1.0);
+                glyph_link_g.selectAll('g.interLink')
+                    .filter(function (d, i) {
+                        var flag = d.weight <= msg[3].cur_max && d.weight >= msg[3].cur_min;
+                        return !flag;
+                    })
+                    .attr('opacity', 0.0);
+
+                //glyphs and the corresponding links
+                glyph_link_g.selectAll('g.glyph_group')
+                    .filter(function (d, i) {
+                        if (d.price_range == null || d.review_count == null || d.stars == null) {
+                            return false;
+                        }
+                        var flag = checkSingleGlyphFlag(d, msg);
+                        return flag;
+                    })
+                    .attr('opacity', 1.0);
+                glyph_link_g.selectAll('g.glyph_group')
+                    .filter(function (d, i) {
+                        if (d.price_range == null || d.rating == null || d.stars == null) {
+                            return true;
+                        }
+                        var flag = checkSingleGlyphFlag(d, msg);
+                        return !flag;
+                    })
+                    .attr('opacity', 0.0)
+                    .each(function (d, i) {
+                        var business_id = d['business_id'];
+                        var start_class = 'start_' + business_id, end_class = 'end_' + business_id;
+                        glyph_link_g.selectAll('line.' + start_class).each(function () {
+                            d3.select(this.parentNode).attr('opacity', 0.0);
+                        });
+                        glyph_link_g.selectAll('line.' + end_class).each(function () {
+                            d3.select(this.parentNode).attr('opacity', 0.0);
+                        });
+                    });
+
+            }
+
+        });
+
         //init the whole map as tempe
         var msg = {'city': _this.current_city, 'type': _this.current_type, 'focus': _this.focus_location};
         pipService.emitCityOrTypeIsChanged(msg);

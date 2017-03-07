@@ -28,10 +28,10 @@ var controlModel = new Vue({
         area_selection_button_text: 'Submit Selection', // or 'Reload Dataset'
 
         //sliders
-        link_slider: {'max': 9999, 'min': 1, 'cur_min': 1, 'cur_max': 9999},
-        customer_slider: {'max': 9999, 'min': 1, 'cur_min': 1, 'cur_max': 9999},
         price_slider: {'max': 5, 'min': 1, 'cur_min': 1, 'cur_max': 5},
+        customer_slider: {'max': 9999, 'min': 1, 'cur_min': 1, 'cur_max': 9999},
         rating_slider: {'max': 5, 'min': 1, 'cur_min': 1, 'cur_max': 5},
+        link_slider: {'max': 9999, 'min': 1, 'cur_min': 1, 'cur_max': 9999},
 
     },
     methods: {
@@ -93,6 +93,38 @@ var controlModel = new Vue({
                 console.log('Features are changed! Begin to emit change attributes!');
                 pipService.emitChangeAttributes(changedValues);
                 console.log('control view: features are changed! ', this.features);
+            },
+            deep: true
+        },
+        'price_slider.cur_max': {
+            handler: function (new_value, old_value) {
+                console.log('price_slider["cur_max"]: ', new_value);
+                var slider = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
+                pipService.emitFilteringSliderIsChanged(slider);
+            },
+            deep: true
+        },
+        'customer_slider.cur_min': {
+            handler: function (new_value, old_value) {
+                console.log('customer_slider["cur_min"]: ', new_value);
+                var slider = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
+                pipService.emitFilteringSliderIsChanged(slider);
+            },
+            deep: true
+        },
+        'rating_slider.cur_min': {
+            handler: function (new_value, old_value) {
+                console.log('rating_slider["cur_min"]: ', new_value);
+                var slider = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
+                pipService.emitFilteringSliderIsChanged(slider);
+            },
+            deep: true
+        },
+        'link_slider.cur_min': {
+            handler: function (new_value, old_value) {
+                console.log('link_slider["cur_min"]: ', new_value);
+                var slider = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
+                pipService.emitFilteringSliderIsChanged(slider);
             },
             deep: true
         },
