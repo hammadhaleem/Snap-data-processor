@@ -310,7 +310,7 @@ var navbar = new Vue({
                         var flag = checkSingleGlyphFlag(d, msg);
                         return !flag;
                     })
-                    .attr('opacity', 1.0); //待修改: 0.0
+                    .attr('opacity', 0.0); //待修改: 0.0
             }
 
             //glyphs and links

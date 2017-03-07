@@ -144,9 +144,9 @@ var controlModel = new Vue({
             var ratings = dataService.business_of_one_city_type.map(function (item) {
                 return item['stars'];
             });
-            // var price = dataService.business_of_one_city_type.map(function (item) { //待补上
-            //     return item['price'];
-            // });
+            var price = dataService.business_of_one_city_type.map(function (item) { //待修改
+                return item['price'];
+            });
 
             _this.customer_slider.max = Math.max.apply(null, customers);
             _this.customer_slider.min = Math.min.apply(null, customers);
@@ -158,10 +158,10 @@ var controlModel = new Vue({
             _this.rating_slider.cur_max = _this.rating_slider.max;
             _this.rating_slider.cur_min = _this.rating_slider.min;
 
-            // _this.price_slider.max = Math.max.apply(null, price); //待补上
-            // _this.price_slider.min = Math.min.apply(null, price);
-            // _this.price_slider.cur_max = _this.price_slider.max;
-            // _this.price_slider.cur_min = _this.price_slider.min;
+            _this.price_slider.max = Math.max.apply(null, price); //待修改
+            _this.price_slider.min = Math.min.apply(null, price);
+            _this.price_slider.cur_max = _this.price_slider.max;
+            _this.price_slider.cur_min = _this.price_slider.min;
 
             console.log('=================this.customer_slider, this.rating_slider: =========== ', _this.customer_slider, _this.rating_slider);
         });
