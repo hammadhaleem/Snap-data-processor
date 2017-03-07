@@ -22,6 +22,8 @@ parts/
 sdist/
 var/
 .idea/
+server/static_webpack/
+
 *.egg-info/
 .installed.cfg
 *.egg
