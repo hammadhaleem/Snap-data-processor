@@ -58,7 +58,7 @@ def get_cities():
         {"$group": {"_id": "$city", "count": {"$sum": 1}}}
     ]
 
-    cities = cities.yelp_business_information_processed.aggregate(pipeline)
+    cities = cities.yelp_business_information_processed_all.aggregate(pipeline)
     dict_tmp = {}
     for elem in cities:
         dict_tmp[elem[u'_id']] = int(elem[u'count'])
@@ -68,14 +68,14 @@ def get_cities():
 
 @mod_api.route('/get_types')
 def get_types():
-    types = mongo_connection.db.yelp_business_information_processed
+    types = mongo_connection.db.yelp_business_information_processed_all
     types = types.distinct('type')
     return jsonify(types=types)
 
 
 @mod_api.route('/get_business_information_city_type/<city>/<type>')
 def business_information_city_type(city, type):
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
     data_query = yelp_business_information.find({'city': city, 'type': type},
                                                 {"business_id": 1,
                                                  'longitude': 1,
@@ -122,7 +122,7 @@ def business_information_city_type(city, type):
 @mod_api.route('/get_business_information/<business_id>')
 @mod_api.route('/get_business_information/<business_id>/<next_page>')
 def business_information(business_id=None, next_page=None):
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
 
     if business_id is None or business_id == "ALL":
 
@@ -175,7 +175,7 @@ def business_information(business_id=None, next_page=None):
 
 @mod_api.route('/get_business_information_city/<city>')
 def business_information_city(city=None):
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
 
     output = []
     for business in yelp_business_information.find({'city': city}, {
@@ -443,7 +443,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
     polygon.append((lat2, lon1))
     polygon.append((lat1, lon1))
 
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
     query = {
         'geometry': {
             '$geoWithin': {
@@ -488,7 +488,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
 def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000):
     distance_meters = float(distance_meters)
 
-    yelp_business_information = mongo_connection.db.yelp_business_information_processed
+    yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
 
     business_data = list(yelp_business_information.find({'business_id': business_id}, {
         'business_id': 1,
