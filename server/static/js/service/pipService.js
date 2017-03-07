@@ -14,6 +14,8 @@ var pipService = new Vue({
         BUSINESS_AND_LINKS_OF_SELECTED_REGION_IS_READY: 'business_and_links_of_selected_region_is_ready',
         CITY_OR_TYPE_IS_CHANGED: 'city_or_type_is_changed',
         FILTERING_SLIDER_IS_CHANGED: 'filtering_slider_is_changed',
+        CONFIRM_FILTERING_RESULT_IS_READY: 'confirm_filtering_result',
+
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -111,6 +113,15 @@ var pipService = new Vue({
         },
         onFilteringSliderIsChanged: function (callback) {
             this.$on(this.FILTERING_SLIDER_IS_CHANGED, function (msg) {
+                callback(msg);
+            });
+        },
+
+        emitConfirmFilteringResult: function (msg) {
+            this.$emit(this.CONFIRM_FILTERING_RESULT_IS_READY, msg);
+        },
+        onConfirmFilteringResult: function (callback) {
+            this.$on(this.CONFIRM_FILTERING_RESULT_IS_READY, function (msg) {
                 callback(msg);
             });
         },

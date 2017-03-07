@@ -58,9 +58,9 @@ d3.myGlyph = function (outer_leaflet_map) {
             var outer_radius = 0, inner_radius = min_r;
             inner_radius = inner_radius / zoom_scale; //zoom scaling
             for (var k = 0; k < d.rating.length; k++) {
-                // outer_radius += d.rating[k]; //待修改
-                d.rating[k] = 40; //待修改
-                outer_radius += 40;
+                outer_radius += d.rating[k]; //待修改
+                // d.rating[k] = 40; //待修改
+                // outer_radius += 40;
             }
             outer_radius = outer_radius_scale(outer_radius);
             outer_radius = outer_radius / zoom_scale; //zoom scaling
@@ -105,7 +105,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .enter()
                 .append('rect')
                 .attr('x', function (item, j) {
-                    d.price_range = 3; //待修改
+                    // d.price_range = 3; //待修改
                     return (j - d.price_range) * rect_size;
                 })
                 .attr('y', -(outer_radius + padding_bar_to_circle + rect_size))

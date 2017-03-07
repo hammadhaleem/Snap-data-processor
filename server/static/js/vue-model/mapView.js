@@ -164,6 +164,15 @@ var navbar = new Vue({
                     return "translate(" + my_map.latLngToLayerPoint(latlng).x + ',' + my_map.latLngToLayerPoint(latlng).y + ')'; //transformation
                 })
                 .call(glyph);
+
+            //append text
+            svg.selectAll('g.glyph_group')
+                .append('title')
+                .text(function (d, i) {
+                    return 'Name: ' + d['name'] + '\n' + 'Review Count: ' + d['review_count'] + '\n'
+                        + 'Stars: ' + d['stars'] + '\n' + 'Price Level: ' + d['price_range'] + '\n'
+                        + 'Business ID: ' + d['business_id'];
+                });
         },
         removeBrushRect: function () {
             var svg = d3.select('#mapViewRealMap').select('svg');
@@ -268,15 +277,16 @@ var navbar = new Vue({
             _this.removeBrushRect();
         });
         pipService.onBusinessAndLinksOfSelectedRegionIsReady(function (msg) {
-            console.log('Result of loading the data of specific region and type: ', msg);
+            console.log('Data of selected region is ready; Start to draw Linked Glyph ======');
             _this.glyph_items = msg.nodes;
             _this.link_items = msg.links;
             _this.drawLinkedGlyphs(_this.my_map, _this.glyph_items, _this.link_items);
+            console.log('Data of selected region is ready; FINISH drawing Linked Glyph ======');
         });
 
         //monitor the case when sliders are changed
         pipService.onFilteringSliderIsChanged(function (msg) {
-            console.log('======================slider msg:================= ', msg);
+            console.log(' Slider is changed !!!!!Start to filter venue circles and linked glyphs!!######### ', msg);
 
             function checkSingleGlyphFlag(d, msg) {
                 var flag = d.price_range >= msg[0].cur_min && d.price_range <= msg[0].cur_max &&
@@ -292,13 +302,9 @@ var navbar = new Vue({
                 venue_circles_g.selectAll('circle')
                     .filter(function (d, i) {
                         if (d.price_range == null || d.review_count == null || d.stars == null) {
-                            console.log('circle returned!');
                             return false;
                         }
                         var flag = checkSingleGlyphFlag(d, msg);
-
-                        console.log('circle returned! flag: ', flag);
-
                         return flag;
                     })
                     .attr('opacity', 1.0);
@@ -363,6 +369,51 @@ var navbar = new Vue({
 
             }
 
+            console.log(' Finished filtering venue circles and linked glyphs!!######### ', msg);
+        });
+
+        //confirm the filtering
+        pipService.onConfirmFilteringResult(function (msg) {
+            function checkSingleGlyphFlag(d, msg) {
+                var flag = d.price_range >= msg[0].cur_min && d.price_range <= msg[0].cur_max &&
+                    d.review_count >= msg[1].cur_min && d.review_count <= msg[1].cur_max &&
+                    d.stars >= msg[2].cur_min && d.stars <= msg[2].cur_max;
+                return flag;
+            }
+
+            //glyphs and links
+            var glyph_link_g = d3.select('#mapViewRealMap').select('svg').select('g.linked_glyphs');
+            if (glyph_link_g[0][0] != null) {
+                //links
+                glyph_link_g.selectAll('g.interLink')
+                    .filter(function (d, i) {
+                        var flag = d.weight <= msg[3].cur_max && d.weight >= msg[3].cur_min;
+                        return !flag;
+                    }).remove();
+
+                //glyphs and the corresponding links
+                glyph_link_g.selectAll('g.glyph_group')
+                    .filter(function (d, i) {
+                        if (d.price_range == null || d.rating == null || d.stars == null) {
+                            return true;
+                        }
+                        var flag = checkSingleGlyphFlag(d, msg);
+                        return !flag;
+                    })
+                    .each(function (d, i) {
+                        var business_id = d['business_id'];
+                        var start_class = 'start_' + business_id, end_class = 'end_' + business_id;
+                        glyph_link_g.selectAll('line.' + start_class).each(function () {
+                            d3.select(this.parentNode).remove();
+                        });
+
+                        glyph_link_g.selectAll('line.' + end_class).each(function () {
+                            d3.select(this.parentNode).remove();
+                        });
+
+                        d3.select(this).remove();
+                    });
+            }
         });
 
         //init the whole map as tempe

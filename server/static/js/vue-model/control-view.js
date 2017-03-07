@@ -76,6 +76,11 @@ var controlModel = new Vue({
             console.log('query_params: ', query_params);
 
             pipService.emitCityOrTypeIsChanged(query_params);
+        },
+        onConfirmSliderFiltering: function () {
+            console.log('confirm filtering!');
+            var slider = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
+            pipService.emitConfirmFilteringResult(slider);
         }
     },
     watch: {
@@ -145,7 +150,12 @@ var controlModel = new Vue({
                 return item['stars'];
             });
             var price = dataService.business_of_one_city_type.map(function (item) { //待修改
-                return item['price'];
+                if (item['price_range'] == null || isNaN(item['price_range']) == true) { //not number
+                    return 1;
+                }
+                else { //number
+                    return item['price_range'];
+                }
             });
 
             _this.customer_slider.max = Math.max.apply(null, customers);
@@ -209,6 +219,11 @@ var controlModel = new Vue({
             _this.price_slider.min = Math.min.apply(null, price);
             _this.price_slider.cur_max = _this.price_slider.max;
             _this.price_slider.cur_min = _this.price_slider.min;
+
+            console.log('Data of selected region is ready; Finish Update slider value! ======', _this.price_slider.max, _this.customer_slider.min,
+                _this.rating_slider.min, _this.link_slider.min);
+            console.log('price:===== ', price);
+            console.log('corresponding nodes: ', msg.nodes);
 
         });
     }
