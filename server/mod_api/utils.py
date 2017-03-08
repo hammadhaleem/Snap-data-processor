@@ -82,6 +82,42 @@ def get_users_for_business(business_id):
     return user_list
 
 
+def get_user_business_ratings(user_list, business_id1, business_id2):
+    # print(business_id1,  business_id2, user_list)
+
+    query = {
+        'user_id': {"$in": user_list.keys()},
+        'business_id': {"$in": [business_id1, business_id2]}
+    }
+
+    data_index = {}
+    query_data = list(mongo_connection.db.yelp_reviews.find(query, {'business_id': 1, "user_id": 1, 'stars': 1}))
+    for elem in query_data:
+        user_list[elem['user_id']]['business_1' + '_rating'] = None
+        user_list[elem['user_id']]['business_2' + '_rating'] = None
+
+    for elem in query_data:
+
+        # user_list[elem['user_id']][elem['business_id']]
+        try:
+            if elem['business_id'] == business_id1 and user_list[elem['user_id']]['business_1' + '_rating'] is None:
+                user_list[elem['user_id']]['business_1' + '_rating'] = + elem['stars']
+
+            if elem['business_id'] == business_id2 and user_list[elem['user_id']]['business_1' + '_rating'] is None:
+                user_list[elem['user_id']]['business_2' + '_rating'] = + elem['stars']
+
+        except Exception as e:
+            print(e)
+            user_list[elem['user_id']] = {}
+            if elem['business_id'] == business_id1:
+                user_list[elem['user_id']]['business_1' + '_rating'] = elem['stars']
+
+            if elem['business_id'] == business_id2:
+                user_list[elem['user_id']]['business_2' + '_rating'] = elem['stars']
+
+    return user_list
+
+
 def get_business_graph(business_id):
     business_id_list = cache.get(str(business_id) + "_graph_user_list")
     if business_id_list is not None:
