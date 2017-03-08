@@ -61,7 +61,12 @@ var dataService = new Vue({
             }, function (error) {
                 console.log('Error in loading business of selected region!', error);
             });
-        }
+        },
+        getCommonCustomerInfoOfTwoVenues: function (bs_id1, bs_id2) {
+            var url = '/api/get_social_graph_common/' + bs_id1 + '/' + bs_id2;
+            return this.$http.get(url);
+        },
+
     },
     created: function () {
         this.getGraphDataFromBackend();

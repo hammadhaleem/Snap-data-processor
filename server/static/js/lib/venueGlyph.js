@@ -28,7 +28,8 @@ d3.myLink = function (outer_leaflet_map) {
             element.append('line')
                 .attr(line_attributes)
                 .classed('start_' + d['start'] + ' end_' + d['end'], true)
-                .style('stroke', 'gray')
+                .style('stroke', '#de2d26')
+                .style('opacity', 0.4)
                 .style('stroke-width', d['weight'] / (3 * zoom_scale)); //zoom scaling
 
         });
@@ -38,8 +39,8 @@ d3.myLink = function (outer_leaflet_map) {
 }
 
 d3.myGlyph = function (outer_leaflet_map) {
-    // var my_color = ['red', 'green', 'blue', 'brown', 'yellow'];
-    var my_color = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'];
+    // var my_color = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'];
+    var my_color = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
     var min_r = 1.5, max_r = 6;
     var outer_radius_scale = d3.scale.linear().domain([40, 200]).range([min_r, max_r]);
     var central_color_scale = d3.scale.linear().domain([1.0, 5.0]).range([my_color[0], my_color[my_color.length - 1]]);
@@ -48,6 +49,9 @@ d3.myGlyph = function (outer_leaflet_map) {
     var init_zoom_level = 15;
     var zoom_scale = Math.pow(1.5, init_zoom_level - outer_leaflet_map.getZoom());
     // circles.attr('r', radius / zoom_scale);
+
+    //record the selected glyphs
+    var selected_glyphs_counting = [];
 
     function my(selection) {
         selection.each(function (d, i) {
@@ -95,7 +99,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .style('stroke-width', '2px');
 
             //draw price bar
-            var rect_size = 2, l_shift = 0, bars = [1, 1, 1, 1];
+            var rect_size = 3, l_shift = 0, bars = [1, 1, 1, 1];
             rect_size = rect_size / zoom_scale; //zoom scaling
             var padding_bar_to_circle = 3 / zoom_scale;//zoom scaling
             var g_price_bars = element.append('g')
@@ -267,35 +271,57 @@ d3.myGlyph = function (outer_leaflet_map) {
                 });
 
             //click price rectangles to select a glyph
+            var glyph_data_item = d;
             element.select('g.price_bars')
                 .selectAll('rect')
                 .on('click', function (item, j) {
                     if (d3.event.defaultPrevented == false) { //it is click event
                         console.log('let us select this glyph!');
-                        console.log('clicked glyph-price_rectangles: ', item, j);
+                        console.log('clicked glyph-price_rectangles: ', glyph_data_item);
+
 
                         var glyph_group = this.parentNode.parentNode;
                         if (d3.select(glyph_group).select('g.highlight_rectangles')[0][0] == null) { //we need to highlight it
+                            //check if we have selected two venues or not
+                            if (selected_glyphs_counting.length >= 2) {
+                                alert('You have already selected two venues! Please de-select one!');
+                                return;
+                            }
+
+                            //otherwise
                             var highlight_group = d3.select(glyph_group).append('g').classed('highlight_rectangles', true);
                             var r = d3.select(glyph_group).select('circle.hidden_circle').attr('r') + 5;
                             var d = 'M' + (-r) + ' ' + (-r)
-                                    + ' L' + (r) + ' ' + (-r)
-                                    + ' L' + (r) + ' ' + (r)
-                                    + ' L' + (-r) + ' ' + (r)
-                                    + ' L' + (-r) + ' ' + (-r);
+                                + ' L' + (r) + ' ' + (-r)
+                                + ' L' + (r) + ' ' + (r)
+                                + ' L' + (-r) + ' ' + (r)
+                                + ' L' + (-r) + ' ' + (-r);
                             highlight_group.append('path').attr('d', d)
                                 .attr('stroke', 'blue')
                                 .attr('stroke-width', '3px')
                                 .attr('fill', 'none');
 
-                            //写到这
+                            //save it
+                            selected_glyphs_counting.push(glyph_data_item);
+                            if (selected_glyphs_counting.length == 2) {
+                                console.log('Selection is done! ', selected_glyphs_counting);
+                                pipService.emitVenueSelectionIsReady(selected_glyphs_counting);
+                            }
                         }
                         else {
                             d3.select(glyph_group).select('g.highlight_rectangles').remove(); //we need to remove it
+
+                            var tmp = []; //update the selection list
+                            for (var k = 0; k < selected_glyphs_counting.length; k++) {
+                                if (selected_glyphs_counting[k]['business_id'] != glyph_data_item['business_id']) {
+                                    tmp.push(glyph_data_item);
+                                }
+                            }
+                            selected_glyphs_counting = tmp;
                         }
                     }
 
-                })
+                });
 
         });
     }

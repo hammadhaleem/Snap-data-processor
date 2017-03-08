@@ -15,7 +15,7 @@ var pipService = new Vue({
         CITY_OR_TYPE_IS_CHANGED: 'city_or_type_is_changed',
         FILTERING_SLIDER_IS_CHANGED: 'filtering_slider_is_changed',
         CONFIRM_FILTERING_RESULT_IS_READY: 'confirm_filtering_result',
-
+        VENUE_SELECTION_LIST_IS_READY: 'venue_selection_list_is_ready',
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -125,6 +125,17 @@ var pipService = new Vue({
                 callback(msg);
             });
         },
+
+
+        emitVenueSelectionIsReady: function (msg) {
+            this.$emit(this.VENUE_SELECTION_LIST_IS_READY, msg);
+        },
+        onVenueSelectionIsReady: function (callback) {
+            this.$on(this.VENUE_SELECTION_LIST_IS_READY, function (msg) {
+                callback(msg);
+            });
+        },
+
 
     }
 })
