@@ -10,7 +10,7 @@ from flask import Blueprint, jsonify, url_for
 from server import app, mongo_connection, cache
 from server.mod_api.graph_get import graph_in_box
 from server.mod_api.utils import get_user_information_from_mongo, \
-    get_business_graph, get_user_information_list, haversine
+    get_business_graph, get_user_information_list, haversine, get_user_business_ratings
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
@@ -286,6 +286,7 @@ def get_business_graph_two_common(business_id1, business_id2):
 
     all_users = list(set(list(user_list1) + list(user_list2) + list(common_users)))
     user_dict = get_user_information_list(list(all_users))
+    user_dict = get_user_business_ratings(user_dict, business_id1, business_id2)
 
     ''' common business '''
     for elem in list(common_users):
