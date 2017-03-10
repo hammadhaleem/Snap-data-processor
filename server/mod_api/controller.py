@@ -255,6 +255,7 @@ def business_graph(business_id=None):
 
 @mod_api.route('/get_social_graph_common/<business_id1>/<business_id2>')
 def get_business_graph_two_common(business_id1, business_id2):
+    business_id1, business_id2 = sorted([business_id1, business_id2])
     data1 = get_business_graph(business_id1)
     data2 = get_business_graph(business_id2)
 
@@ -316,6 +317,7 @@ def get_business_graph_two_common(business_id1, business_id2):
 
 @mod_api.route('/get_social_graph_of_two_business/<business_id1>/<business_id2>')
 def business_graph_two(business_id1, business_id2):
+    business_id1, business_id2 = sorted([business_id1, business_id2])
     data1 = get_business_graph(business_id1)
     data2 = get_business_graph(business_id2)
 
