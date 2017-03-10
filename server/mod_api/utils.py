@@ -90,32 +90,31 @@ def get_user_business_ratings(user_list, business_id1, business_id2):
         'business_id': {"$in": [business_id1, business_id2]}
     }
 
-    for k,v in user_list.items():
-        user_list[k] = {}
-        user_list[k]['business_1_rating'] = None #elem['stars']
-        user_list[k]['business_2_rating'] = None #elem['stars']
-
     query_data = list(mongo_connection.db.yelp_reviews.find(query, {'business_id': 1, "user_id": 1, 'stars': 1}))
-    for elem in query_data:
-        user_list[elem['user_id']]['business_1' + '_rating'] = None
-        user_list[elem['user_id']]['business_2' + '_rating'] = None
 
     for elem in query_data:
+        k = elem['user_id']
         try:
-            if elem['business_id'] == business_id1 and user_list[elem['user_id']]['business_1' + '_rating'] is None:
-                user_list[elem['user_id']]['business_1' + '_rating'] = + elem['stars']
-
-            if elem['business_id'] == business_id2 and user_list[elem['user_id']]['business_1' + '_rating'] is None:
-                user_list[elem['user_id']]['business_2' + '_rating'] = + elem['stars']
-
-        except Exception as e:
-            print(e)
-            user_list[elem['user_id']] = {}
             if elem['business_id'] == business_id1:
-                user_list[elem['user_id']]['business_1' + '_rating'] = elem['stars']
+                user_list[k]['business_1' + '_rating'] = (float(user_list[k]['business_1' + '_rating']) + elem['stars']) / 2
 
             if elem['business_id'] == business_id2:
-                user_list[elem['user_id']]['business_2' + '_rating'] = elem['stars']
+                user_list[k]['business_2' + '_rating'] = (float(user_list[k]['business_2' + '_rating']) + elem['stars']) / 2
+
+        except Exception as e:
+            if elem['business_id'] == business_id1:
+                user_list[k]['business_1' + '_rating'] = elem['stars']
+
+            if elem['business_id'] == business_id2:
+                user_list[k]['business_2' + '_rating'] = elem['stars']
+
+    for k, v in user_list.items():
+
+        if 'business_1_rating' not in user_list[k]:
+            user_list[k]['business_1_rating'] = None
+
+        if 'business_2_rating' not in user_list[k]:
+            user_list[k]['business_2_rating'] = None
 
     return user_list
 
