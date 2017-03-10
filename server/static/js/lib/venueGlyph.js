@@ -314,7 +314,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                             var tmp = []; //update the selection list
                             for (var k = 0; k < selected_glyphs_counting.length; k++) {
                                 if (selected_glyphs_counting[k]['business_id'] != glyph_data_item['business_id']) {
-                                    tmp.push(glyph_data_item);
+                                    tmp.push(selected_glyphs_counting[k]);
                                 }
                             }
                             selected_glyphs_counting = tmp;
