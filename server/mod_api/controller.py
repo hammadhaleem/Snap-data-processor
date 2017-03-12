@@ -86,8 +86,8 @@ def business_information_city_type(city, type):
                                                  'city': 1,
                                                  'rating': 1,
                                                  'price_range': 1,
-                                                 'type':1,
-                                                 'review_distribution':1
+                                                 'type': 1,
+                                                 'review_distribution': 1
                                                  })
 
     output = []
@@ -187,7 +187,7 @@ def business_information_city(city=None):
         'stars': 1,
         'city': 1,
         'type': 1,
-        'price_range':1,
+        'price_range': 1,
         'review_distribution': 1
     }):
 
@@ -590,3 +590,64 @@ def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
 
     nodes, link = graph_in_box(city, type, polygon)
     return jsonify(nodes=nodes, links=link)
+
+
+@mod_api.route('/get_review_information/<business_id1>/<business_id2>')
+def review_information_agg(business_id1, business_id2):
+    business_ids = sorted([business_id1, business_id2])
+    yelp_business_information = mongo_connection.db.yelp_reviews
+
+    query = {
+        'business_id': {
+            '$in': business_ids
+        }
+    }
+
+    what = {
+        'business_id': 1,
+        'review_id': 1,
+        'date': 1,
+        'user_id': 1,
+        'stars': 1
+    }
+
+    user_list = {
+        business_id1: [],
+        business_id2: []
+    }
+
+    data_dict = {
+        business_id1: [],
+        business_id2: []
+    }
+
+    lis = list(yelp_business_information.find(query, what))
+
+    lis = sorted(lis, key=lambda k: k['date'])
+
+    date_list = [e['date'] for e in lis]
+
+    max_date = max(date_list)
+    min_date = min(date_list)
+
+    for elem in lis:
+        del elem['_id']
+        user_list[elem['business_id']].append(elem['user_id'])
+        data_dict[elem['business_id']].append(elem)
+
+    user_list[business_id2] = set(user_list[business_id2])
+    user_list[business_id1] = set(user_list[business_id1])
+
+    for elem in data_dict[business_id1]:
+        if elem['user_id'] in user_list[business_id2]:
+            elem['common'] = 'true'
+        else:
+            elem['common'] = 'false'
+
+    for elem in data_dict[business_id2]:
+        if elem['user_id'] in set(user_list[business_id1]):
+            elem['common'] = 'true'
+        else:
+            elem['common'] = 'false'
+
+    return jsonify(data = data_dict, max_date=max_date, min_date=min_date)
