@@ -9,7 +9,6 @@ d3.sankey = function () {
         nodes = [],
         links = [];
     var width = 600; //initial value
-    var groupingMode = false; //group the rectangles or not
 
     sankey.nodeWidth = function (_) {
         if (!arguments.length) return nodeWidth;
@@ -20,12 +19,6 @@ d3.sankey = function () {
     sankey.width = function (_) {
         if (!arguments.length) return width;
         width = +_;
-        return sankey;
-    };
-
-    sankey.groupingMode = function (_) {
-        if (!arguments.length) return groupingMode;
-        groupingMode = _;
         return sankey;
     };
 
@@ -239,118 +232,36 @@ d3.sankey = function () {
             }
         }
 
-        function isGroupedOrNotByName(cur_name, pre_name) {
-            if (pre_name == null) {
-                return false;
-            }
-
-            if ((cur_name[0] == 'l' && pre_name[0] == 'l') || (cur_name[0] == 'r' && pre_name[0] == 'r')) {
-                if (cur_name[1] == '4' && pre_name[1] == '5') {
-                    return true;
-                }
-                else if (cur_name[1] == '1' && pre_name[1] == '2') {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            }
-            else if ((cur_name[0] == 'm' && pre_name[0] == 'm') || (cur_name[0] == 'm' && pre_name[0] == 'm')) {
-                var pre_idx = parseInt(pre_name.substring(1)), cur_idx = parseInt(cur_name.substring(1));
-                if (pre_idx == 0 || (pre_idx > 0 && cur_idx <= 0)) {
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }
-            else {
-                alert('Error in the grouping by breadth!');
-                return false;
-            }
-
-        }
-
         function resolveCollisions() {
-            nodesByBreadth.forEach(function (nodes) { //for each column: by breadth
+            nodesByBreadth.forEach(function (nodes) {
                 var node,
                     dy,
                     y0 = 0,
                     n = nodes.length,
                     i;
 
-                if (!groupingMode) { //do not group it
-                    // Push any overlapping nodes down.
-                    nodes.sort(ascendingDepth);
-                    for (i = 0; i < n; ++i) {
-                        node = nodes[i];
-                        dy = y0 - node.y;
-                        if (dy > 0) node.y += dy;
-                        y0 = node.y + node.dy + nodePadding;
-                    }
-
-                    // If the bottommost node goes outside the bounds, push it back up.
-                    dy = y0 - nodePadding - size[1];
-                    if (dy > 0) {
-                        y0 = node.y -= dy;
-
-                        // Push any overlapping nodes back up.
-                        for (i = n - 2; i >= 0; --i) {
-                            node = nodes[i];
-                            dy = node.y + node.dy + nodePadding - y0;
-                            if (dy > 0) node.y -= dy;
-                            y0 = node.y;
-                        }
-                    }
-                }
-                else { //group it
-                    // Push any overlapping nodes down.
-                    nodes.sort(ascendingDepth);
-                    for (i = 0; i < n; ++i) {
-                        node = nodes[i];
-                        dy = y0 - node.y;
-                        if (dy > 0) node.y += dy;
-
-                        if (i < (n - 1)) {
-                            var cur_nm = nodes[i + 1]['name'], pre_nm = nodes[i]['name'];
-                            var flag = isGroupedOrNotByName(cur_nm, pre_nm);
-                            if (flag) {
-                                y0 = node.y + node.dy; //grouping
-                            }
-                            else {
-                                y0 = node.y + node.dy + nodePadding;
-                            }
-                        }
-                        else {
-                            y0 = node.y + node.dy; //record the position of the last rectangle of a column
-                        }
-                    }
-
-                    // If the bottommost node goes outside the bounds, push it back up.
-                    dy = y0 - size[1];
-                    if (dy > 0) {
-                        y0 = node.y -= dy;
-
-                        // Push any overlapping nodes back up.
-                        for (i = n - 2; i >= 0; --i) {
-                            node = nodes[i];
-
-                            var cur_nm = nodes[i + 1]['name'], pre_nm = nodes[i]['name'];
-                            var flag = isGroupedOrNotByName(cur_nm, pre_nm);
-                            if (flag) { //grouped
-                                dy = node.y + node.dy - y0;
-                            }
-                            else {
-                                dy = node.y + node.dy + nodePadding - y0;
-                            }
-
-                            if (dy > 0) node.y -= dy;
-                            y0 = node.y;
-                        }
-                    }
-
+                // Push any overlapping nodes down.
+                nodes.sort(ascendingDepth);
+                for (i = 0; i < n; ++i) {
+                    node = nodes[i];
+                    dy = y0 - node.y;
+                    if (dy > 0) node.y += dy;
+                    y0 = node.y + node.dy + nodePadding;
                 }
 
+                // If the bottommost node goes outside the bounds, push it back up.
+                dy = y0 - nodePadding - size[1];
+                if (dy > 0) {
+                    y0 = node.y -= dy;
+
+                    // Push any overlapping nodes back up.
+                    for (i = n - 2; i >= 0; --i) {
+                        node = nodes[i];
+                        dy = node.y + node.dy + nodePadding - y0;
+                        if (dy > 0) node.y -= dy;
+                        y0 = node.y;
+                    }
+                }
             });
         }
 

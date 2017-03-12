@@ -8,14 +8,49 @@ var commonCustomerView = new Vue({
     data: {
         // view_svg_handler: undefined,
         // selected_venue_info: [],
-        common_customer_rating_reviews: []
+        common_customer_rating_reviews: [],
+        l_color_mapping: ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'], //light blue to dark blue
+        r_color_mapping: ['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'], //light yellow to dark yellow
+        m_color_no_diff: '#cccccc',
     },
     methods: {
         initDrawing: function () {
-            var width = 770, height = 450;
+            var width = 770, height = 400;
             var svg_tmp = d3.select('#commonCustomerComparisonView').select('svg');
-            if (svg_tmp[0][0] != null) {
+            if (svg_tmp[0][0] != null){
                 svg_tmp.remove();
+            }
+            d3.select('#commonCustomerComparisonView')
+                .select('section')
+                .append("svg")
+                .attr('width', width)
+                .attr('height', height);
+        },
+        getRectColorByAttrName: function (attr_nm) {
+            if (attr_nm[0] == 'l') { //left
+                var idx = parseInt(attr_nm.substring(1)) - 1;
+                return this.l_color_mapping[idx];
+            }
+            else if (attr_nm[0] == 'r') { //right
+                var idx = parseInt(attr_nm.substring(1)) - 1;
+                return this.r_color_mapping[idx];
+            }
+            else if (attr_nm[0] == 'm') { //middle
+                var idx = parseInt(attr_nm.substring(1));
+                if (idx == 0) {
+                    return this.m_color_no_diff;
+                }
+                else if (idx > 0) {
+                    idx = idx - 1;
+                    return this.l_color_mapping[idx];
+                }
+                else if (idx < 0) {
+                    idx = Math.abs(idx) - 1;
+                    return this.r_color_mapping[idx];
+                }
+            }
+            else {
+                alert('Error in the processing!');
             }
 
         },
@@ -87,7 +122,7 @@ var commonCustomerView = new Vue({
                 else if (b[0] < a[0])
                     return -1;
                 else {
-                    return a.substring(1) - b.substring(1);
+                    return b.substring(1) - a.substring(1);
                 }
             });
             for (var i = 0; i < links.length; i++) {
@@ -104,15 +139,15 @@ var commonCustomerView = new Vue({
             return {'nodes': nodes, 'links': links};
         },
         drawSankeyDiagram: function (nodes, links) {
-            var width = 770, height = 450;
+            var _this = this;
+            var width = 770, height = 400;
             var view_svg_handler = d3.select('#commonCustomerComparisonView')
                 .select('section')
-                .append("svg")
-                .attr('width', width)
-                .attr('height', height);
+                .select("svg");
+                // .attr('width', width)
+                // .attr('height', height);
 
-
-            var units = "Widgets";
+            var units = "Customers";
             var formatNumber = d3.format(",.0f"), // zero decimal places
                 format = function (d) {
                     return formatNumber(d) + " " + units;
@@ -121,37 +156,118 @@ var commonCustomerView = new Vue({
 
             // Set the sankey diagram properties
             var sankey = d3.sankey()
-                .nodeWidth(36)
-                .nodePadding(50)
+                .nodeWidth(20)
+                .nodePadding(10)
                 .width(760)
-                .size([760, 420]); //width, height
-
+                .size([760, 420]); // width,height
             var path = sankey.link();
 
             sankey
                 .nodes(nodes)
                 .links(links)
-                .layout(32); //iteration number
+                .groupingMode(true)
+                .layout(0); //iteration number. When set as 0, the order of the nodes will follow the data order
 
             // add in the links
             var link = view_svg_handler
-                .append("g").selectAll(".link")
+                .append("g")
+                .selectAll(".link")
                 .data(links)
-                .enter().append("path")
-                .attr("class", "link")
+                .enter()
+                .append("path")
+                .attr("class", function (d, j) {
+                    var src_name = d.source.name, target_name = d.target.name;
+                    var class_str = "link " + src_name + ' ' + target_name;
+                    return class_str;
+                })
                 .attr("d", path)
                 .style("stroke-width", function (d) {
                     return Math.max(1, d.dy);
                 })
                 .sort(function (a, b) {
                     return b.dy - a.dy;
+                })
+                .on('mouseover', function (d, j) {
+                    console.log('Mouse Over Event! ', d, j);
+                    var src_name = d.source.name, target_name = d.target.name;
+                    if (src_name[0] == 'l') {
+                        var related_target = src_name.substring(1) - target_name.substring(1);
+                        var related_target_name = 'r' + related_target;
+
+                        d3.select('.link.' + src_name + '.' + target_name) //current
+                            .classed('link_hovered', true)
+                            .style('stroke', _this.getRectColorByAttrName(src_name));
+                        d3.select('.link.' + target_name + '.' + related_target_name)
+                            .classed('link_hovered', true)   //the other
+                            .style('stroke', _this.getRectColorByAttrName(related_target_name));
+                    }
+                    else if (src_name[0] == 'm') {
+                        var related_src = src_name.substring(1) + target_name.substring(1);
+                        var related_src_name = 'l' + related_src;
+
+                        d3.select('.link.' + src_name + '.' + target_name) //current
+                            .classed('link_hovered', true)
+                            .style('stroke', _this.getRectColorByAttrName(target_name));
+                        d3.select('.link.' + src_name + '.' + related_src_name)
+                            .classed('link_hovered', true)
+                            .style('stroke', _this.getRectColorByAttrName(related_src_name));
+                    }
+                    else {
+                        alert('Error in the source names!');
+                    }
+                })
+                .on('mouseout', function (d, j) {
+                    console.log('Mouse Out Event!', d, j);
+                    var src_name = d.source.name, target_name = d.target.name;
+                    if (src_name[0] == 'l') {
+                        var related_target = src_name.substring(1) - target_name.substring(1);
+                        var related_target_name = 'r' + related_target;
+
+                        d3.select('.link.' + src_name + '.' + target_name) //current
+                            .classed('link_hovered', false)
+                            .style('stroke', '#000');
+                        d3.select('.link.' + target_name + '.' + related_target_name)
+                            .classed('link_hovered', false)   //the other
+                            .style('stroke', '#000');
+                    }
+                    else if (src_name[0] == 'm') {
+                        var related_src = src_name.substring(1) + target_name.substring(1);
+                        var related_src_name = 'l' + related_src;
+
+                        d3.select('.link.' + src_name + '.' + target_name) //current
+                            .classed('link_hovered', false)
+                            .style('stroke', '#000');
+                        d3.select('.link.' + src_name + '.' + related_src_name)
+                            .classed('link_hovered', false)
+                            .style('stroke', '#000');
+                    }
+                    else {
+                        alert('Error in the source names!');
+                    }
+
                 });
 
             // add the link titles
             link.append("title")
                 .text(function (d) {
-                    return d.source.name + " → " +
-                        d.target.name + "\n" + format(d.value);
+                    var src_name = d.source.name, target_name = d.target.name;
+                    if (src_name[0] == 'l') {
+                        var related_target = src_name.substring(1) - target_name.substring(1);
+                        var related_target_name = 'r' + related_target;
+
+                        return src_name + " → " + target_name + " → " + related_target_name +
+                            "\n" + format(d.value);
+                    }
+                    else if (src_name[0] == 'm') {
+                        var related_src = src_name.substring(1) + target_name.substring(1);
+                        var related_src_name = 'l' + related_src;
+
+                        return related_src_name + " → " + src_name + " → " + target_name +
+                            "\n" + format(d.value);
+                    }
+                    else {
+                        alert('Error in the source names!');
+                    }
                 });
 
             // add in the nodes
@@ -173,14 +289,18 @@ var commonCustomerView = new Vue({
                     .on("drag", dragmove));
 
             // add the rectangles for the nodes
+            var mid_rect_rate = 1.6;
             node.append("rect")
                 .attr("height", function (d) {
                     return d.dy;
                 })
-                .attr("width", sankey.nodeWidth())
+                .attr("width", function (d, i) {
+                    return sankey.nodeWidth();
+                })
                 .style("fill", function (d) {
                     // return d.color = color(d.name.replace(/ .*/, ""));
-                    return d.color = color(d.name);
+                    // return d.color = color(d.name);
+                    return _this.getRectColorByAttrName(d.name);
                 })
                 .style("stroke", function (d) {
                     return d3.rgb(d.color).darker(2);
@@ -189,6 +309,19 @@ var commonCustomerView = new Vue({
                 .text(function (d) {
                     return d.name + "\n" + format(d.value);
                 });
+
+            //change the shape of middle rectangle
+            node.filter(function (d, i) {
+                var nm = d.name[0];
+                return nm == 'm';
+            }).each(function (d, i) {
+                d3.select(this)
+                    .select('rect')
+                    .attr('width', sankey.nodeWidth() * mid_rect_rate)
+                // .attr('rx', 6)
+                // .attr('ry', 6);
+            });
+
 
             // add in the title for the nodes
             node.append("text")
@@ -200,13 +333,24 @@ var commonCustomerView = new Vue({
                 .attr("text-anchor", "end")
                 .attr("transform", null)
                 .text(function (d) {
-                    return d.name;
+                    // return d.name;
+                    if(d.name[0] == 'r' || d.name[0] == 'l'){
+                        return 'Rating: ' + d.name.substring(1);
+                    }
+                    else{
+                        return 'Diff: ' + d.name.substring(1);
+                    }
                 })
                 .filter(function (d) {
                     return d.x < width / 2;
                 })
                 .attr("x", 6 + sankey.nodeWidth())
-                .attr("text-anchor", "start");
+                .attr("text-anchor", "start")
+                .filter(function (d) {
+                    var nm = d.name[0];
+                    return nm == 'm';
+                })
+                .attr('x', 6 + sankey.nodeWidth() * mid_rect_rate);
 
             // the function for moving the nodes
             function dragmove(d) {
@@ -227,6 +371,7 @@ var commonCustomerView = new Vue({
     mounted: function () {
 
         var _this = this;
+        _this.initDrawing();
         pipService.onVenueSelectionIsReady(function (selected_glyphs) {
             console.log('selected glyph list: ', selected_glyphs);
             var bs_id1 = selected_glyphs[0]['business_id'], bs_id2 = selected_glyphs[1]['business_id'];
@@ -245,6 +390,11 @@ var commonCustomerView = new Vue({
             }, function (error) {
                 console.log('Error in getting common customer information!', error);
             });
+        });
+
+        //remove
+        pipService.onRemoveCommonCustomerCompView(function (msg) {
+            _this.initDrawing();
         });
     },
     watch: {},

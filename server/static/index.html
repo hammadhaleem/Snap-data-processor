@@ -10,23 +10,23 @@
 
 <body>
 
-<nav id="body-navbar" class="navbar navbar-inverse navbar-static-top">
-    <!-- container to make the display of navbar to be centered -->
-    <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand hidden-sm" href="#"> Visual Comparison of Commercial Entities</a>
-        </div>
+<!--<nav id="body-navbar" class="navbar navbar-inverse navbar-static-top">-->
+<!--&lt;!&ndash; container to make the display of navbar to be centered &ndash;&gt;-->
+<!--<div class="container">-->
+<!--<div class="navbar-header">-->
+<!--<a class="navbar-brand hidden-sm" href="#"> Visual Comparison of Commercial Entities</a>-->
+<!--</div>-->
 
-        <div class="navbar-collapse collapse navbar-right">
-            <ul class="nav navbar-nav">
-                <li v-for="item in buttons">
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<!--<div class="navbar-collapse collapse navbar-right">-->
+<!--<ul class="nav navbar-nav">-->
+<!--<li v-for="item in buttons">-->
+<!--</li>-->
+<!--</ul>-->
+<!--</div>-->
+<!--</div>-->
+<!--</nav>-->
 
-<div class="container-fluid">
+<div class="container-fluid" style="margin-top: 10px">
     <div class="row">
         <div id="control-view" class="col-sm-2 col-md-2 sidebar">
             <section style="margin-top: 1px">
@@ -96,15 +96,29 @@
                 <h3 style="margin-top: 0px;background-color: #aaaaaa;">Search&Table View</h3>
             </section>
         </div>
-        <div id="mapView" class="col-sm-5 col-md-5 sidebar">
-            <h3 style="background-color: #aaaaaa; margin-top: 1px; margin-bottom: 0px">Map View</h3>
-            <section id="mapViewRealMap">
-            </section>
+        <div class="col-sm-5 col-md-5 sidebar">
+            <div id="mapView">
+                <h3 style="background-color: #aaaaaa; margin-top: 1px; margin-bottom: 0px">Map View</h3>
+                <section id="mapViewRealMap">
+                </section>
+            </div>
+            <div id="temporalView">
+                <h3 style="background-color: #aaaaaa; margin-top: 1px; margin-bottom: 0px">Temporal View</h3>
+                <section>
+                </section>
+            </div>
+
         </div>
-        <div id="commonCustomerComparisonView" class="col-sm-5 col-md-5 sidebar">
-            <h3 style="background-color: #aaaaaa; margin-top: 1px; margin-bottom: 0px">Common Customer Comparison View</h3>
-            <section>
-            </section>
+        <div class="col-sm-5 col-md-5 sidebar">
+            <div id="commonCustomerComparisonView">
+                <h3 style="background-color: #aaaaaa; margin-top: 1px; margin-bottom: 0px">Common Customer Comparison
+                    View</h3>
+                <section>
+                </section>
+            </div>
+            <div id="wordCloudView">
+                Word Cloud View
+            </div>
         </div>
     </div>
 </div>
@@ -130,6 +144,7 @@
 <script src="js/vue-model/control-view.js"></script>
 <script src="js/vue-model/mapView.js"></script>
 <script src="js/vue-model/commonCustomerView.js"></script>
+<script src="js/vue-model/temporalView.js"></script>
 
 
 </body>

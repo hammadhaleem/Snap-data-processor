@@ -140,7 +140,7 @@ label {
 /***************************Added by Yong***************************/
 #mapView section {
     width: 770px;
-    height: 450px;
+    height: 400px;
 }
 
 #mapViewRealMap svg {
@@ -172,7 +172,7 @@ div#control_pannel {
 
 .node rect {
     cursor: move;
-    fill-opacity: .9;
+    fill-opacity: 1.0;
     shape-rendering: crispEdges;
 }
 
@@ -187,8 +187,12 @@ div#control_pannel {
     stroke-opacity: .2;
 }
 
-.link:hover {
-    stroke-opacity: .5;
+.link_hovered{
+    stroke-opacity: 1.0
 }
+
+/*.link:hover {*/
+    /*stroke-opacity: .5;*/
+/*}*/
 
 /***************************Added by Yong***************************/

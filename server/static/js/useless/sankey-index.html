@@ -56,14 +56,13 @@
         // Set the sankey diagram properties
         var sankey = d3.sankey()
                 .nodeWidth(36)
-                .nodePadding(140)
+                .nodePadding(20)
                 .size([width, height]);
 
         var path = sankey.link();
 
         // load the data (using the timelyportfolio csv method)
-        d3.csv("sankey.csv", function (error, data) {
-
+        d3.csv("sankey-simple.csv", function (error, data) {
             //set up graph in same style as original example but empty
             graph = {"nodes": [], "links": []};
 
@@ -96,10 +95,9 @@
                 graph.nodes[i] = {"name": d};
             });
 
-            sankey
-                    .nodes(graph.nodes)
+            sankey.nodes(graph.nodes)
                     .links(graph.links)
-                    .layout(32); //iteration number
+                    .layout(0); //iteration number
 
             // add in the links
             var link = svg.append("g").selectAll(".link")

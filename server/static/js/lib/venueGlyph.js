@@ -279,7 +279,6 @@ d3.myGlyph = function (outer_leaflet_map) {
                         console.log('let us select this glyph!');
                         console.log('clicked glyph-price_rectangles: ', glyph_data_item);
 
-
                         var glyph_group = this.parentNode.parentNode;
                         if (d3.select(glyph_group).select('g.highlight_rectangles')[0][0] == null) { //we need to highlight it
                             //check if we have selected two venues or not
@@ -303,10 +302,6 @@ d3.myGlyph = function (outer_leaflet_map) {
 
                             //save it
                             selected_glyphs_counting.push(glyph_data_item);
-                            if (selected_glyphs_counting.length == 2) {
-                                console.log('Selection is done! ', selected_glyphs_counting);
-                                pipService.emitVenueSelectionIsReady(selected_glyphs_counting);
-                            }
                         }
                         else {
                             d3.select(glyph_group).select('g.highlight_rectangles').remove(); //we need to remove it
@@ -319,6 +314,17 @@ d3.myGlyph = function (outer_leaflet_map) {
                             }
                             selected_glyphs_counting = tmp;
                         }
+
+                        //check the number of selected glyphs
+                        if (selected_glyphs_counting.length == 2) {
+                            console.log('Selection is done! ', selected_glyphs_counting);
+                            pipService.emitVenueSelectionIsReady(selected_glyphs_counting);
+                        }
+                        else if(selected_glyphs_counting.length < 2){
+                            console.log('remove common customer comparison view!');
+                            pipService.emitRemoveCommonCustomerCompView('remove');
+                        }
+
                     }
 
                 });

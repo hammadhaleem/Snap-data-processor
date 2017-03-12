@@ -16,6 +16,7 @@ var pipService = new Vue({
         FILTERING_SLIDER_IS_CHANGED: 'filtering_slider_is_changed',
         CONFIRM_FILTERING_RESULT_IS_READY: 'confirm_filtering_result',
         VENUE_SELECTION_LIST_IS_READY: 'venue_selection_list_is_ready',
+        REMOVE_COMMON_CUSTOMER_VIEW: 'remove_common_customer_view',
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -136,6 +137,14 @@ var pipService = new Vue({
             });
         },
 
+        emitRemoveCommonCustomerCompView: function (msg) {
+            this.$emit(this.REMOVE_COMMON_CUSTOMER_VIEW, msg);
+        },
+        onRemoveCommonCustomerCompView: function (callback) {
+            this.$on(this.REMOVE_COMMON_CUSTOMER_VIEW, function (msg) {
+                callback(msg);
+            });
+        },
 
     }
 })

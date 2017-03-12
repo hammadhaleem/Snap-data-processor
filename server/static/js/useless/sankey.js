@@ -43,7 +43,7 @@ d3.sankey = function() {
     computeNodeLinks();
     computeNodeValues();
     computeNodeBreadths();
-    computeNodeDepths(iterations);
+    computeNodeDepths(iterations); //the most important part
     computeLinkDepths();
     return sankey;
   };
@@ -82,9 +82,9 @@ d3.sankey = function() {
   // Populate the sourceLinks and targetLinks for each node.
   // Also, if the source and target are not objects, assume they are indices.
   function computeNodeLinks() {
-    nodes.forEach(function(node) {
-      node.sourceLinks = [];
-      node.targetLinks = [];
+    nodes.forEach(function(node) { //init
+      node.sourceLinks = []; //store all the links of the source node
+      node.targetLinks = []; //store all the links of the target node
     });
     links.forEach(function(link) {
       var source = link.source,
@@ -173,7 +173,7 @@ d3.sankey = function() {
     }
 
     function initializeNodeDepth() {
-      var ky = d3.min(nodesByBreadth, function(nodes) {
+      var ky = d3.min(nodesByBreadth, function(nodes) { //计算y轴的间隔
         return (size[1] - (nodes.length - 1) * nodePadding) / d3.sum(nodes, value);
       });
 
@@ -233,7 +233,7 @@ d3.sankey = function() {
           node = nodes[i];
           dy = y0 - node.y;
           if (dy > 0) node.y += dy;
-          y0 = node.y + node.dy + nodePadding;
+          y0 = node.y + node.dy + nodePadding; //y0 is the starting position of each point
         }
 
         // If the bottommost node goes outside the bounds, push it back up.
