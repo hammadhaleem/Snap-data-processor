@@ -9,6 +9,7 @@ from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
 from server.mod_api.graph_get import graph_in_box
+from server.mod_api.nlp import nlp_analysis
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
 
@@ -650,4 +651,10 @@ def review_information_agg(business_id1, business_id2):
         else:
             elem['common'] = 'false'
 
-    return jsonify(data = data_dict, max_date=max_date, min_date=min_date)
+    return jsonify(data=data_dict, max_date=max_date, min_date=min_date)
+
+
+@mod_api.route('/get_business_review_analysis/<business_id>/')
+def get_review_analysis(business_id):
+    nlp_analysis_res = nlp_analysis(business_id,mongo_connection)
+    return jsonify(data=nlp_analysis_res)

@@ -165,21 +165,22 @@ print('[Info] Ngram and hot encoding done ...saving ...', (time.time() - start_t
 with open('ngram_counter' + city + '.pkl', 'wb') as fid:
     cPickle.dump(ngram_counter, fid)
 
-feature_names = ngram_counter.get_feature_names()
+
 print('[Info] Computing features and writing ...saving ...', (time.time() - start_time))
+feature_names = ngram_counter.get_feature_names()
 
 with open('feature_names' + city + '.pkl', 'wb') as fid:
     cPickle.dump(feature_names, fid)
 
+
+print('[Info] Computing SVC models ...', (time.time() - start_time))
 X_train = ngram_counter.transform(reviews_df.text_tokens)
 y_train = list(reviews_df.sentiment)
 
-print('[Info] total_feautres', len(feature_names), 'time from start', (time.time() - start_time))
-
+print('[Info] Total Features', len(feature_names), 'time from start', (time.time() - start_time))
 classifier = SVC(kernel='linear', cache_size=100000)
 model = classifier.fit(X_train, y_train)
 
 print('[Info] Save to pickle', (time.time() - start_time))
-
 with open('model' + city + '.pkl', 'wb') as fid:
     cPickle.dump(model, fid)
