@@ -9,9 +9,10 @@ from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
 from server.mod_api.graph_get import graph_in_box
-from server.mod_api.nlp import nlp_analysis
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
+
+from server.mod_api.get_reviews import  get_nlp_analysis
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
@@ -656,5 +657,5 @@ def review_information_agg(business_id1, business_id2):
 
 @mod_api.route('/get_business_review_analysis/<business_id>/')
 def get_review_analysis(business_id):
-    nlp_analysis_res = nlp_analysis(business_id,mongo_connection)
-    return jsonify(data=nlp_analysis_res)
+    nlp_analysis_res = get_nlp_analysis(business_id,mongo_connection)
+    return jsonify(nlp_analysis_res)
