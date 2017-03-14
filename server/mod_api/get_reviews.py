@@ -14,10 +14,10 @@ def update_scores(raw_list, dictionary):
             new_score += dictionary[word]['average_score']
 
         stri = ''
-        if new_score < 0:
+        if new_score < -0.1:
             stri = 'coef_neg_' + str(len(split_words))
 
-        if new_score > 0:
+        if new_score > 0.1:
             stri = 'coef_pos_' + str(len(split_words))
 
         if new_score == 0:
@@ -47,13 +47,13 @@ def create_word_dictionary(word_list):
                 }
 
     for word in data_dict.keys():
-        avg = (data_dict[word]['score'] + 0.1 * data_dict[word]['polarity']) / 1.1
+        avg = (data_dict[word]['score'] + data_dict[word]['polarity']) / 2
         data_dict[word]['average_score'] = avg
 
     return data_dict
 
 
-def get_nlp_analysis(business_id, mongo_connection):
+def get_nlp_analysis(business_id, mongo_connection,exhaustive):
     # pRlO48w4GkWEPEYIH2tHsw
     db = mongo_connection.db.yelp_reviews_scored_tempe
     query = {
@@ -79,16 +79,17 @@ def get_nlp_analysis(business_id, mongo_connection):
     # score each word in the positive or negative list
     # update the new word list
     # 3 words patterns are more important
-    data_dict_return = {
-        "count": raw['count'],
-        "coef_neg_3": raw['coef_neg_3'],
-        "coef_neg_1": raw['coef_neg_1'],
-        "coef_neg": raw['coef_neg'],
-        "business_id": raw['business_id'],
-        "stars": raw['stars'],
-        "coef_pos_3": raw['coef_pos_3'],
-        "coef_pos_2": raw['coef_pos_2'],
-        "coef_pos_1": raw['coef_pos_1'],
-    }
 
-    return data_dict_return  # list(raw.keys())
+    if exhaustive is False:
+        data_dict_return = {
+            "count": raw['count'],
+            "coef_neg_3": raw['coef_neg_3'],
+            "coef_neg_2": raw['coef_neg_2'],
+            "business_id": raw['business_id'],
+            "stars": raw['stars'],
+            "coef_pos_3": raw['coef_pos_3'],
+            "coef_pos_2": raw['coef_pos_2'],
+        }
+
+        return data_dict_return  # list(raw.keys())
+    return raw

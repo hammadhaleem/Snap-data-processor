@@ -656,6 +656,7 @@ def review_information_agg(business_id1, business_id2):
 
 
 @mod_api.route('/get_business_review_analysis/<business_id>/')
-def get_review_analysis(business_id):
-    nlp_analysis_res = get_nlp_analysis(business_id,mongo_connection)
+@mod_api.route('/get_business_review_analysis/<business_id>/<exhaustive>')
+def get_review_analysis(business_id,exhaustive=False):
+    nlp_analysis_res = get_nlp_analysis(business_id,mongo_connection,exhaustive)
     return jsonify(nlp_analysis_res)
