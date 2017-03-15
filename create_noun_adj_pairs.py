@@ -221,9 +221,6 @@ def get_ngrams(token, number=2):
 
 review['bi_grams'] = review.new_tokens.apply(lambda x: get_ngrams(x, 2))
 review['tri_grams'] = review.new_tokens.apply(lambda x: get_ngrams(x, 3))
-review = review.drop('tokens', axis=1)
-review = review.drop('new_tokens', axis=1)
-review = review.drop('pos_tagged', axis=1)
 print("[Info] Third phase completed", (time.time() - start_time))
 review.head()
 
@@ -323,21 +320,32 @@ def sum_of_dict(list_of_dict):
     return dict_lis
 
 
-reviews_df = review[['review_id', 'business_id', 'stars', 'tri_grams', 'bi_grams', 'count',
-                     'polarity', 'tf_idf']]\
-    .groupby(['review_id', 'business_id', 'stars'])\
-    .agg({
-        'tri_grams': sum_of_list,
-        'bi_grams': sum_of_list,
-        'count': sum,
-        'polarity': np.mean,
-        'tf_idf': sum_of_dict
-    })\
-    .reset_index()\
-    .sort_values('polarity')
+def extend_list(list_):
+    l = []
+    for elem in list(list_):
+        for item in elem:
+            l.append(item)
+    return ','.join(l)
+
+
+review['tokens'] = review['new_tokens']
+reviews_df = review[
+    ['review_id', 'business_id', 'stars', 'tri_grams', 'bi_grams', 'count', 'polarity', 'tf_idf', 'tokens']] \
+    .groupby(['review_id', 'business_id']).agg({
+    'tri_grams': sum_of_list,
+    'bi_grams': sum_of_list,
+    'count': sum,
+    'polarity': np.mean,
+    'tf_idf': sum_of_dict,
+    'stars': np.mean,
+    'tokens': extend_list
+}).reset_index().sort_values('polarity')
+
+
+
 print("[Info] Grouped together", (time.time() - start_time))
 
 print(reviews_df.head())
 
-to_mongo_db(reviews_df, 'yelp_reviews_analysis_adj_noun_restaurants')
+to_mongo_db(reviews_df, 'yelp_reviews_analysis_adj_noun_restaurants_tokens')
 print("[Info] Written", (time.time() - start_time))
