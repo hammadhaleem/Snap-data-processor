@@ -8,7 +8,9 @@ from bson.json_util import dumps
 from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
+from server.mod_api.get_word_pairs import get_word_pairs
 from server.mod_api.graph_get import graph_in_box
+from server.mod_api.nlp import nlp_analysis
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
 
@@ -656,8 +658,13 @@ def review_information_agg(business_id1, business_id2):
     return jsonify(data=data_dict, max_date=max_date, min_date=min_date)
 
 
-@mod_api.route('/get_business_review_analysis/<business_id>/')
-@mod_api.route('/get_business_review_analysis/<business_id>/<exhaustive>')
+@mod_api.route('/nlp/review_analysis/<business_id>/')
+@mod_api.route('/nlp/review_analysis/<business_id>/<exhaustive>')
 def get_review_analysis(business_id, exhaustive=False):
-    nlp_analysis_res = get_nlp_analysis(business_id, mongo_connection, exhaustive)
+    #  http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
+    # bit better?
+    if exhaustive is True :
+        nlp_analysis_res = nlp_analysis(business_id, mongo_connection, exhaustive)
+    else:
+        nlp_analysis_res = get_word_pairs(business_id, mongo_connection)
     return jsonify(nlp_analysis_res)
