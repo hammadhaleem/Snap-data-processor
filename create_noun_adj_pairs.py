@@ -340,8 +340,6 @@ reviews_df = review[
     'tokens': extend_list
 }).reset_index().sort_values('polarity')
 
-
-
 print("[Info] Grouped together", (time.time() - start_time))
 
 print(reviews_df.head())

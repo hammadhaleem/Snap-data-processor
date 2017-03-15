@@ -662,6 +662,7 @@ def review_information_agg(business_id1, business_id2):
 @mod_api.route('/nlp/review_analysis/<business_id>/<exhaustive>')
 def get_review_analysis(business_id, exhaustive=False):
     #  http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
+    # http://localhost:5002/api/nlp/review_analysis/mRWhEetiEi5Gx4H2zwM7Jw/
     # bit better?
     if exhaustive is True :
         nlp_analysis_res = nlp_analysis(business_id, mongo_connection, exhaustive)
