@@ -158,7 +158,7 @@ def token_ze(text):
 # In[10]:
 
 review['tokens'] = review.text.apply(lambda x: token_ze(x))
-print ("[Info] grams ", (time.time() - start_time))
+print("[Info] grams ", (time.time() - start_time))
 review.head()
 
 
@@ -323,15 +323,18 @@ def sum_of_dict(list_of_dict):
     return dict_lis
 
 
-reviews_df = review[
-    ['review_id', 'business_id', 'stars', 'tri_grams', 'bi_grams', 'count', 'polarity', 'tf_idf']].groupby(
-    ['review_id', 'business_id', 'stars']).agg({
-    'tri_grams': sum_of_list,
-    'bi_grams': sum_of_list,
-    'count': sum,
-    'polarity': np.mean,
-    'tf_idf': sum_of_dict
-}).reset_index().sort_values('polarity')
+reviews_df = review[['review_id', 'business_id', 'stars', 'tri_grams', 'bi_grams', 'count',
+                     'polarity', 'tf_idf']]\
+    .groupby(['review_id', 'business_id', 'stars'])\
+    .agg({
+        'tri_grams': sum_of_list,
+        'bi_grams': sum_of_list,
+        'count': sum,
+        'polarity': np.mean,
+        'tf_idf': sum_of_dict
+    })\
+    .reset_index()\
+    .sort_values('polarity')
 print("[Info] Grouped together", (time.time() - start_time))
 
 print(reviews_df.head())
