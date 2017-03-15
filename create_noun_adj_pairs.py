@@ -323,9 +323,8 @@ def sum_of_dict(list_of_dict):
 def extend_list(list_):
     l = []
     for elem in list(list_):
-        for item in elem:
-            l.append(item)
-    return ','.join(l)
+        l.append(' '.join(elem))
+    return '|'.join(l)
 
 
 review['tokens'] = review['new_tokens']

@@ -6,7 +6,7 @@ def get_word_pairs(business_id, mongo_connection):
         'business_id': business_id
     }
 
-    processed = list(mongo_connection.db.yelp_reviews_analysis_adj_noun.find(query))
+    processed = list(mongo_connection.db.yelp_reviews_analysis_adj_noun_restaurants_tokens.find(query))
     for raw in processed:
         del raw['_id']
 
