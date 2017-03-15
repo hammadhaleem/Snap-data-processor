@@ -33,6 +33,15 @@ client = MongoClient()
 db = client.yelp_comparative_analytics
 
 
+
+word_dictionary = {}
+word_count = 0
+stop_words = set(stopwords.words('english'))
+
+city = 'tempe'
+bus_type = 'restaurants'
+
+
 def get_sets():
     lis = []
     noun = ['NN ', 'NNS', 'NNP', 'NNPS']
@@ -110,14 +119,6 @@ def format_word_split(txt):
 def get_ngrams(token, number=2):
     return list(set(ngrams(token, number)))
 
-
-word_dictionary = {}
-word_count = 0
-stop_words = set(list(set(stopwords.words('english'))) + ['ok', 'the', 'other', 'that', 'their', 'there'])
-
-city = 'tempe'
-bus_type = 'restaurants'
-
 data_lis = list(db.yelp_business_information_processed.find({'city': city, 'type': bus_type}, {'business_id': 1}))
 business = [x['business_id'] for x in data_lis]
 print("[Info] Total business " + str(len(business)), 'time from start', (time.time() - start_time))
@@ -157,7 +158,7 @@ print('[Info] Ngram and hot encoding .. reducing features .. this step will take
       (time.time() - start_time))
 
 # # build the feature matrices
-ngram_counter = CountVectorizer(ngram_range=(1, 3), analyzer='word')
+ngram_counter = CountVectorizer(ngram_range=(2, 4), analyzer='word')
 ngram_counter.fit(reviews_df.text_tokens)
 
 print('[Info] Ngram and hot encoding done ...saving ...', (time.time() - start_time))

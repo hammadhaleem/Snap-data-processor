@@ -12,7 +12,7 @@ from server.mod_api.graph_get import graph_in_box
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
 
-from server.mod_api.get_reviews import  get_nlp_analysis
+from server.mod_api.get_reviews import get_nlp_analysis
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
@@ -61,10 +61,11 @@ def get_cities():
     ]
 
     cities = cities.yelp_business_information_processed_all.aggregate(pipeline)
-    dict_tmp = {}
+    dict_tmp = []
     for elem in cities:
-        dict_tmp[elem[u'_id']] = int(elem[u'count'])
+        dict_tmp.append([elem[u'_id'], int(elem[u'count'])])
 
+    dict_tmp = sorted(dict_tmp, key=lambda x: x[1], reverse=True)
     return jsonify(cities=dict_tmp)
 
 
@@ -657,6 +658,6 @@ def review_information_agg(business_id1, business_id2):
 
 @mod_api.route('/get_business_review_analysis/<business_id>/')
 @mod_api.route('/get_business_review_analysis/<business_id>/<exhaustive>')
-def get_review_analysis(business_id,exhaustive=False):
-    nlp_analysis_res = get_nlp_analysis(business_id,mongo_connection,exhaustive)
+def get_review_analysis(business_id, exhaustive=False):
+    nlp_analysis_res = get_nlp_analysis(business_id, mongo_connection, exhaustive)
     return jsonify(nlp_analysis_res)
