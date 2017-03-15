@@ -187,12 +187,21 @@ div#control_pannel {
     stroke-opacity: .2;
 }
 
-.link_hovered{
+.link_hovered {
     stroke-opacity: 1.0
 }
 
 /*.link:hover {*/
-    /*stroke-opacity: .5;*/
+/*stroke-opacity: .5;*/
 /*}*/
+
+.bs1_x_axis,
+.bs2_x_axis,
+.bs1_y_axis,
+.bs2_y_axis{
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
 
 /***************************Added by Yong***************************/

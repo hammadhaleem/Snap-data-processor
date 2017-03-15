@@ -66,6 +66,10 @@ var dataService = new Vue({
             var url = '/api/get_social_graph_common/' + bs_id1 + '/' + bs_id2;
             return this.$http.get(url);
         },
+        getReviewRatingTemporalInfo: function (bs_id1, bs_id2) {
+            var url = '/api/get_review_information/' + bs_id1 + '/' + bs_id2;
+            return this.$http.get(url);
+        }
 
     },
     created: function () {
