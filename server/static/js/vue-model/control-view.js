@@ -22,6 +22,9 @@ var controlModel = new Vue({
         types: ['All', 'Restaurants', 'Shopping', 'Transportation', 'Entertainment', 'Hotel', 'Health', 'Services',
             'Education', 'Pets', 'Media', 'Religious', 'Parks', 'Null'],
         selected_type: 'All',
+        layout_options: ['Stacked', 'Layered'],
+        selected_temporal_layout: 'Stacked',
+
         area_selection: false,
         area_selection_flag: false, //since some posts say that event response and value change may not happen simultaneously
         area_selection_button_mode: false, //false: you can brush a region to select now; true: you can re-load all the red circles now
@@ -81,7 +84,11 @@ var controlModel = new Vue({
             console.log('confirm filtering!');
             var slider = [this.price_slider, this.customer_slider, this.rating_slider, this.link_slider];
             pipService.emitConfirmFilteringResult(slider);
-        }
+        },
+        onLayoutChanged: function () {
+            var layout = this.selected_temporal_layout;
+            pipService.emitTemporalViewLayoutIsChanged(layout);
+        },
     },
     watch: {
         features: {

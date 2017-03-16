@@ -37,7 +37,7 @@
                         <select v-model="selected_city" style="display: inline; width: 50%;"
                                 v-on:change="onCityOrTypeChanged">
                             <option v-for="city in cities" v-bind:value="city">
-                                {{city}}
+                                {{ city }}
                             </option>
                         </select>
                     </div>
@@ -46,7 +46,7 @@
                         <select v-model="selected_type" style="display: inline; width: 50%;"
                                 v-on:change="onCityOrTypeChanged">
                             <option v-for="type in types" v-bind:value="type">
-                                {{type}}
+                                {{ type }}
                             </option>
                         </select>
                     </div>
@@ -56,31 +56,31 @@
                                style="width: 30%">
                     </div>
                     <div>
-                        <button v-on:click="onSubmitSelectionArea">{{area_selection_button_text}}</button>
+                        <button v-on:click="onSubmitSelectionArea">{{ area_selection_button_text }}</button>
                         <button v-on:click="onClearSelectionArea">Clear Selection</button>
                     </div>
 
                     <div>
                         <span style="display: inline; width: 25%;">Max Price Level: </span>
-                        <span style="display: inline; width: 25%;">{{price_slider.cur_max}}</span>
+                        <span style="display: inline; width: 25%;">{{ price_slider.cur_max }}</span>
                         <input type="range" v-model="price_slider.cur_max" v-bind:min="price_slider.min"
                                v-bind:max="price_slider.max" style="display: inline; width: 45%; float: right;">
                     </div>
                     <div>
                         <span style="display: inline; width: 25%;">Min Customer: </span>
-                        <span style="display: inline; width: 25%;">{{customer_slider.cur_min}}</span>
+                        <span style="display: inline; width: 25%;">{{ customer_slider.cur_min }}</span>
                         <input type="range" v-model="customer_slider.cur_min" v-bind:min="customer_slider.min"
                                v-bind:max="customer_slider.max" style="display: inline; width: 45%; float: right;">
                     </div>
                     <div>
                         <span style="display: inline; width: 25%;">Min Rating: </span>
-                        <span style="display: inline; width: 25%;">{{rating_slider.cur_min}}</span>
+                        <span style="display: inline; width: 25%;">{{ rating_slider.cur_min }}</span>
                         <input type="range" v-model="rating_slider.cur_min" v-bind:min="rating_slider.min"
                                v-bind:max="rating_slider.max" style="display: inline; width: 45%; float: right;">
                     </div>
                     <div>
                         <span style="display: inline; width: 25%;">Min Link: </span>
-                        <span style="display: inline; width: 25%;">{{link_slider.cur_min}}</span>
+                        <span style="display: inline; width: 25%;">{{ link_slider.cur_min }}</span>
                         <input type="range" v-model="link_slider.cur_min" v-bind:min="link_slider.min"
                                v-bind:max="link_slider.max" style="display: inline; width: 45%; float: right;">
                     </div>
@@ -89,6 +89,15 @@
                         <button v-on:click="onConfirmSliderFiltering">Confirm Filtering</button>
                     </div>
 
+                    <div>
+                        <span style="display: inline-block; width: 30%;">Layout Mode:</span>
+                        <select v-model="selected_temporal_layout" style="display: inline; width: 50%;"
+                                v-on:change="onLayoutChanged">
+                            <option v-for="layout in layout_options" v-bind:value="layout">
+                                {{ layout }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
 
             </section>
