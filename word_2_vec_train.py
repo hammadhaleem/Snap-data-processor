@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # In[1]:
@@ -31,7 +30,7 @@ business = [x['business_id'] for x in list(db.yelp_business_information_processe
 print("[Info] Total business " + str(len(business)), 'time from start', (time.time() - start_time))
 
 query = {
-    'business_id': {'$in': business[:4]}
+    'business_id': {'$in': business}
 }
 raw = list(db.yelp_reviews.find(query, {'business_id': 1, 'text': 1, 'stars': 1, 'review_id': 1}))
 print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() - start_time))
@@ -57,7 +56,6 @@ def fix_df(data_frame_reviews):
 
         if count % 10010 == 0:
             print (count, (time.time() - start_time))
-            break
         count += 1
         lis.append(row)
     review = pd.DataFrame(lis)
