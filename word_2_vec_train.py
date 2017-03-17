@@ -70,8 +70,6 @@ reviews_df.to_csv(city + "-tmp.csv", encoding='utf-8')
 cores = multiprocessing.cpu_count()
 print(cores, (time.time() - start_time))
 
-# In[ ]:
-
 sentences = [x for x in reviews_df.tokens]
 
 print ("Run model", (time.time() - start_time))
@@ -79,4 +77,4 @@ model = gensim.models.Word2Vec(sentences=sentences, size=4000, min_count=1, wind
 
 print ("Save model", (time.time() - start_time))
 
-model.save(city + '-rest.word2vec.model')
+model.save(city + 'all-rest.word2vec.model')
