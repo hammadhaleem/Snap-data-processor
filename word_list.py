@@ -2,12 +2,15 @@
 
 import gensim, logging
 import pandas as pd
+from __builtin__ import float
 from __builtin__ import len
 
 from __builtin__ import list
+from __builtin__ import set
 from __builtin__ import str
 import json
 import time
+from numpy import sum
 
 from pymongo import MongoClient
 
@@ -33,7 +36,7 @@ food = [u'all-day', u'all-you-can-eat', u'american-style', u'ancestry', u'appeti
         u'nigiri', u'nigiris', u'nigri', u'nite', u'non-ayce', u'non-spicy', u'noodle', u'noodles', u'noon',
         u'noontime', u'offerings', u'oily', u'omelets', u'omelettes', u'omletes', u'omlets', u'omlette', u'omlettes',
         u'organics', u'over-salted', u'over-seasoned', u'oversalted', u'overseasoned', u'oyako', u'pan-asian',
-        u'panacotta', 'pasta', u'peppery', u'pescado', u'pizza', u'place', u'place..', u'plate', u'post-work',
+        u'panacotta', u'pasta', u'peppery', u'pescado', u'pizza', u'place', u'place..', u'plate', u'post-work',
         u'pre-pinkberry', u'profiteroles', u'quesadilla', u'quesadillas', u'quesedilla', u'quesedillas', u'quesidilla',
         u'quesidillas', u'quisine', u'revelation', u'run-of-the-mill', u'saltier', u'saltiness', u'salty', u'salty..',
         u'sashimi', u'sashmi', u'sauce', u'sauces', u'sause', u'scramblers', u'scrambles', u'seasoning', u'semifreddo',
@@ -65,7 +68,7 @@ place = [u'-location', u'after-work', u'afterwork', u'ambiance', u'ambience', u'
          u'decorating', u'decoration', u'decorations', u'decore', u'decors', u'decour', u'delicatessen', u'delis',
          u'destinations', u'digs', u'dysart', u'eateries', u'eatery', u'echiza', u'enviorment', u'enviornment',
          u'enviroment', u'environment', u'environs', u'establishment', u'establishments', u'fancier', u'fanciest',
-         u'flori', u'franchises', u'gastro-pub', u'gastropub', u'germann', u'go-tos', u'guadalupe', u'hang -outs',
+         u'flori', u'franchises', u'gastro-pub', u'gastropub', u'germann', u'go-tos', u'guadalupe', u'hang-outs',
          u'hangout', u'hangouts', u'haunt', u'haunts', u'higley', u'hitmaker', u'hot-spot', u'hotspot', u'hotspots',
          u'hualapai', u'i-215', u'interior', u'interiors', u'izakayas', u'joint', u'joint-', u'joint..', u'joint/bar',
          u'joints', u'kyrene', u'locale', u'locales', u'location', u'location-', u'location-wise', u'location..',
@@ -76,7 +79,7 @@ place = [u'-location', u'after-work', u'afterwork', u'ambiance', u'ambience', u'
          u'restaurant/bar', u'restaurants', u'restaurants..', u'resteraunt', u'resteraunts', u'resto', u'restos',
          u'restraunt', u'restraunts', u'restuarant', u'restuarants', u'resturant', u'resturants', u'resturaunt',
          u'sportsbar', u'spot', u'spot-', u'spot..', u'spots', u'steakhouse', u'steakhouses', u'subways', u'taquerias',
-         u'tra\xeen\xe9', u'unwind', u'urru', u'v ibe', u'vibe', u'vibe-', u'vibe..', u'vibes', u'walmarts',
+         u'tra\xeen\xe9', u'unwind', u'urru', u'vibe', u'vibes', u'walmarts',
          u'well-decorated', u'windmill']
 service = [u'*service', u'-customer', u'-price', u'-service', u'-staff', u'.service', u'.staff', u'adviser',
            u'advisers', u'advisor', u'advisors', u'assistants', u'associates', u'attentionn\xe9', u'attentiveness',
@@ -96,7 +99,6 @@ service = [u'*service', u'-customer', u'-price', u'-service', u'-staff', u'.serv
            u'staffs', u'stylist', u'thoroughness', u'wait-staff', u'waiter', u'waiters', u'waiters/waitresses',
            u'waitress', u'waitresses', u'waitstaff', u'worker', u'workers']
 
-
 client = MongoClient()
 db = client.yelp_comparative_analytics
 categories = {
@@ -107,11 +109,9 @@ categories = {
 }
 
 
-
 def to_mongo_db(df, collection_name):
     records = json.loads(df.T.to_json()).values()
     db[collection_name].insert_many(records)
-
 
 
 print("Try loading model")
@@ -119,8 +119,7 @@ model = gensim.models.Word2Vec.load('deep/all-rest.word2vec.model')
 word_vectors = model.wv
 del model
 
-print ("Loaded model")
-
+print("Loaded model")
 
 raw = list(db.yelp_reviews_terms_adj_noun.find())
 print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() - start_time))
@@ -142,24 +141,24 @@ def function_to_run(review):
             for key in tags.keys():
                 _scores_[key] = {}
                 word = key.split(" ")
-                for categor in categories.keys():
+                for category in categories.keys():
                     score_cat = 0
-                    for elem in categories[categor]:
-                        try:
-                            score_cat = + sum(word_vectors.similarity(word, elem))
-                        except:
-                            pass
-                    _scores_[key][categor] = score_cat
+                    cat = categories[category]
+                    try:
+                        score_cat = + sum(word_vectors.n_similarity(word, cat))
+                    except Exception as e:
+                        print  e
+                        pass
+
+                    _scores_[key][category] = score_cat
+
         row['score'] = _scores_
         ret_list.append(row)
-        if len(ret_list) > 10000:
+        if len(ret_list) > 5000:
             df = pd.DataFrame(ret_list)
             to_mongo_db(df, 'yelp_review_scored_pairs')
             print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
             ret_list = []
-
-        if (time.time() - start_time) % 181 == 0:
-            print ("[Info]", len(ret_list), 'time from start', (time.time() - start_time))
 
     df = pd.DataFrame(ret_list)
     to_mongo_db(df, 'yelp_review_scored_pairs')
