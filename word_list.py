@@ -118,7 +118,10 @@ def to_mongo_db(df, collection_name):
 # In[6]:
 
 print("Try loading model")
-word_vectors = gensim.models.KeyedVectors.load_word2vec_format('deep/vector.word2vec.model')
+model  =  gensim.models.Word2Vec.load('deep/all-rest.word2vec.model')
+word_vectors = model.wv
+del model
+
 print ("Loaded model")
 
 # In[39]:
