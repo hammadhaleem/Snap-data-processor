@@ -96,7 +96,6 @@ service = [u'*service', u'-customer', u'-price', u'-service', u'-staff', u'.serv
            u'staffs', u'stylist', u'thoroughness', u'wait-staff', u'waiter', u'waiters', u'waiters/waitresses',
            u'waitress', u'waitresses', u'waitstaff', u'worker', u'workers']
 
-# In[37]:
 
 client = MongoClient()
 db = client.yelp_comparative_analytics
@@ -108,61 +107,63 @@ categories = {
 }
 
 
-# In[38]:
 
 def to_mongo_db(df, collection_name):
     records = json.loads(df.T.to_json()).values()
     db[collection_name].insert_many(records)
 
 
-# In[6]:
 
 print("Try loading model")
-model  =  gensim.models.Word2Vec.load('deep/all-rest.word2vec.model')
+model = gensim.models.Word2Vec.load('deep/all-rest.word2vec.model')
 word_vectors = model.wv
 del model
 
 print ("Loaded model")
 
-# In[39]:
 
-raw = list(db.yelp_reviews_terms_adj_noun.find().limit(10))
+raw = list(db.yelp_reviews_terms_adj_noun.find())
 print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() - start_time))
 review = pd.DataFrame(raw)
+print("[Info] Total elements " + str(len(review)), 'time from start', (time.time() - start_time))
 
-# In[46]:
 
-ret_list = []
-for _, row in review.iterrows():
-    _scores_ = {}
-    del row['_id']
-    del row['rule_one']
-    del row['rule_one_special']
-    del row['rule_two']
-    del row['rule_two_reduce']
+def function_to_run(review):
+    ret_list = []
+    for _, row in review.iterrows():
+        _scores_ = {}
+        del row['_id']
+        del row['rule_one']
+        del row['rule_one_special']
+        del row['rule_two']
+        del row['rule_two_reduce']
+        tags = row['final_pairs']
+        if len(set(tags.keys())) > 0:
+            for key in tags.keys():
+                _scores_[key] = {}
+                word = key.split(" ")
+                for categor in categories.keys():
+                    score_cat = 0
+                    for elem in categories[categor]:
+                        try:
+                            score_cat = + sum(word_vectors.similarity(word, elem))
+                        except:
+                            pass
+                    _scores_[key][categor] = score_cat
+        row['score'] = _scores_
+        ret_list.append(row)
+        if len(ret_list) > 10000:
+            df = pd.DataFrame(ret_list)
+            to_mongo_db(df, 'yelp_review_scored_pairs')
+            print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
+            ret_list = []
 
-    tags = row['final_pairs']
-    if len(set(tags.keys())) > 0:
-        for key in tags.keys():
-            _scores_[key] = {}
-            word = key.split(" ")
-            for categor in categories.keys():
-                score_cat = 0
-                for elem in categories[categor]:
-                    try:
-                        score_cat = + word_vectors.similarity(word, elem)
-                    except:
-                        pass
+        if (time.time() - start_time) % 181 == 0:
+            print ("[Info]", len(ret_list), 'time from start', (time.time() - start_time))
 
-                _scores_[key][categor] = score_cat
-    row['score'] = _scores_
-    ret_list.append(row)
-    if len(ret_list) > 2000:
-        df = pd.DataFrame(ret_list)
-        to_mongo_db(df, 'yelp_review_scored_pairs')
-        print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
-        ret_list = []
+    df = pd.DataFrame(ret_list)
+    to_mongo_db(df, 'yelp_review_scored_pairs')
+    print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
 
-df = pd.DataFrame(ret_list)
-to_mongo_db(df, 'yelp_review_scored_pairs')
-print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
+
+function_to_run(review)
