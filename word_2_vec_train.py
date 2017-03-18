@@ -12,9 +12,7 @@ import time
 from __builtin__ import len
 from __builtin__ import list
 from __builtin__ import str
-from nltk.corpus import stopwords
 
-stopwords = list(stopwords.words('english'))
 start_time = time.time()
 from pymongo import MongoClient
 
@@ -51,8 +49,7 @@ def fix_df(data_frame_reviews):
         row = row.to_dict()
         row['tokens'] = []
         for elem in nltk.word_tokenize(row['text']):
-            if elem not in stopwords:
-                row['tokens'].append(elem)
+            row['tokens'].append(elem)
 
         if count % 10010 == 0:
             print (count, (time.time() - start_time))
@@ -73,8 +70,7 @@ print(cores, (time.time() - start_time))
 sentences = [x for x in reviews_df.tokens]
 
 print ("Run model", (time.time() - start_time))
-model = gensim.models.Word2Vec(sentences=sentences, size=4000, min_count=1, window=5, batch_words=5, workers=cores)
+model = gensim.models.Word2Vec(sentences=sentences, size=1000, min_count=1, window=5, workers=cores)
 
 print ("Save model", (time.time() - start_time))
-
-model.save(city + 'all-rest.word2vec.model')
+model.save('new-all-rest.word2vec.model')

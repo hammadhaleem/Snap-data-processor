@@ -40,7 +40,7 @@ def get_word_pairs(review_list, mongo_connection):
         'final_pairs': 1
     }
 
-    processed = list(mongo_connection.db.yelp_review_scored_pairs.find(query, what))
+    processed = list(mongo_connection.db.yelp_review_scored_pair_all.find(query, what))
     map(for_each_review_, processed)
     processed = pd.DataFrame(processed).set_index('review_id')
 
