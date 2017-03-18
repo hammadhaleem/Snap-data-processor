@@ -35,6 +35,7 @@ def api_index():
         'get_business_information_city_type': "<city> / <type>",
         'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>',
         'get_competition_graph': "business_id , distance",
+        ''
         'examples': [
             'http://localhost:5002/api/get_business_information_city/las_vegas',
             'http://localhost:5002/api/get_business_information_city/tempe',
@@ -47,6 +48,7 @@ def api_index():
             'http://localhost:5002/api/get_competition_graph/zUHID qm_UKdnSygmWKtyRg/1000',
             'http://localhost:5002/api/get_cities',
             'http://localhost:5002/api/get_types',
+            "http://localhost:5002/api/nlp/review_analysis/['1o0g0ymmHl6HRgrg3KEM5w' , '1nJaL6VBUHR1DlErpnsIBQ' , '4cDrkvLInTuSlBU9zNOi8Q' , '4cCxazHh5DfWJ9eOcfvlSA' , 'nslcUj3coPzFFzeSYrkqrQ' , '4cOrGZfCKbhhdjZohhBkPQ']/"
         ], 'helper': [
             'http://www.birdtheme.org/useful/v3tool.html',
             'http://www.bogotobogo.com/python/MongoDB_PyMongo/python_MongoDB_RESTAPI_with_Flask.php'
@@ -658,14 +660,11 @@ def review_information_agg(business_id1, business_id2):
     return jsonify(data=data_dict, max_date=max_date, min_date=min_date)
 
 
-@mod_api.route('/nlp/review_analysis/<business_id>/')
-@mod_api.route('/nlp/review_analysis/<business_id>/<exhaustive>')
-def get_review_analysis(business_id, exhaustive=False):
+@mod_api.route('/nlp/review_analysis/<review_list>/')
+def get_review_analysis(review_list):
     #  http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
     # http://localhost:5002/api/nlp/review_analysis/mRWhEetiEi5Gx4H2zwM7Jw/
     # bit better?
-    if exhaustive is True :
-        nlp_analysis_res = nlp_analysis(business_id, mongo_connection, exhaustive)
-    else:
-        nlp_analysis_res = get_word_pairs(business_id, mongo_connection)
+
+    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
     return jsonify(nlp_analysis_res)
