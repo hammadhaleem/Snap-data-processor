@@ -140,21 +140,18 @@ def function_to_run(review):
         if len(set(tags.keys())) > 0:
             for key in tags.keys():
                 _scores_[key] = {}
-                word = key.split(" ")
+                word = sorted(key.split(" "))
                 for category in categories.keys():
-                    score_cat = 0
                     cat = categories[category]
                     try:
-                        score_cat = + sum(word_vectors.n_similarity(word, cat))
+                        _scores_[' '.join(word)][category] = sum(word_vectors.n_similarity(word, cat))
                     except Exception as e:
-                        print  e
+                        break
                         pass
-
-                    _scores_[key][category] = score_cat
 
         row['score'] = _scores_
         ret_list.append(row)
-        if len(ret_list) > 5000:
+        if len(ret_list) > 10000:
             df = pd.DataFrame(ret_list)
             to_mongo_db(df, 'yelp_review_scored_pairs')
             print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
