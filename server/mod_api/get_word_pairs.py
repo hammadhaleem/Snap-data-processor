@@ -26,8 +26,8 @@ def for_each_review_(review):
 
 def get_word_pairs(review_list, mongo_connection):
     query = {
-        'business_id': {
-            '$in': ['qJAdvf4yDfr8jMS7NqCEPQ']
+        'review_id': {
+            '$in': review_list
         }
     }
     what = {
