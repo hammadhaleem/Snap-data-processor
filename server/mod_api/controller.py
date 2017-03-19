@@ -672,5 +672,9 @@ def get_review_analysis(review_list):
     #            '4cOrGZfCKbhhdjZohhBkPQ']/
     # bit better?
 
-    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+    review_list = mongo_connection.db.yelp_reviews.find({'business_id':{'$in' : ['ndQTAJzhhkrl1i5ToEGSZw' , 'jiOREht1_iH8BPDBe9kerw']}})
+    review_list = [x['review_id'] for x in review_list]
+
+    # nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+    nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
     return jsonify(nlp_analysis_res)

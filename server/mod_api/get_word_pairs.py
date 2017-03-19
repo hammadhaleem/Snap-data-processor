@@ -23,6 +23,7 @@ def for_each_review_(review, ret_data_dict):
     del review['_id']
     scored_terms = review['score']
     for term in scored_terms.keys():
+        term = term.lower().strip()
         object = {
             'word_pairs': term,
             'frequency': {}
@@ -44,6 +45,8 @@ def for_each_review_(review, ret_data_dict):
 
         try:
             obj = ret_data_dict[object['business_id']][term]
+            # print (term, 'old', ret_data_dict[object['business_id']][term], 'new', object['frequency'])
+
             for txt in obj['frequency'].keys():
                 obj['frequency'][txt] += object['frequency'][txt]
 
