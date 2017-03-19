@@ -39,8 +39,8 @@ d3.myLink = function (outer_leaflet_map) {
 }
 
 d3.myGlyph = function (outer_leaflet_map) {
-    // var my_color = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'];
-    var my_color = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+    // var my_color = ['#0571b0', '#92c5de', '#f7f7f7', '#f4a582', '#ca0020']; //diverging
+    var my_color = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];//sequential
     var min_r = 1.5, max_r = 6;
     var outer_radius_scale = d3.scale.linear().domain([40, 200]).range([min_r, max_r]);
     var central_color_scale = d3.scale.linear().domain([1.0, 5.0]).range([my_color[0], my_color[my_color.length - 1]]);
@@ -320,7 +320,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                             console.log('Selection is done! ', selected_glyphs_counting);
                             pipService.emitVenueSelectionIsReady(selected_glyphs_counting);
                         }
-                        else if(selected_glyphs_counting.length < 2){
+                        else if (selected_glyphs_counting.length < 2) {
                             console.log('remove common customer comparison view!');
                             pipService.emitRemoveCommonCustomerCompView('remove');
                         }

@@ -923,7 +923,6 @@ var temporalView = new Vue({
         drawStackedRectsForTemporalViewWithLayers: function (bs_review_ratings, bs_temporal_view, layout_config,
                                                              bs_mode_str, bs_max_num_of_each_rating_accumulated) {
             var _this = this;
-
             bs_temporal_view.append('g')
                 .attr('class', bs_mode_str + '_temporal_rects')
                 .selectAll('g')
