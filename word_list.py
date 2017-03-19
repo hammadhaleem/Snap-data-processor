@@ -114,12 +114,12 @@ def to_mongo_db(df, collection_name):
     db[collection_name].insert_many(records)
 
 
-print("Try loading model")
+print("Try loading model", 'time from start', (time.time() - start_time))
 model = gensim.models.Word2Vec.load('new-all-rest.word2vec.model')
 word_vectors = model.wv
 del model
 
-print("Loaded model")
+print("Loaded model",'time from start', (time.time() - start_time))
 
 raw = list(db.yelp_reviews_terms_adj_noun.find())
 print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() - start_time))
@@ -140,11 +140,11 @@ def function_to_run(review):
         if len(set(tags.keys())) > 0:
             for key in tags.keys():
                 _scores_[key] = {}
-                word = sorted(key.split(" "))
+                word = key.split(" ")
                 for category in categories.keys():
                     cat = categories[category]
                     try:
-                        _scores_[' '.join(key)][category] = sum(word_vectors.n_similarity(word, cat))
+                        _scores_[key][category] = sum(word_vectors.n_similarity(word, cat))
                     except Exception as e:
                         break
                         pass

@@ -1,27 +1,66 @@
 import pandas as pd
 from __builtin__ import list
 import numpy as np
+import pprint
 
-def for_each_review_(review):
+pp = pprint.PrettyPrinter(depth=6)
+
+
+def get_type(data_dict):
+    if len(data_dict.keys()) == 0:
+        return None, None
+    max = -99999
+    ret = list(data_dict.keys())[0]
+
+    for key in data_dict.keys():
+        if data_dict[key] > max:
+            max = data_dict[key]
+            ret = key
+    return ret, max
+
+
+def for_each_review_(review, ret_data_dict):
     del review['_id']
     scored_terms = review['score']
     for term in scored_terms.keys():
+        object = {
+            'word_pairs': term,
+            'frequency': {}
+        }
+
         term_list = term.split(" ")
+
         for t in term_list:
             try:
-                scored_terms[term]['frequency'][t] = review['tf_idf'][t]
-
-
+                object['frequency'][t] += review['tf_idf'][t]
             except:
-                scored_terms[term]['frequency'] = {}
-                scored_terms[term]['frequency'][t] = review['tf_idf'][t]
-                scored_terms[term]['frequency']['polarity'] = np.mean(review['final_pairs'][term])
+
+                object['frequency'][t] = review['tf_idf'][t]
+
+        object['type'], object['tpye_score'] = get_type(scored_terms[term])
+        object['polarity'] = np.mean(review['final_pairs'][term])
+        object['business_id'] = review['business_id']
+        object['review_id'] = review['review_id']
+
+        try:
+            obj = ret_data_dict[object['business_id']][term]
+            for txt in obj['frequency'].keys():
+                obj['frequency'][txt] += object['frequency'][txt]
+
+            ret_data_dict[object['business_id']][term] = obj
+
+        except Exception as e:
+            if object['business_id'] in ret_data_dict.keys():
+                ret_data_dict[object['business_id']][term] = object
+            else:
+                ret_data_dict[object['business_id']] = {}
+                ret_data_dict[object['business_id']][term] = object
 
     review['score'] = scored_terms
 
-    del review['final_pairs']
-    del review['tf_idf']
-    return review
+    del review
+
+    return ret_data_dict
 
 
 def get_word_pairs(review_list, mongo_connection):
@@ -41,9 +80,9 @@ def get_word_pairs(review_list, mongo_connection):
     }
 
     processed = list(mongo_connection.db.yelp_review_scored_pair_all.find(query, what))
-    map(for_each_review_, processed)
-    processed = pd.DataFrame(processed).set_index('review_id')
+    ret_list = {}
+    for review in processed:
+        ret_list = for_each_review_(review, ret_list)
 
-    ret = processed.reset_index().T.to_dict()
-
-    return ret
+    ret_list['business_es'] = list(ret_list.keys())
+    return ret_list
