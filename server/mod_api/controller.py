@@ -662,8 +662,9 @@ def review_information_agg(business_id1, business_id2):
 
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
+
     #  http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
-    # http://localhost:5002/api/nlp/review_analysis/
+    #  http://localhost:5002/api/nlp/review_analysis/
     #           ['1o0g0ymmHl6HRgrg3KEM5w',
     #            '1nJaL6VBUHR1DlErpnsIBQ',
     #            '4cDrkvLInTuSlBU9zNOi8Q',
@@ -671,10 +672,18 @@ def get_review_analysis(review_list):
     #            'nslcUj3coPzFFzeSYrkqrQ',
     #            '4cOrGZfCKbhhdjZohhBkPQ']/
     # bit better?
-
     # review_list = mongo_connection.db.yelp_reviews.find({'business_id':{'$in' : ['ndQTAJzhhkrl1i5ToEGSZw' , 'jiOREht1_iH8BPDBe9kerw']}})
     # review_list = [x['review_id'] for x in review_list]
     # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
 
+
+    final_result_ = {}
     nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
-    return jsonify(nlp_analysis_res)
+    final_result_['business_es'] = sorted(nlp_analysis_res['business_es'])
+    for bid in final_result_['business_es']:
+        final_result_[bid] = []
+        data = nlp_analysis_res[bid]
+        for item in sorted(data.keys()):
+            final_result_[bid].append(nlp_analysis_res[bid][item])
+
+    return jsonify(final_result_)
