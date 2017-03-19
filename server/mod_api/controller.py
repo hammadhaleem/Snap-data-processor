@@ -35,7 +35,6 @@ def api_index():
         'get_business_information_city_type': "<city> / <type>",
         'get_business_information_lat_lon': '<lat1 , lon1 > , <lat2 , long2>',
         'get_competition_graph': "business_id , distance",
-        ''
         'examples': [
             'http://localhost:5002/api/get_business_information_city/las_vegas',
             'http://localhost:5002/api/get_business_information_city/tempe',
@@ -49,7 +48,8 @@ def api_index():
             'http://localhost:5002/api/get_cities',
             'http://localhost:5002/api/get_types',
             "http://localhost:5002/api/nlp/review_analysis/['1o0g0ymmHl6HRgrg3KEM5w' , '1nJaL6VBUHR1DlErpnsIBQ' , '4cDrkvLInTuSlBU9zNOi8Q' , '4cCxazHh5DfWJ9eOcfvlSA' , 'nslcUj3coPzFFzeSYrkqrQ' , '4cOrGZfCKbhhdjZohhBkPQ']/"
-        ], 'helper': [
+        ],
+        'helper': [
             'http://www.birdtheme.org/useful/v3tool.html',
             'http://www.bogotobogo.com/python/MongoDB_PyMongo/python_MongoDB_RESTAPI_with_Flask.php'
         ]
@@ -662,7 +662,6 @@ def review_information_agg(business_id1, business_id2):
 
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
-
     #  http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
     #  http://localhost:5002/api/nlp/review_analysis/
     #           ['1o0g0ymmHl6HRgrg3KEM5w',
@@ -672,10 +671,16 @@ def get_review_analysis(review_list):
     #            'nslcUj3coPzFFzeSYrkqrQ',
     #            '4cOrGZfCKbhhdjZohhBkPQ']/
     # bit better?
-    # review_list = mongo_connection.db.yelp_reviews.find({'business_id':{'$in' : ['ndQTAJzhhkrl1i5ToEGSZw' , 'jiOREht1_iH8BPDBe9kerw']}})
+    #
+    # review_list = mongo_connection.db.yelp_reviews.find(
+    #                   {'business_id':
+    #                           {'$in' :
+    #                               ['ndQTAJzhhkrl1i5ToEGSZw' , 'jiOREht1_iH8BPDBe9kerw']
+    #                           }
+    #                   }
+    #               )
     # review_list = [x['review_id'] for x in review_list]
     # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
-
 
     final_result_ = {}
     nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
