@@ -121,7 +121,7 @@ del model
 
 print("Loaded model",'time from start', (time.time() - start_time))
 
-raw = list(db.yelp_reviews_terms_adj_noun.find())
+raw = list(db.yelp_reviews_terms_adj_noun_truncated.find())
 print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() - start_time))
 review = pd.DataFrame(raw)
 print("[Info] Total elements " + str(len(review)), 'time from start', (time.time() - start_time))
@@ -153,12 +153,12 @@ def function_to_run(review):
         ret_list.append(row)
         if len(ret_list) > 10000:
             df = pd.DataFrame(ret_list)
-            to_mongo_db(df, 'yelp_review_scored_pair_all')
+            to_mongo_db(df, 'yelp_review_scored_pair_all_truncated')
             print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
             ret_list = []
 
     df = pd.DataFrame(ret_list)
-    to_mongo_db(df, 'yelp_review_scored_pair_all')
+    to_mongo_db(df, 'yelp_review_scored_pair_all_truncated')
     print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
 
 

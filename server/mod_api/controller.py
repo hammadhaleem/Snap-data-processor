@@ -10,11 +10,8 @@ from flask import Blueprint, jsonify, url_for
 from server import app, mongo_connection, cache
 from server.mod_api.get_word_pairs import get_word_pairs
 from server.mod_api.graph_get import graph_in_box
-from server.mod_api.nlp import nlp_analysis
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
-
-from server.mod_api.get_reviews import get_nlp_analysis
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
@@ -662,16 +659,18 @@ def review_information_agg(business_id1, business_id2):
 
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
-    #  http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
-    #  http://localhost:5002/api/nlp/review_analysis/
+    #
+    # http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
+    #
+    # http://localhost:5002/api/nlp/review_analysis/
     #           ['1o0g0ymmHl6HRgrg3KEM5w',
     #            '1nJaL6VBUHR1DlErpnsIBQ',
     #            '4cDrkvLInTuSlBU9zNOi8Q',
     #            '4cCxazHh5DfWJ9eOcfvlSA',
     #            'nslcUj3coPzFFzeSYrkqrQ',
     #            '4cOrGZfCKbhhdjZohhBkPQ']/
-    # bit better?
     #
+    # bit better?
     # review_list = mongo_connection.db.yelp_reviews.find(
     #                   {'business_id':
     #                           {'$in' :

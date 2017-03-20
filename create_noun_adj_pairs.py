@@ -27,7 +27,7 @@ start_time = time.time()
 data_dir = '/home/hammad/dev/yelp/txt_sentoken'
 classes = ['pos', 'neg']
 
-port_stemmmer = PorterStemmer()
+port_stemmer = PorterStemmer()
 word_net_lemmer = WordNetLemmatizer()
 
 client = MongoClient()
@@ -39,11 +39,7 @@ noun = ['NN', 'NNS', 'NNP', 'NNPS']
 adj = ['JJ', 'JJR', 'JJS']
 
 words = ['is', 'be', 'are', 'was', 'were']
-# stop_words = set(list(stopwords.words('english')) + ['id' , 'youll' ,'youd'  , 'mr' , 'youll' , 'thru' , 'tues' ]) - set(words)
-
 stop_words = ['id', 'youll', 'youd', 'mr', 'youll', 'thru', 'tues']
-
-# In[68]:
 
 word_dictionary_expand = {
     "woudn't": 'would not',
@@ -150,21 +146,19 @@ print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() 
 reviews_df = pd.DataFrame(raw)
 reviews_df = reviews_df.drop('_id', axis=1)
 
-# In[73]:
-
 reviews_df['text'] = reviews_df.text.apply(lambda x: x.lower().strip())
-reviews_df['sentances'] = reviews_df.text.apply(lambda x: nltk.sent_tokenize(x))
+reviews_df['sentences'] = reviews_df.text.apply(lambda x: nltk.sent_tokenize(x))
 
 
 def fix_df(reviews_df):
     lis = []
     for _, row in reviews_df.iterrows():
         row = row.to_dict()
-        sentances = row['sentances'][:]
-        for sen in sentances:
+        sentences = row['sentences'][:]
+        for sen in sentences:
             row1 = row.copy()
             row1['text'] = sen
-            del row1['sentances']
+            del row1['sentences']
             lis.append(row1)
 
     review = pd.DataFrame(lis)
@@ -267,8 +261,7 @@ def get_only_required_sets(bigrams, types, words_set):
 # In[81]:
 
 review['rule_one'] = review.apply(lambda row: get_only_required_sets(row['bi_grams'], row['type'], word_sets), axis=1)
-review['rule_one_special'] = review.apply(
-    lambda row: get_only_required_sets(row['bi_grams_spl'], row['type'], word_sets), axis=1)
+review['rule_one_special'] = review.apply(lambda row: get_only_required_sets(row['bi_grams_spl'], row['type'], word_sets), axis=1)
 print("[Info] First phase completed", (time.time() - start_time))
 
 
@@ -450,9 +443,9 @@ review_df_final = review.groupby(['review_id', 'business_id']).agg({
 
 # In[89]:
 
-def create_set(rule_one, rule_one_spl, rule_two_reduce):
+def create_set(lis):
     data_dict = {}
-    for dicti in [rule_one, rule_one_spl, rule_two_reduce]:
+    for dicti in lis:
         for k, v in dicti.items():
             if k in data_dict.keys():
                 data_dict[k].append(v)
@@ -465,9 +458,12 @@ def create_set(rule_one, rule_one_spl, rule_two_reduce):
 
 # In[90]:
 
-review_df_final['final_pairs'] = review_df_final.apply(
-    lambda row: create_set(row['rule_one'], row['rule_one_special'], row['rule_two_reduce']), axis=1)
+review_df_final['final_pairs'] = review_df_final\
+    .apply(lambda row: create_set([row['rule_one'], row['rule_one_special'], row['rule_two_reduce']]), axis=1)
 
+
+review_df_final['final_pairs_reduced'] = review_df_final\
+    .apply(lambda row: create_set([row['rule_one'], row['rule_two_reduce']]), axis=1)
 # In[91]:
 
 print("[Info] Sixth phase completed, pair created ", (time.time() - start_time))
@@ -482,6 +478,6 @@ review_df = review_df_final[columns].copy()
 
 print(review_df_final.head(n=2))
 
-to_mongo_db(review_df_final, 'yelp_reviews_terms_adj_noun')
+to_mongo_db(review_df_final, 'yelp_reviews_terms_adj_noun_truncated')
 
 print("[Info] Seventh  phase completed, written to DB ", (time.time() - start_time))
