@@ -36,7 +36,10 @@ def for_each_review_(review, ret_data_dict):
         term_list = term.split(" ")
         tagged = nltk.pos_tag(term_list)
         ct = 0
+        skip = False
         for elem in tagged:
+            if elem[1] in stopwords:
+                skip = True
             if elem[1] in noun and elem[0] not in stopwords:
                 ct += 1
                 nn = elem[0]
@@ -56,7 +59,7 @@ def for_each_review_(review, ret_data_dict):
 
                 object['frequency'][t] = review['tf_idf'][t]
 
-        if nn is not None or ct > 1:
+        if nn is not None or ct > 1 and skip is False:
             object['type'], object['tpye_score'] = get_type(scored_terms[term])
             object['polarity'] = np.mean(review['final_pairs'][term])
             object['business_id'] = review['business_id']
