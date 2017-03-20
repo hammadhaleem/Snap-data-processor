@@ -2,7 +2,14 @@ import pandas as pd
 from __builtin__ import list
 import numpy as np
 import pprint
+import nltk
 
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+
+
+noun = ['NN', 'NNS', 'NNP', 'NNPS']
+stopwords = ['i']
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -24,12 +31,22 @@ def for_each_review_(review, ret_data_dict):
     scored_terms = review['score']
     for term in scored_terms.keys():
         term = term.lower().strip()
+
+        nn = None
+        term_list = term.split(" ")
+        tagged = nltk.pos_tag(term_list)
+
+        for elem in tagged:
+            if elem[1] in noun and elem[0] not in stopwords:
+                nn = elem[0]
+
         object = {
             'word_pairs': term,
-            'frequency': {}
-        }
+            'frequency': {
 
-        term_list = term.split(" ")
+            },
+            'noun': nn
+        }
 
         for t in term_list:
             try:
@@ -38,26 +55,28 @@ def for_each_review_(review, ret_data_dict):
 
                 object['frequency'][t] = review['tf_idf'][t]
 
-        object['type'], object['tpye_score'] = get_type(scored_terms[term])
-        object['polarity'] = np.mean(review['final_pairs'][term])
-        object['business_id'] = review['business_id']
-        object['review_id'] = review['review_id']
+        if nn is not None:
+            object['noun_frequency'] = object['frequency'][nn]
+            object['type'], object['tpye_score'] = get_type(scored_terms[term])
+            object['polarity'] = np.mean(review['final_pairs'][term])
+            object['business_id'] = review['business_id']
+            object['review_id'] = review['review_id']
 
-        try:
-            obj = ret_data_dict[object['business_id']][term]
-            # print (term, 'old', ret_data_dict[object['business_id']][term], 'new', object['frequency'])
+            try:
+                obj = ret_data_dict[object['business_id']][term]
+                # print (term, 'old', ret_data_dict[object['business_id']][term], 'new', object['frequency'])
 
-            for txt in obj['frequency'].keys():
-                obj['frequency'][txt] += object['frequency'][txt]
+                for txt in obj['frequency'].keys():
+                    obj['frequency'][txt] += object['frequency'][txt]
 
-            ret_data_dict[object['business_id']][term] = obj
+                ret_data_dict[object['business_id']][term] = obj
 
-        except Exception as e:
-            if object['business_id'] in ret_data_dict.keys():
-                ret_data_dict[object['business_id']][term] = object
-            else:
-                ret_data_dict[object['business_id']] = {}
-                ret_data_dict[object['business_id']][term] = object
+            except Exception as e:
+                if object['business_id'] in ret_data_dict.keys():
+                    ret_data_dict[object['business_id']][term] = object
+                else:
+                    ret_data_dict[object['business_id']] = {}
+                    ret_data_dict[object['business_id']][term] = object
 
     review['score'] = scored_terms
 
@@ -82,10 +101,11 @@ def get_word_pairs(review_list, mongo_connection):
         'final_pairs': 1
     }
 
-    processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated.find(query, what))
+    processed = list(mongo_connection.db.yelp_review_scored_pair_all.find(query, what))
     ret_list = {}
     for review in processed:
         ret_list = for_each_review_(review, ret_list)
 
     ret_list['business_es'] = list(ret_list.keys())
+
     return ret_list

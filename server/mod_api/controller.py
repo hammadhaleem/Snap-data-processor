@@ -671,23 +671,29 @@ def get_review_analysis(review_list):
     #            '4cOrGZfCKbhhdjZohhBkPQ']/
     #
     # bit better?
-    # review_list = mongo_connection.db.yelp_reviews.find(
-    #                   {'business_id':
-    #                           {'$in' :
-    #                               ['ndQTAJzhhkrl1i5ToEGSZw' , 'jiOREht1_iH8BPDBe9kerw']
-    #                           }
-    #                   }
-    #               )
-    # review_list = [x['review_id'] for x in review_list]
-    # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
+
 
     final_result_ = {}
-    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+
+    review_list = mongo_connection.db.yelp_reviews.find(
+        {'business_id':
+             {'$in':
+                  ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
+              }
+         }
+    )
+    review_list = [x['review_id'] for x in review_list]
+    nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
+    # nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+
     final_result_['business_es'] = sorted(nlp_analysis_res['business_es'])
     for bid in final_result_['business_es']:
         final_result_[bid] = []
         data = nlp_analysis_res[bid]
         for item in sorted(data.keys()):
             final_result_[bid].append(nlp_analysis_res[bid][item])
+
+    for bid in final_result_['business_es']:
+        final_result_[bid] = sorted(final_result_[bid], key=lambda k: k['noun_frequency'], reverse=True)
 
     return jsonify(final_result_)
