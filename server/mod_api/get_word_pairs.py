@@ -82,7 +82,7 @@ def get_word_pairs(review_list, mongo_connection):
         'final_pairs': 1
     }
 
-    processed = list(mongo_connection.db.yelp_review_scored_pair_all.find(query, what))
+    processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated.find(query, what))
     ret_list = {}
     for review in processed:
         ret_list = for_each_review_(review, ret_list)
