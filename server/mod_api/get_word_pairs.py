@@ -9,7 +9,7 @@ import nltk
 
 
 noun = ['NN', 'NNS', 'NNP', 'NNPS']
-stopwords = ['i']
+stopwords = ['i', 's']
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -35,9 +35,10 @@ def for_each_review_(review, ret_data_dict):
         nn = None
         term_list = term.split(" ")
         tagged = nltk.pos_tag(term_list)
-
+        ct = 0
         for elem in tagged:
             if elem[1] in noun and elem[0] not in stopwords:
+                ct += 1
                 nn = elem[0]
 
         object = {
@@ -55,8 +56,7 @@ def for_each_review_(review, ret_data_dict):
 
                 object['frequency'][t] = review['tf_idf'][t]
 
-        if nn is not None:
-            object['noun_frequency'] = object['frequency'][nn]
+        if nn is not None or ct > 1:
             object['type'], object['tpye_score'] = get_type(scored_terms[term])
             object['polarity'] = np.mean(review['final_pairs'][term])
             object['business_id'] = review['business_id']
@@ -77,6 +77,9 @@ def for_each_review_(review, ret_data_dict):
                 else:
                     ret_data_dict[object['business_id']] = {}
                     ret_data_dict[object['business_id']][term] = object
+
+            ret_data_dict[object['business_id']][term]['noun_frequency'] = \
+            ret_data_dict[object['business_id']][term]['frequency'][nn]
 
     review['score'] = scored_terms
 
