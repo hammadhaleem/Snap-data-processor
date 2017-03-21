@@ -1,4 +1,4 @@
-import pandas as pd
+from __future__ import print_function
 from __builtin__ import list
 import numpy as np
 import pprint
@@ -9,7 +9,7 @@ import nltk
 
 
 noun = ['NN', 'NNS', 'NNP', 'NNPS']
-stopwords = ['i', 's']
+stopwords = ["i", "s"]
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -29,20 +29,43 @@ def get_type(data_dict):
 def for_each_review_(review, ret_data_dict):
     del review['_id']
     scored_terms = review['score']
-    for term in scored_terms.keys():
-        term = term.lower().strip()
 
-        nn = None
-        term_list = term.split(" ")
-        tagged = nltk.pos_tag(term_list)
+    # text = ""
+    # for line in review['text']:
+    #     text = text + " " + line
+
+
+    dict_ = {}
+
+    para_ = []
+    for text in list(review['text'].keys()):
+        text = text.replace("  ", " ").strip().split(" ")
+        if len(text) > 1:
+            para_.append(text)
+
+    text = nltk.pos_tag_sents(para_)
+
+    for line in text:
+        for word in line:
+            dict_[word[0]] = word[1]
+
+    for term in scored_terms.keys():
         ct = 0
         skip = False
-        for elem in tagged:
-            if elem[1] in stopwords:
+        nn = None
+
+        term = term.lower().strip()
+        term_list = term.split(" ")
+
+        for elem in term_list:
+            if elem in dict_.keys():
+                if elem in stopwords:
+                    skip = True
+                if skip is not True and dict_[elem] in noun:
+                    ct += 1
+                    nn = elem
+            else:
                 skip = True
-            if elem[1] in noun and elem[0] not in stopwords:
-                ct += 1
-                nn = elem[0]
 
         object = {
             'word_pairs': term,
@@ -59,9 +82,9 @@ def for_each_review_(review, ret_data_dict):
 
                 object['frequency'][t] = review['tf_idf'][t]
 
-        if nn is not None or ct > 1 and skip is False:
+        if ct < 2 and skip is False and nn is not None:
             object['type'], object['tpye_score'] = get_type(scored_terms[term])
-            object['polarity'] = np.mean(review['final_pairs'][term])
+            object['polarity'] = np.mean(review['final'][term])
             object['business_id'] = review['business_id']
             object['review_id'] = review['review_id']
 
@@ -82,7 +105,9 @@ def for_each_review_(review, ret_data_dict):
                     ret_data_dict[object['business_id']][term] = object
 
             ret_data_dict[object['business_id']][term]['noun_frequency'] = \
-            ret_data_dict[object['business_id']][term]['frequency'][nn]
+                ret_data_dict[object['business_id']][term]['frequency'][nn]
+            # elif skip is False:
+            #     print " - ", term_list, term
 
     review['score'] = scored_terms
 
@@ -104,7 +129,8 @@ def get_word_pairs(review_list, mongo_connection):
         'business_id': 1,
         'stars': 1,
         'tf_idf': 1,
-        'final_pairs': 1
+        'final': 1,
+        'text': 1
     }
 
     processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated_reduced.find(query, what))
