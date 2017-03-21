@@ -1,12 +1,13 @@
 # coding: utf-8
 
-# In[67]:
+# In[285]:
 
 from __future__ import division
 from __builtin__ import len
 from __builtin__ import list
 from __builtin__ import str
 
+words = ['is', 'be', 'are', 'was', 'were', 'been']
 import json
 import nltk
 import numpy as np
@@ -27,7 +28,7 @@ start_time = time.time()
 data_dir = '/home/hammad/dev/yelp/txt_sentoken'
 classes = ['pos', 'neg']
 
-port_stemmer = PorterStemmer()
+port_stemmmer = PorterStemmer()
 word_net_lemmer = WordNetLemmatizer()
 
 client = MongoClient()
@@ -37,25 +38,60 @@ tags = set(['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS'])
 
 noun = ['NN', 'NNS', 'NNP', 'NNPS']
 adj = ['JJ', 'JJR', 'JJS']
+# stop_words = set(list(stopwords.words('english')) + ['id' , 'youll' ,'youd'  , 'mr' , 'youll' , 'thru' , 'tues' ]) - set(words)
 
-words = ['is', 'be', 'are', 'was', 'were']
 stop_words = ['id', 'youll', 'youd', 'mr', 'youll', 'thru', 'tues']
+
+# In[285]:
+
+
+city = raw_input('Enter City ')
+bus_type = 'restaurants'
+
+# In[286]:
+
+from nltk.tag.stanford import StanfordPOSTagger
+
+path_to_model = "std/models/english-bidirectional-distsim.tagger"
+path_to_jar = "std/stanford-postagger.jar"
+tagger = StanfordPOSTagger(path_to_model, path_to_jar)
+tagger.java_options = '-mx14096m'  ### Setting higher memory limit for long sentences
+sentence = 'This is testing'
+
+# In[287]:
 
 word_dictionary_expand = {
     "woudn't": 'would not',
+    "woudnt": 'would not',
+
     "shouldn't": "should not",
+    "shouldnt": "should not",
+
     "can't": "cannot",
+    "cant": "cannot",
+
     "$": "dollar",
     "%": 'percentage',
+
     "mustn't": "must not",
+    "mustnt": "must not",
+
     "couldn't": "could not",
+    "couldn't": "could not",
+
     "ain't": "are not",
+    "aint": "are not",
+
     "aren't": "are not",
-    "you'll": "you will"
+    "arent": "are not",
+
+    "you'll": "you will",
+    "youll": "you will",
+
 }
 
 
-# In[69]:
+# In[288]:
 
 def to_mongo_db(df, collection_name):
     records = json.loads(df.T.to_json()).values()
@@ -68,7 +104,7 @@ def _get_sentiment(star_polarity):
     return 'neg'
 
 
-# In[70]:
+# In[289]:
 
 def sum_new(lis):
     sum_i = 0
@@ -122,21 +158,18 @@ def get_tfidf(seq):
     return Counter(seq)
 
 
-# In[71]:
+# In[290]:
 
 word_dictionary = {}
 word_count = 0
 
-city = raw_input('Enter City ')
-bus_type = 'restaurants'
-table = 'yelp_review_patterns_las_vagas_restaurant'
-
-# In[72]:
+# In[291]:
 
 business = [x['business_id'] for x in
             list(db.yelp_business_information_processed.find({'type': bus_type, 'city': city}, {'business_id': 1}))]
 print("[Info] Total business " + str(len(business)), 'time from start', (time.time() - start_time))
 
+# business = ['4gXdyihRiytmXEAfqLNMBw']
 query = {
     'business_id': {'$in': business}
 }
@@ -146,19 +179,21 @@ print("[Info] Total elements " + str(len(raw)), 'time from start', (time.time() 
 reviews_df = pd.DataFrame(raw)
 reviews_df = reviews_df.drop('_id', axis=1)
 
+# In[292]:
+
 reviews_df['text'] = reviews_df.text.apply(lambda x: x.lower().strip())
-reviews_df['sentences'] = reviews_df.text.apply(lambda x: nltk.sent_tokenize(x))
+reviews_df['sentances'] = reviews_df.text.apply(lambda x: nltk.sent_tokenize(x))
 
 
 def fix_df(reviews_df):
     lis = []
     for _, row in reviews_df.iterrows():
         row = row.to_dict()
-        sentences = row['sentences'][:]
-        for sen in sentences:
+        sentances = row['sentances'][:]
+        for sen in sentances:
             row1 = row.copy()
             row1['text'] = sen
-            del row1['sentences']
+            del row1['sentances']
             lis.append(row1)
 
     review = pd.DataFrame(lis)
@@ -169,7 +204,7 @@ review = fix_df(reviews_df)
 print("[Info] Load and clean dataframe", (time.time() - start_time))
 
 
-# In[74]:
+# In[293]:
 
 def format_word_split(txt):
     """Turns a text document to a list of formatted words.
@@ -185,56 +220,35 @@ def format_word_split(txt):
     return tt
 
 
-# In[75]:
+# In[294]:
 
 review['polarity'] = review.text.apply(lambda x: TextBlob(x).sentiment.polarity)
 review['text'] = review.text.apply(lambda x: format_word_split(x))
 print("[Info] Get polarity", (time.time() - start_time))
 review.head()
 
+# In[295]:
 
-# In[76]:
-
-def remove_stop(x):
-    ret = []
-    for elem in x:
-        if elem not in stop_words:
-            ret.append(elem)
-    return ret
-
-
-# In[77]:
-
-review['tokens'] = review.text.apply(lambda x: nltk.word_tokenize((x)))
-review['tokens'] = review.tokens.apply(lambda x: remove_stop(x))
+review['tokens'] = review.text.apply(lambda x: nltk.word_tokenize(x))
 review['tf_idf'] = review.tokens.apply(lambda x: get_tfidf(x))
+review['pos_tagged'] = review.tokens.apply(lambda x: nltk.pos_tag(x))
 print ("[Info] -2 phase completed ", (time.time() - start_time))
 
-# In[78]:
+# In[296]:
 
-review['pos_tagged'] = review.tokens.apply(lambda x: nltk.pos_tag(x))
-review['bi_grams'] = review.tokens.apply(lambda x: find_bigrams(x))
-review['tri_grams'] = review.tokens.apply(lambda x: find_trigrams(x))
-review['type'] = review.pos_tagged.apply(lambda x: get_only_selected_types(x))
-print("[Info] -1 phase completed", (time.time() - start_time))
-
-# In[79]:
-
-review['tokens_spl'] = review.apply(lambda x: get_only_selected_types_tags(x['tokens'], x['type']), axis=1)
-review['bi_grams_spl'] = review.tokens_spl.apply(lambda x: find_bigrams(x))
-review['tri_grams_spl'] = review.tokens_spl.apply(lambda x: find_trigrams(x))
-print("[Info] Zero phase completed", (time.time() - start_time))
+# review['pos_tagged_stan'] = review.tokens.apply(lambda x: tagger.tag(x))
+print("[Info] -1 phase completed ", (time.time() - start_time))
+review.head(n=2)
 
 
-# In[80]:
-
-##  rule one only extract adj , noun pairs
+# In[297]:
+# rule one only extract adj , noun pairs
 def get_sets():
     lis = []
     for n in noun:
         for a in adj:
             lis.append(a + "," + n)
-            lis.append(n + "," + a)
+            # lis.append(n +","+ a)
 
     return set(lis)
 
@@ -243,170 +257,130 @@ word_sets = list(get_sets())
 print(" Only find word_sets", word_sets)
 
 
-def get_only_required_sets(bigrams, types, words_set):
+def get_rule_one(text, tags):
     ret = []
-
-    for gram in bigrams:
-        lis = []
-        gram_split = gram.split(" ")
-        for elem in gram_split:
-            lis.append(types[elem])
-
-        if ','.join(lis) in words_set:
-            ret.append(' '.join(gram_split))
-
+    ct = 1
+    while ct < len(tags):
+        pair_tag = (tags[ct - 1][1] + "," + tags[ct][1])
+        if pair_tag in word_sets:
+            #             print pair_tag, tags[ct-1][0] +" "+ tags[ct][0],"||", text
+            ret.append(tags[ct - 1][0] + " " + tags[ct][0])
+        ct += 1
     return ret
 
 
-# In[81]:
+# In[298]:
 
-review['rule_one'] = review.apply(lambda row: get_only_required_sets(row['bi_grams'], row['type'], word_sets), axis=1)
-review['rule_one_special'] = review.apply(lambda row: get_only_required_sets(row['bi_grams_spl'], row['type'], word_sets), axis=1)
+# review['rule_one_stan'] = review.apply(lambda x: get_rule_one(x['text'], x['pos_tagged_stan']), axis=1)
 print("[Info] First phase completed", (time.time() - start_time))
 
+# In[299]:
 
-# In[82]:
+review['rule_one'] = review.apply(lambda x: get_rule_one(x['text'], x['pos_tagged']), axis=1)
+print("[Info] First phase completed", (time.time() - start_time))
+review.head()
 
-##  rule one only extract adj , noun pairs
-##  following the templates as defined in here
-##  print adj
-
-def reduce_set(word_sets, types):
-    return_lis = []
-    for words in word_sets:
-        ret = []
-        for elem in words:
-            if types[elem] in tags:
-                ret.append((elem, types[elem]))
-
-        ret = sorted(ret, key=lambda x: x[1], reverse=False)
-        ret = [x[0] for x in ret]
-        return_lis.append(' '.join(ret))
-    return return_lis
-
+# In[315]:
 
 templates = [
-    (adj, words, noun),
-    (noun, words, adj),
-    (noun, words, noun),
+    (adj, words, noun)
 ]
 
 
-def find_rules_based_templates(word_list, types, templates, words, size=3):
-    list_length = len(word_list)
+def find_rules_based_templates(tokens, text, rule_one):
     ret = []
-    i = 0
-    while i < list_length:
-        word_set = word_list[i:i + size]
-        if len(set(word_set).intersection(words)) > 0:
-            lis = []
-            for word in word_set:
-                if types[word] in tags:
-                    lis.append(types[word])
-                else:
-                    lis.append(word)
+    noun_index = None
+    ct = 0
+    while ct < len(tokens):
+        #         print ct,(tokens),tokens[ct], len(tokens)
+        if tokens[ct][1] in noun:
+            noun_index = ct
 
-            for template in templates:
-                if len(template) == len(lis):
-                    check = True
-                    for ct in range(0, len(template)):
-                        if (lis[ct] in template[ct]):
-                            pass
-                        else:
-                            check = False
-                    if check is True:
-                        ret.append(word_set)
-        i += 1
+        if tokens[ct][0] in words:
+            tmp = ct
+            adj_index = None
+            while tmp < len(tokens) and noun_index is not None:
+                if tokens[tmp][1] in adj:
+                    adj_index = -1
+                    break
+                tmp += 1
+            if adj_index == -1:
+                adj_index = tmp
+                ret.append(tokens[adj_index][0] + " " + tokens[noun_index][0])
+
+        ct += 1
+
     return ret
 
 
-# In[83]:
+text = 'staff was very outgoing and friendly'
+t = nltk.pos_tag(nltk.word_tokenize(text))
+r = find_rules_based_templates(t, text, [])
+print("[Info] words", words, (time.time() - start_time))
 
-review['rule_two'] = review.apply(lambda x: find_rules_based_templates(x['tokens'], x['type'], templates, words),
+# In[316]:
+
+review['rule_two'] = review.apply(lambda x: find_rules_based_templates(x['pos_tagged'], x['text'], x['rule_one']),
                                   axis=1)
-review['rule_two_reduce'] = review.apply(lambda x: reduce_set(x['rule_two'], x['type']), axis=1)
-print("[Info] Second phase completed", (time.time() - start_time))
-
-# In[84]:
-
-review['text'] = review.apply(lambda x: (x['text'], x['polarity']), axis=1)
-review['tokens'] = review.apply(lambda x: (x['tokens'], x['polarity']), axis=1)
-review['rule_one'] = review.apply(lambda x: (x['rule_one'], x['polarity']), axis=1)
-print("[Info] Third phase completed", (time.time() - start_time))
-
-# In[85]:
-
-review['rule_one_special'] = review.apply(lambda x: (x['rule_one_special'], x['polarity']), axis=1)
-review['rule_two'] = review.apply(lambda x: (x['rule_two'], x['polarity']), axis=1)
-review['rule_two_reduce'] = review.apply(lambda x: (x['rule_two_reduce'], x['polarity']), axis=1)
-print("[Info] Fourth phase completed", (time.time() - start_time))
+print("[Info] 1 phase completed", (time.time() - start_time))
 
 
-# In[86]:
+def _join__(lis1, lis2):
+    ret = []
 
-def _join_list_text(data_lis):
-    dictionary = {}
-    for lis in list(data_lis):
+    for elem in lis1:
+        ret.append(elem)
+    for elem in lis2:
+        ret.append(elem)
 
-        polarity = lis[1]
-        elem = lis[0]
+    return ret
 
-        if elem in dictionary.keys():
-            dictionary[elem] += polarity
+
+review['final'] = review.apply(lambda x: _join__(x['rule_one'], x['rule_two']), axis=1)
+
+print("[Info] 2 phase completed", (time.time() - start_time))
+
+review.head(n=1)
+
+review_f = review.copy()
+
+review_f['text'] = review_f.apply(lambda x: (x['text'], x['polarity']), axis=1)
+review_f['tokens'] = review_f.apply(lambda x: (x['tokens'], x['polarity']), axis=1)
+review_f['rule_one'] = review_f.apply(lambda x: (x['rule_one'], x['polarity']), axis=1)
+review_f['rule_two'] = review_f.apply(lambda x: (x['rule_two'], x['polarity']), axis=1)
+review_f['final'] = review_f.apply(lambda x: (x['final'], x['polarity']), axis=1)
+
+
+def _join_list_text(text):
+    ret_dict = {}
+    for line in text:
+        pol = line[1]
+        line = line[0]
+
+        if line in ret_dict.keys():
+            ret_dict[''.join(line)] += pol
         else:
-            dictionary[elem] = polarity
+            ret_dict[''.join(line)] = pol
 
-    return dictionary
-
-
-def _join_list_token(data_lis):
-    dictionary = {}
-    for lis in data_lis:
-
-        polarity = lis[1]
-        elem = lis[0]
-        elem = ' '.join(elem)
-
-        if elem in dictionary.keys():
-            dictionary[elem] += polarity
-        else:
-            dictionary[elem] = polarity
-
-    return dictionary
+    return ret_dict
 
 
-def _join_list(data_lis):
-    dictionary = {}
-    for lis in data_lis:
+def _join_list_list(text):
+    ret_dict = {}
+    for line in text:
+        pol = line[1]
+        line = line[0]
 
-        polarity = lis[1]
-        sublist = lis[0]
-        for elem in sublist:
-
-            if elem in dictionary.keys():
-                dictionary[elem] += polarity
+        if len(line) > 0:
+            if line in ret_dict.keys():
+                ret_dict[' '.join(line)] += pol
             else:
-                dictionary[elem] = polarity
+                ret_dict[' '.join(line)] = pol
 
-    return dictionary
+    return ret_dict
 
 
-def _join_list_two(data_lis):
-    dictionary = {}
-    for lis in data_lis:
-
-        polarity = lis[1]
-        sublist = lis[0]
-        for elem in sublist:
-            elem = ' '.join(elem)
-
-            if elem in dictionary.keys():
-                dictionary[elem] += polarity
-            else:
-                dictionary[elem] = polarity
-
-    return dictionary
-
+# In[320]:
 
 def _sum_of_dict(list_of_dict):
     data_dict = {}
@@ -420,64 +394,50 @@ def _sum_of_dict(list_of_dict):
     return data_dict
 
 
-# In[87]:
-
-
-print("[Info] Fifth phase completed, merge ", (time.time() - start_time))
-
-# In[88]:
-
-review_df_final = review.groupby(['review_id', 'business_id']).agg({
+review_df = review_f.groupby(['review_id', 'business_id']).agg({
     'text': _join_list_text,
-    'tokens': _join_list_token,
+    'tokens': _join_list_list,
     'stars': np.mean,
     'polarity': sum,
-    'rule_one': _join_list,
-    'rule_one_special': _join_list,
-    'rule_two': _join_list_two,
-    'rule_two_reduce': _join_list,
-    'tf_idf': _sum_of_dict
-
+    'rule_one': _join_list_list,
+    'rule_two': _join_list_list,
+    'tf_idf': _sum_of_dict,
+    'final': _join_list_list
 }).reset_index()
 
+# In[322]:
 
-# In[89]:
-
-def create_set(lis):
-    data_dict = {}
-    for dicti in lis:
-        for k, v in dicti.items():
-            if k in data_dict.keys():
-                data_dict[k].append(v)
-            else:
-                data_dict[k] = []
-                data_dict[k].append(v)
-
-    return data_dict
+# review_df.head()
 
 
-# In[90]:
-
-review_df_final['final_pairs'] = review_df_final\
-    .apply(lambda row: create_set([row['rule_one'], row['rule_one_special'], row['rule_two_reduce']]), axis=1)
-
-
-review_df_final['final_pairs_reduced'] = review_df_final\
-    .apply(lambda row: create_set([row['rule_one'], row['rule_two_reduce']]), axis=1)
-# In[91]:
+# In[323]:
 
 print("[Info] Sixth phase completed, pair created ", (time.time() - start_time))
 
-# In[92]:
-
-review_df_final.head(n=10)
-columns = ['review_id', 'business_id', 'tokens', 'polarity', 'stars', 'text', 'final_pairs', 'tf_idf']
-review_df = review_df_final[columns].copy()
-
-# In[93]:
-
-print(review_df_final.head(n=2))
-
-to_mongo_db(review_df_final, 'yelp_reviews_terms_adj_noun_truncated')
+review_df.head(n=10)
 
 print("[Info] Seventh  phase completed, written to DB ", (time.time() - start_time))
+
+print(review_df.head(n=2))
+
+to_mongo_db(review_df, 'yelp_reviews_terms_adj_noun_truncated')
+
+print("[Info] Seventh  phase completed, written to DB ", (time.time() - start_time))
+
+
+# In[264]:
+
+
+
+
+# In[264]:
+
+
+
+
+# In[264]:
+
+
+
+
+# In[ ]:

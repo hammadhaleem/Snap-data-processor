@@ -136,7 +136,7 @@ def function_to_run(review):
         del row['rule_one_special']
         del row['rule_two']
         del row['rule_two_reduce']
-        tags = row['final_pairs_reduced']
+        tags = row['final']
         if len(set(tags.keys())) > 0:
             for key in tags.keys():
                 _scores_[key] = {}
