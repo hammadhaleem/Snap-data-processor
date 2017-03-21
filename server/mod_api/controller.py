@@ -684,6 +684,8 @@ def get_review_analysis(review_list):
     # )
     # review_list = [x['review_id'] for x in review_list]
     # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
+
+
     nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
 
     final_result_['business_es'] = sorted(nlp_analysis_res['business_es'])
