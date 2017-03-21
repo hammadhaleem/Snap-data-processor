@@ -356,27 +356,26 @@ def _join_list_text(text):
     for line in text:
         pol = line[1]
         line = line[0]
-
         if line in ret_dict.keys():
-            ret_dict[''.join(line)] += pol
+            ret_dict[line] += pol
         else:
-            ret_dict[''.join(line)] = pol
-
+            ret_dict[line] = pol
     return ret_dict
 
 
 def _join_list_list(text):
     ret_dict = {}
+
     for line in text:
         pol = line[1]
         line = line[0]
 
         if len(line) > 0:
-            if line in ret_dict.keys():
-                ret_dict[' '.join(line)] += pol
-            else:
-                ret_dict[' '.join(line)] = pol
-
+            for elem in line:
+                if elem in ret_dict.keys():
+                    ret_dict[elem] += pol
+                else:
+                    ret_dict[elem] = pol
     return ret_dict
 
 
@@ -396,7 +395,6 @@ def _sum_of_dict(list_of_dict):
 
 review_df = review_f.groupby(['review_id', 'business_id']).agg({
     'text': _join_list_text,
-    'tokens': _join_list_list,
     'stars': np.mean,
     'polarity': sum,
     'rule_one': _join_list_list,
@@ -414,30 +412,10 @@ review_df = review_f.groupby(['review_id', 'business_id']).agg({
 
 print("[Info] Sixth phase completed, pair created ", (time.time() - start_time))
 
-review_df.head(n=10)
+print(review_df.head(n=10))
 
 print("[Info] Seventh  phase completed, written to DB ", (time.time() - start_time))
-
-print(review_df.head(n=2))
 
 to_mongo_db(review_df, 'yelp_reviews_terms_adj_noun_truncated')
 
 print("[Info] Seventh  phase completed, written to DB ", (time.time() - start_time))
-
-
-# In[264]:
-
-
-
-
-# In[264]:
-
-
-
-
-# In[264]:
-
-
-
-
-# In[ ]:

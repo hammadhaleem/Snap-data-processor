@@ -132,10 +132,6 @@ def function_to_run(review):
     for _, row in review.iterrows():
         _scores_ = {}
         del row['_id']
-        del row['rule_one']
-        del row['rule_one_special']
-        del row['rule_two']
-        del row['rule_two_reduce']
         tags = row['final']
         if len(set(tags.keys())) > 0:
             for key in tags.keys():
