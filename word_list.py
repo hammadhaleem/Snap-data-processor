@@ -136,7 +136,7 @@ def function_to_run(review):
         del row['rule_one_special']
         del row['rule_two']
         del row['rule_two_reduce']
-        tags = row['final_pairs']
+        tags = row['final_pairs_reduced']
         if len(set(tags.keys())) > 0:
             for key in tags.keys():
                 _scores_[key] = {}
@@ -153,12 +153,12 @@ def function_to_run(review):
         ret_list.append(row)
         if len(ret_list) > 10000:
             df = pd.DataFrame(ret_list)
-            to_mongo_db(df, 'yelp_review_scored_pair_all_truncated')
+            to_mongo_db(df, 'yelp_review_scored_pair_all_truncated_reduced')
             print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
             ret_list = []
 
     df = pd.DataFrame(ret_list)
-    to_mongo_db(df, 'yelp_review_scored_pair_all_truncated')
+    to_mongo_db(df, 'yelp_review_scored_pair_all_truncated_reduced')
     print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
 
 
