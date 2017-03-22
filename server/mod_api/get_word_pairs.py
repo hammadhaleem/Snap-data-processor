@@ -8,7 +8,6 @@ import nltk
 import enchant
 import inflect
 
-
 english = enchant.Dict("en_US")
 
 inflect_engine = inflect.engine()
@@ -18,7 +17,8 @@ inflect_engine = inflect.engine()
 
 
 noun = ['NN', 'NNS', 'NNP', 'NNPS']
-stopwords = ["i", "s"]
+adj = ['JJ', 'JJR', 'JJS']
+stopwords = ["i", "s", 'able']
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -40,7 +40,6 @@ def for_each_review_(review, ret_data_dict):
     scored_terms = review['score']
 
     dict_ = {}
-
     para_ = []
     for text in list(review['text'].keys()):
         text = text.replace("  ", " ").strip().split(" ")
@@ -54,31 +53,38 @@ def for_each_review_(review, ret_data_dict):
             dict_[word[0]] = word[1]
 
     for term in scored_terms.keys():
-        ct = 0
         skip = False
         nn = None
-
-        term = term.lower().strip()
-        term_list = term.split(" ")
+        t_list = []
         l_list = []
-        for elem in term_list:
-            if elem in dict_.keys():
+        nn_count = 0
 
-                item = inflect_engine.singular_noun(elem)
-                if item is False:
-                    item = elem
+        term = term.lower().strip().replace("  ", " ")
+        term_list = term.split(" ")
+        list_words = []  # nltk.pos_tag(term_list)
+        try:
+            for word in term_list:
+                list_words.append((word, dict_[word]))
+        except Exception as e:
+            print("not in sentence" + str(e))
+            skip = True
 
-                if elem in stopwords:
-                    skip = True
-                if skip is not True and dict_[elem] in noun:
-                    ct += 1
-                    nn = item
+        for elem in list_words:
 
-                if len(elem) < 3:
-                    skip = True
+            if len(elem[0]) < 3:
+                skip = True
+
+            if elem[1] in noun:
+                nn_count += 1
+
+                item = inflect_engine.singular_noun(elem[0])
+                if not item:
+                    item = elem[0]
+
+                nn = item
                 l_list.append(item)
             else:
-                skip = True
+                l_list.append(elem[0])
 
         term_list = l_list
         term_mod = ' '.join(l_list)
@@ -91,52 +97,47 @@ def for_each_review_(review, ret_data_dict):
             'noun': nn
         }
 
-        t_list = []
         for singular in term_list:
             object['frequency'][singular] = 1
             t_list.append(singular)
 
         object['word_pairs'] = term_mod
 
-        # if term_mod != term:
-        #     print (term_mod , term)
+        if nn_count == 1 and skip is False and nn is not None:
 
-        if ct < 2 and skip is False and nn is not None:
-
-            # print(nn, term_mod, term, inflect_engine.singular_noun(nn))
-
-            object['type'], object['tpye_score'] = get_type(scored_terms[term])
+            object['type'], object['type_score'] = get_type(scored_terms[term])
             object['polarity'] = np.mean(review['final'][term])
             object['business_id'] = review['business_id']
+            object_type = object['type']
 
             try:
-                obj = ret_data_dict[object['business_id']][term_mod]
+                obj = ret_data_dict[object['business_id']][object_type][term_mod]
                 object['polarity'] = np.sum(review['final'][term])
                 object['polarity'] = (object['polarity'] + obj['polarity'])
+
+                for txt in obj['frequency'].keys():
+                    object['frequency'][txt] += obj['frequency'][txt]
+
+                    ret_data_dict[object['business_id']][object_type][term_mod] = object
+
             except:
                 object['polarity'] = np.sum(review['final'][term])
 
+                try:
+                    ret_data_dict[object['business_id']][object_type][term_mod] = object
+                except:
+                    try:
+                        dict = ret_data_dict[object['business_id']]
+                    except:
+                        ret_data_dict[object['business_id']] = {}
 
-            try:
-                obj = ret_data_dict[object['business_id']][term_mod]
-                # print (term, 'old', ret_data_dict[object['business_id']][term], 'new', object['frequency'])
+                    ret_data_dict[object['business_id']][object_type] = {}
+                    ret_data_dict[object['business_id']][object_type][term_mod] = object
 
-                for txt in obj['frequency'].keys():
-                    obj['frequency'][txt] += object['frequency'][txt]
-
-                ret_data_dict[object['business_id']][term_mod] = obj
-
-            except Exception as e:
-                if object['business_id'] in ret_data_dict.keys():
-                    ret_data_dict[object['business_id']][term_mod] = object
-                else:
-                    ret_data_dict[object['business_id']] = {}
-                    ret_data_dict[object['business_id']][term_mod] = object
-
-            ret_data_dict[object['business_id']][term_mod]['noun_frequency'] = \
-                ret_data_dict[object['business_id']][term_mod]['frequency'][nn]
-            # else:
-            #     print(" - ", nltk.pos_tag(term_list))  # , list(review['text'].keys()))
+            ret_data_dict[object['business_id']][object_type][term_mod]['noun_frequency'] = object['frequency'][nn]
+        # else:
+            # print(" - ", "list : ", list_words, "noun_count : ", nn_count, "skip : ", skip, "noun : ", nn,
+            #       (nn_count == 1 and skip is False and nn is not None))  # , list(review['text'].keys()))
 
     review['score'] = scored_terms
 
@@ -174,38 +175,35 @@ def get_word_pairs(review_list, mongo_connection):
 
 def create_groups(data_dict):
     ret_dict = {}
-    for bid in data_dict['business_es']:
-        data = data_dict[bid]
+    for types_ in data_dict.keys():
+        data = data_dict[types_]
         data_bid = {}
-        for term_obj in data:
+        for words in data.keys():
+            term_obj = data[words]
+            # print (term_obj)
             noun = term_obj['noun']
-
             if english.check(noun) is True:
                 try:
                     data_bid[noun]['objects'].append(term_obj)
                     data_bid[noun]['count'] += term_obj['noun_frequency']
+                    data_bid[noun]['objects'] = sorted( data_bid[noun]['noun_frequency'], key=lambda k: k['count'], reverse=True)
+
                 except Exception as e:
                     data_bid[noun] = {
                         'objects': [],
                         'count': 0
                     }
-                    # print(e, term_obj)
                     data_bid[noun]['objects'].append(term_obj)
+
                     data_bid[noun]['count'] = term_obj['noun_frequency']
 
         lis = []
-        for noun in data_bid.keys():
-                lis.append({
-                    'key': noun,
-                    'value' : data_bid[noun],
-                    'count': data_bid[noun]['count']
-                })
+        for item in data_bid.keys():
+            lis.append(data_bid[item])
 
-
-        ret_dict[bid] = {
-            '_all_noun_in_bid':  data_bid.keys(),
-            'lis_of_words' : sorted(lis, key=lambda k: k['count'], reverse=True)
+        ret_dict[types_] = {
+                '_all_noun_in_bid': data_bid.keys(),
+                'lis_of_words': sorted(lis, key=lambda k: k['count'], reverse=True)
         }
 
-    ret_dict['business_es'] = data_dict['business_es']
     return ret_dict

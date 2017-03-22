@@ -678,7 +678,7 @@ def get_review_analysis(review_list):
               }
          }
     )
-    review_list = [x['review_id'] for x in review_list]
+    review_list = [x['review_id'] for x in review_list][:10]
     nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
 
     final_result_ = {}
@@ -686,15 +686,14 @@ def get_review_analysis(review_list):
     # nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
 
     final_result_['business_es'] = sorted(nlp_analysis_res['business_es'])
+
+    return_data = {'business_es': final_result_['business_es']}
     for bid in final_result_['business_es']:
-        final_result_[bid] = []
-        data = nlp_analysis_res[bid]
-        for item in sorted(data.keys()):
-            final_result_[bid].append(nlp_analysis_res[bid][item])
+        return_data[bid] = create_groups(nlp_analysis_res[bid])
 
     # for bid in final_result_['business_es']:
     #     final_result_[bid] = sorted(final_result_[bid], key=lambda k: k['noun_frequency'], reverse=True)
     # return jsonify(final_result_)
 
-    result = create_groups(final_result_)
-    return jsonify(result)
+    # result = create_groups(final_result_)
+    return jsonify(return_data)
