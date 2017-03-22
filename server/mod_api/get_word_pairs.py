@@ -200,19 +200,23 @@ def get_word_pairs(review_list, mongo_connection):
 def create_groups(data_types):
     ret_dict = {}
     for key in data_types.keys():
-        obj = data_types[key]
 
-        if key in ret_dict.keys():
-            ret_dict[key]['count'] += obj['noun_frequency']
-            ret_dict[key]['objects'].append(obj)
+        obj = data_types[key]
+        noun_key = obj['noun']
+
+        if noun_key in ret_dict.keys():
+            ret_dict[noun_key]['count'] += obj['noun_frequency']
+            ret_dict[noun_key]['objects'].append(obj)
         else:
-            ret_dict[key] = {
+            ret_dict[noun_key] = {
                 'count': obj['noun_frequency'],
-                'objects': [obj]
+                'objects': [obj],
+                'noun' : noun_key
             }
 
     final_ret = []
     for key in ret_dict.keys():
+        print(key , len(ret_dict[key]['objects']))
         ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
         final_ret.append(ret_dict[key])
 
