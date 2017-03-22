@@ -8,7 +8,7 @@ from bson.json_util import dumps
 from flask import Blueprint, jsonify, url_for
 
 from server import app, mongo_connection, cache
-from server.mod_api.get_word_pairs import get_word_pairs
+from server.mod_api.get_word_pairs import get_word_pairs, create_groups
 from server.mod_api.graph_get import graph_in_box
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
@@ -659,9 +659,8 @@ def review_information_agg(business_id1, business_id2):
 
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
-    #
     # http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
-    #
+
     # http://localhost:5002/api/nlp/review_analysis/
     #           ['1o0g0ymmHl6HRgrg3KEM5w',
     #            '1nJaL6VBUHR1DlErpnsIBQ',
@@ -672,20 +671,19 @@ def get_review_analysis(review_list):
     #
     # bit better?
 
-    # review_list = mongo_connection.db.yelp_reviews.find(
-    #     {'business_id':
-    #          {'$in':
-    #               ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
-    #           }
-    #      }
-    # )
-    # review_list = [x['review_id'] for x in review_list]
-    # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
-
+    review_list = mongo_connection.db.yelp_reviews.find(
+        {'business_id':
+             {'$in':
+                  ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
+              }
+         }
+    )
+    review_list = [x['review_id'] for x in review_list]
+    nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
 
     final_result_ = {}
 
-    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+    # nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
 
     final_result_['business_es'] = sorted(nlp_analysis_res['business_es'])
     for bid in final_result_['business_es']:
@@ -694,7 +692,9 @@ def get_review_analysis(review_list):
         for item in sorted(data.keys()):
             final_result_[bid].append(nlp_analysis_res[bid][item])
 
-    for bid in final_result_['business_es']:
-        final_result_[bid] = sorted(final_result_[bid], key=lambda k: k['noun_frequency'], reverse=True)
+    # for bid in final_result_['business_es']:
+    #     final_result_[bid] = sorted(final_result_[bid], key=lambda k: k['noun_frequency'], reverse=True)
+    # return jsonify(final_result_)
 
-    return jsonify(final_result_)
+    result = create_groups(final_result_)
+    return jsonify(result)
