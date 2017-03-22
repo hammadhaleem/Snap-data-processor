@@ -671,29 +671,22 @@ def get_review_analysis(review_list):
     #
     # bit better?
 
-    review_list = mongo_connection.db.yelp_reviews.find(
-        {'business_id':
-             {'$in':
-                  ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
-              }
-         }
-    )
-    review_list = [x['review_id'] for x in review_list][:10]
-    nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
+    # review_list = mongo_connection.db.yelp_reviews.find(
+    #     {'business_id':
+    #          {'$in':
+    #               ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
+    #           }
+    #      }
+    # )
+    # review_list = [x['review_id'] for x in review_list]
+    # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
 
-    final_result_ = {}
 
-    # nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
-
-    final_result_['business_es'] = sorted(nlp_analysis_res['business_es'])
-
-    return_data = {'business_es': final_result_['business_es']}
+    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+    final_result_ = {'business_es': sorted(nlp_analysis_res['business_es'])}
     for bid in final_result_['business_es']:
-        return_data[bid] = create_groups(nlp_analysis_res[bid])
+        final_result_[bid] = {}
+        for obj_type in nlp_analysis_res[bid].keys():
+            final_result_[bid][obj_type] = create_groups(nlp_analysis_res[bid][obj_type])
 
-    # for bid in final_result_['business_es']:
-    #     final_result_[bid] = sorted(final_result_[bid], key=lambda k: k['noun_frequency'], reverse=True)
-    # return jsonify(final_result_)
-
-    # result = create_groups(final_result_)
-    return jsonify(return_data)
+    return jsonify(final_result_)

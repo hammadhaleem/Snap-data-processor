@@ -1,12 +1,16 @@
 from __future__ import print_function
 
-from __builtin__ import len
-from __builtin__ import list
-import numpy as np
 import pprint
-import nltk
+import re
+import string
+
 import enchant
 import inflect
+import nltk
+import numpy as np
+from __builtin__ import len
+from __builtin__ import list
+
 
 english = enchant.Dict("en_US")
 
@@ -24,7 +28,7 @@ pp = pprint.PrettyPrinter(depth=6)
 
 def get_type(data_dict):
     if len(data_dict.keys()) == 0:
-        return None, None
+        return "other", None
     max = -99999
     ret = list(data_dict.keys())[0]
 
@@ -35,22 +39,9 @@ def get_type(data_dict):
     return ret, max
 
 
-def for_each_review_(review, ret_data_dict):
+def for_each_review_(review, ret_data_dict, dict_):
     del review['_id']
     scored_terms = review['score']
-
-    dict_ = {}
-    para_ = []
-    for text in list(review['text'].keys()):
-        text = text.replace("  ", " ").strip().split(" ")
-        if len(text) > 1:
-            para_.append(text)
-
-    text = nltk.pos_tag_sents(para_)
-
-    for line in text:
-        for word in line:
-            dict_[word[0]] = word[1]
 
     for term in scored_terms.keys():
         skip = False
@@ -65,8 +56,9 @@ def for_each_review_(review, ret_data_dict):
         try:
             for word in term_list:
                 list_words.append((word, dict_[word]))
+
         except Exception as e:
-            print("not in sentence" + str(e))
+            print("not in sentence : " + str(e) + " : " + str(term_list))
             skip = True
 
         for elem in list_words:
@@ -94,54 +86,53 @@ def for_each_review_(review, ret_data_dict):
             'frequency': {
 
             },
-            'noun': nn
+            'noun': nn,
+            'tagged_text': list_words
         }
 
-        for singular in term_list:
-            object['frequency'][singular] = 1
-            t_list.append(singular)
+        for item in term_list:
+            object['frequency'][item] = 1
+            t_list.append(item)
 
         object['word_pairs'] = term_mod
 
+        object['type'], object['type_score'] = get_type(scored_terms[term])
+        object['polarity'] = np.mean(review['final'][term])
+
+        object['business_id'] = review['business_id']
+        object_type = object['type']
+
+        # print (object,skip)
+
         if nn_count == 1 and skip is False and nn is not None:
-
-            object['type'], object['type_score'] = get_type(scored_terms[term])
-            object['polarity'] = np.mean(review['final'][term])
-            object['business_id'] = review['business_id']
-            object_type = object['type']
-
             try:
                 obj = ret_data_dict[object['business_id']][object_type][term_mod]
-                object['polarity'] = np.sum(review['final'][term])
                 object['polarity'] = (object['polarity'] + obj['polarity'])
+                object['type_score'] = (object['type_score'] + obj['type_score'])
 
                 for txt in obj['frequency'].keys():
                     object['frequency'][txt] += obj['frequency'][txt]
 
-                    ret_data_dict[object['business_id']][object_type][term_mod] = object
+                ret_data_dict[object['business_id']][object_type][term_mod] = object
 
             except:
-                object['polarity'] = np.sum(review['final'][term])
-
                 try:
                     ret_data_dict[object['business_id']][object_type][term_mod] = object
                 except:
                     try:
-                        dict = ret_data_dict[object['business_id']]
+                        oo = ret_data_dict[object['business_id']]
                     except:
                         ret_data_dict[object['business_id']] = {}
 
                     ret_data_dict[object['business_id']][object_type] = {}
                     ret_data_dict[object['business_id']][object_type][term_mod] = object
 
-            ret_data_dict[object['business_id']][object_type][term_mod]['noun_frequency'] = object['frequency'][nn]
-        # else:
-            # print(" - ", "list : ", list_words, "noun_count : ", nn_count, "skip : ", skip, "noun : ", nn,
-            #       (nn_count == 1 and skip is False and nn is not None))  # , list(review['text'].keys()))
-
-    review['score'] = scored_terms
-
-    del review
+            noun_in_t = ret_data_dict[object['business_id']][object_type][term_mod]['noun']
+            ret_data_dict[object['business_id']][object_type][term_mod]['noun_frequency'] = \
+            ret_data_dict[object['business_id']][object_type][term_mod]['frequency'][noun_in_t]
+            # else:
+            #     print(" - ", "list : ", list_words, "noun_count : ", nn_count, "skip : ", skip, "noun : ", nn,
+            #           (nn_count == 1 and skip is False and nn is not None))  # , list(review['text'].keys()))
 
     return ret_data_dict
 
@@ -160,50 +151,70 @@ def get_word_pairs(review_list, mongo_connection):
         'stars': 1,
         'tf_idf': 1,
         'final': 1,
-        'text': 1
     }
 
+    reviews_text = [x['text'] for x in list(mongo_connection.db.yelp_reviews.find(query))]
+    data_dict = {}
+
+    final_para = []
+    for text in reviews_text:
+        text = text.lower().\
+            replace("!"," ").\
+            replace('/'," ").\
+            replace("  ", " ").\
+            replace("\t", " ").\
+            replace("\n", " ").\
+            replace("~"," ").\
+            lstrip()
+
+        regex = re.compile('[%s]' % re.escape(string.punctuation))
+        text = regex.sub(' ', text)
+        text= text.split(" ")
+
+
+        ret_text = []
+        for word in text:
+            if len(word) > 1:
+                ret_text.append(word)
+        final_para.append(ret_text)
+
+    text_tagged = nltk.pos_tag_sents(final_para)
+
+    dict_ = {}
+    for texxt in text_tagged:
+        for word in texxt:
+            dict_[word[0]] = word[1]
+    #pp.pprint(dict_)
+
     processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated_reduced.find(query, what))
+
     ret_list = {}
     for review in processed:
-        ret_list = for_each_review_(review, ret_list)
+        ret_list = for_each_review_(review, ret_list, dict_)
 
     ret_list['business_es'] = list(ret_list.keys())
 
     return ret_list
 
 
-def create_groups(data_dict):
+def create_groups(data_types):
     ret_dict = {}
-    for types_ in data_dict.keys():
-        data = data_dict[types_]
-        data_bid = {}
-        for words in data.keys():
-            term_obj = data[words]
-            # print (term_obj)
-            noun = term_obj['noun']
-            if english.check(noun) is True:
-                try:
-                    data_bid[noun]['objects'].append(term_obj)
-                    data_bid[noun]['count'] += term_obj['noun_frequency']
-                    data_bid[noun]['objects'] = sorted( data_bid[noun]['noun_frequency'], key=lambda k: k['count'], reverse=True)
+    for key in data_types.keys():
+        obj = data_types[key]
 
-                except Exception as e:
-                    data_bid[noun] = {
-                        'objects': [],
-                        'count': 0
-                    }
-                    data_bid[noun]['objects'].append(term_obj)
+        if key in ret_dict.keys():
+            ret_dict[key]['count'] += obj['noun_frequency']
+            ret_dict[key]['objects'].append(obj)
+        else:
+            ret_dict[key] = {
+                'count': obj['noun_frequency'],
+                'objects': [obj]
+            }
 
-                    data_bid[noun]['count'] = term_obj['noun_frequency']
+    final_ret = []
+    for key in ret_dict.keys():
+        ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
+        final_ret.append(ret_dict[key])
 
-        lis = []
-        for item in data_bid.keys():
-            lis.append(data_bid[item])
-
-        ret_dict[types_] = {
-                '_all_noun_in_bid': data_bid.keys(),
-                'lis_of_words': sorted(lis, key=lambda k: k['count'], reverse=True)
-        }
-
-    return ret_dict
+    final_ret = sorted(final_ret, key=lambda x: x['count'], reverse=True)
+    return final_ret
