@@ -657,6 +657,24 @@ def review_information_agg(business_id1, business_id2):
     return jsonify(data=data_dict, max_date=max_date, min_date=min_date)
 
 
+@mod_api.route('/get_review_by_id/<review_id>')
+def review_by_id(review_id):
+    review = list(mongo_connection.db.yelp_reviews.find({'review_id': review_id}))[0]
+    del review['_id']
+
+    user_name = list(mongo_connection.db.yelp_users.find({'user_id': review['user_id']}, {'name': 1}))[0]
+    business_name = \
+    list(mongo_connection.db.yelp_business_information.find({'business_id': review['business_id']}, {'name': 1}))[0]
+
+    del user_name['_id']
+    del business_name['_id']
+
+    review['user_name'] = user_name['name']
+    review['business_name'] = business_name['name']
+
+    return jsonify(review)
+
+
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
     # http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
@@ -671,22 +689,21 @@ def get_review_analysis(review_list):
     #
     # bit better?
 
-    review_list = mongo_connection.db.yelp_reviews.find(
-        {'business_id':
-             {'$in':
-                  ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
-              },
-         'stars': {
-             '$in': [1, 2]
-         }
-    })
+    # review_list = mongo_connection.db.yelp_reviews.find(
+    #     {'business_id':
+    #          {'$in':
+    #               ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
+    #           },
+    #      'stars': {
+    #          '$in': [1, 2, 3, 4, 5]
+    #      }
+    #      })
+    #
+    # review_list = [x['review_id'] for x in review_list]
+    # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
+    # print(len(review_list))
 
-    review_list = [x['review_id'] for x in review_list]
-    nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
-
-    print(len(review_list))
-
-    # nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
     final_result_ = {'business_es': sorted(nlp_analysis_res['business_es'])}
     for bid in final_result_['business_es']:
         final_result_[bid] = {}

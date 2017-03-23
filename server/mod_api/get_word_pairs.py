@@ -108,7 +108,7 @@ def for_each_review_(review, ret_data_dict, dict_):
         if nn_count == 1 and skip is False and nn is not None:
             try:
                 obj = ret_data_dict[object['business_id']][object_type][term_mod]
-                object['polarity'] = (object['polarity'] + obj['polarity'])
+                object['polarity'] = TextBlob(term_mod).sentiment.polarity
                 object['type_score'] = (object['type_score'] + obj['type_score'])
 
                 for txt in obj['frequency'].keys():
@@ -205,6 +205,7 @@ def create_groups(data_types):
         noun_key = obj['noun']
         if noun_key in ret_dict.keys():
             ret_dict[noun_key]['count'] += obj['noun_frequency']
+            ret_dict[noun_key]['polarity'] += obj['polarity']
             ret_dict[noun_key]['objects'].append(obj)
         else:
             ret_dict[noun_key] = {
@@ -216,11 +217,12 @@ def create_groups(data_types):
 
         nouns.append(obj['noun'])
 
-
     final_ret = []
     for key in ret_dict.keys():
-        if (ret_dict[key]['count'] > 1) or (ret_dict[key]['polarity'] < -0.1):
+        if (ret_dict[key]['count'] > 1) and (ret_dict[key]['polarity'] < -0.1 or ret_dict[key]['polarity'] > 0.1):
             ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
+            ret_dict[key]['polarity'] = ret_dict[key]['polarity'] / len(ret_dict[key]['objects'])
+
             final_ret.append(ret_dict[key])
 
     final_ret = sorted(final_ret, key=lambda x: x['count'], reverse=True)
