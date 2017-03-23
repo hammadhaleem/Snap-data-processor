@@ -12,6 +12,8 @@ from __builtin__ import len
 from __builtin__ import list
 
 
+from textblob import TextBlob
+
 english = enchant.Dict("en_US")
 
 inflect_engine = inflect.engine()
@@ -33,10 +35,10 @@ def get_type(data_dict):
     ret = list(data_dict.keys())[0]
 
     for key in data_dict.keys():
-        if data_dict[key] > max:
+        if data_dict[key] >= int(100*max):
             max = data_dict[key]
             ret = key
-    return ret, max
+    return ret, float(max)/100.0
 
 
 def for_each_review_(review, ret_data_dict, dict_):
@@ -58,7 +60,7 @@ def for_each_review_(review, ret_data_dict, dict_):
                 list_words.append((word, dict_[word]))
 
         except Exception as e:
-            print("not in sentence : " + str(e) + " : " + str(term_list))
+            # print("not in sentence : " + str(e) + " : " + str(term_list))
             skip = True
 
         for elem in list_words:
@@ -97,7 +99,7 @@ def for_each_review_(review, ret_data_dict, dict_):
         object['word_pairs'] = term_mod
 
         object['type'], object['type_score'] = get_type(scored_terms[term])
-        object['polarity'] = np.mean(review['final'][term])
+        object['polarity'] =  TextBlob(term_mod).sentiment.polarity
 
         object['business_id'] = review['business_id']
         object_type = object['type']
@@ -199,6 +201,7 @@ def get_word_pairs(review_list, mongo_connection):
 
 def create_groups(data_types):
     ret_dict = {}
+    nouns = []
     for key in data_types.keys():
         obj = data_types[key]
 
@@ -211,10 +214,14 @@ def create_groups(data_types):
                 'objects': [obj]
             }
 
+            nouns.append(obj['noun'])
+
+    print (set(nouns))
     final_ret = []
     for key in ret_dict.keys():
-        ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
-        final_ret.append(ret_dict[key])
+        if ret_dict[key]['count'] > 1:
+            ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
+            final_ret.append(ret_dict[key])
 
     final_ret = sorted(final_ret, key=lambda x: x['count'], reverse=True)
     return final_ret
