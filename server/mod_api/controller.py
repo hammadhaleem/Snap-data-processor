@@ -675,9 +675,12 @@ def get_review_analysis(review_list):
         {'business_id':
              {'$in':
                   ['ndQTAJzhhkrl1i5ToEGSZw', 'jiOREht1_iH8BPDBe9kerw']
-              }
-        }
-    )
+              },
+         'stars': {
+             '$in': [1, 2]
+         }
+    })
+
     review_list = [x['review_id'] for x in review_list]
     nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
 

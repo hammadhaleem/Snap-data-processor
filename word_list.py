@@ -83,12 +83,12 @@ place = [u'location', u'after-work', u'afterwork', u'ambiance', u'ambience', u'a
          u'sportsbar', u'spot', u'spot-', u'spot..', u'spots', u'steakhouse', u'steakhouses', u'subways', u'taquerias',
          u'unwind', u'urru', u'vibe', u'vibes', u'walmarts',
          u'well-decorated', u'windmill']
-service = [u'*service', u'-customer',  u'service', u'-staff', u'.service', u'.staff',
+service = [u'service', u'customer',  u'service', u'staff', u'service', u'staff',
            u'assistants', u'associates', u'attention', u'attentiveness',
            u'barkeeps', u'bartenders', u'cashiers', u'clerks', u'clients', u'competence', u'competency', u'consultants',
            u'consumers', u'costomer', u'costumer', u'costumers', u'courtois', u'coustomer', u'cust', u'customer',
            u'customer-service', u'customer..', u'customers', u'customers-', u'customers..', u'custumer', u'cutomer',
-           u'dance/twirk', u'employee', u'employees', u'employer', u'employes', u'experience', u'experiance',
+           u'dance',u'twirk', u'employee', u'employees', u'employer', u'employes', u'experience', u'experiance',
            u'experience-', u'experience..', u'experiences', u'experince', u'expertise', u'expierence',
            u'friendly/customer', u'guests', u'hairdresser', u'hairstylist', u'healthy-mind', u'helpfulness',
            u'hostesses', u'hygiene', u'hygienic', u'hygienists', u'impecable', u'manouver', u'minuses', u'm\xe9diocre',
@@ -99,7 +99,7 @@ service = [u'*service', u'-customer',  u'service', u'-staff', u'.service', u'.st
            u'service..', u'service.i', u'service.the', u'service=', u'severs', u'sevice', u'sincerity', u'staf',
            u'staff', u'staff-', u'staff..', u'staff/owner', u'staff/owners', u'staff/service', u'staff=', u'staffers',
            u'staffs', u'stylist', u'thoroughness', u'wait-staff', u'waiter', u'waiters', u'waiters/waitresses',
-           u'waitress', u'waitresses', u'waitstaff', u'worker', u'workers']
+           u'waitress', u'waitresses', u'waitstaff', u'worker', u'workers' , u'service' , u'support']
 
 client = MongoClient()
 db = client.yelp_comparative_analytics
@@ -151,12 +151,12 @@ def function_to_run(review):
         ret_list.append(row)
         if len(ret_list) > 10000:
             df = pd.DataFrame(ret_list)
-            to_mongo_db(df, 'yelp_review_scored_pair_all_truncated_reduced')
+            to_mongo_db(df, 'yelp_review_scored_pair_all_truncated_reduced_n')
             print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
             ret_list = []
 
     df = pd.DataFrame(ret_list)
-    to_mongo_db(df, 'yelp_review_scored_pair_all_truncated_reduced')
+    to_mongo_db(df, 'yelp_review_scored_pair_all_truncated_reduced_n')
     print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
 
 

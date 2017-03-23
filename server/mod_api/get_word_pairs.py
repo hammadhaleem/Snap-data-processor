@@ -11,7 +11,6 @@ import numpy as np
 from __builtin__ import len
 from __builtin__ import list
 
-
 from textblob import TextBlob
 
 english = enchant.Dict("en_US")
@@ -35,10 +34,10 @@ def get_type(data_dict):
     ret = list(data_dict.keys())[0]
 
     for key in data_dict.keys():
-        if data_dict[key] >= int(100*max):
+        if data_dict[key] > max:
             max = data_dict[key]
             ret = key
-    return ret, float(max)/100.0
+    return ret, max
 
 
 def for_each_review_(review, ret_data_dict, dict_):
@@ -99,7 +98,7 @@ def for_each_review_(review, ret_data_dict, dict_):
         object['word_pairs'] = term_mod
 
         object['type'], object['type_score'] = get_type(scored_terms[term])
-        object['polarity'] =  TextBlob(term_mod).sentiment.polarity
+        object['polarity'] = TextBlob(term_mod).sentiment.polarity
 
         object['business_id'] = review['business_id']
         object_type = object['type']
@@ -131,7 +130,7 @@ def for_each_review_(review, ret_data_dict, dict_):
 
             noun_in_t = ret_data_dict[object['business_id']][object_type][term_mod]['noun']
             ret_data_dict[object['business_id']][object_type][term_mod]['noun_frequency'] = \
-            ret_data_dict[object['business_id']][object_type][term_mod]['frequency'][noun_in_t]
+                ret_data_dict[object['business_id']][object_type][term_mod]['frequency'][noun_in_t]
             # else:
             #     print(" - ", "list : ", list_words, "noun_count : ", nn_count, "skip : ", skip, "noun : ", nn,
             #           (nn_count == 1 and skip is False and nn is not None))  # , list(review['text'].keys()))
@@ -160,19 +159,18 @@ def get_word_pairs(review_list, mongo_connection):
 
     final_para = []
     for text in reviews_text:
-        text = text.lower().\
-            replace("!"," ").\
-            replace('/'," ").\
-            replace("  ", " ").\
-            replace("\t", " ").\
-            replace("\n", " ").\
-            replace("~"," ").\
+        text = text.lower(). \
+            replace("!", " "). \
+            replace('/', " "). \
+            replace("  ", " "). \
+            replace("\t", " "). \
+            replace("\n", " "). \
+            replace("~", " "). \
             lstrip()
 
         regex = re.compile('[%s]' % re.escape(string.punctuation))
         text = regex.sub(' ', text)
-        text= text.split(" ")
-
+        text = text.split(" ")
 
         ret_text = []
         for word in text:
@@ -186,9 +184,9 @@ def get_word_pairs(review_list, mongo_connection):
     for texxt in text_tagged:
         for word in texxt:
             dict_[word[0]] = word[1]
-    #pp.pprint(dict_)
+    # pp.pprint(dict_)
 
-    processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated_reduced.find(query, what))
+    processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated_reduced_n.find(query, what))
 
     ret_list = {}
     for review in processed:
@@ -204,22 +202,24 @@ def create_groups(data_types):
     nouns = []
     for key in data_types.keys():
         obj = data_types[key]
-
-        if key in ret_dict.keys():
-            ret_dict[key]['count'] += obj['noun_frequency']
-            ret_dict[key]['objects'].append(obj)
+        noun = obj['noun']
+        print(noun)
+        if noun in ret_dict.keys():
+            ret_dict[noun]['count'] += obj['noun_frequency']
+            ret_dict[noun]['objects'].append(obj)
+            print ("-----")
         else:
-            ret_dict[key] = {
+            ret_dict[noun] = {
                 'count': obj['noun_frequency'],
-                'objects': [obj]
+                'objects': [obj],
+                'polarity': obj['polarity']
             }
 
             nouns.append(obj['noun'])
 
-    print (set(nouns))
     final_ret = []
     for key in ret_dict.keys():
-        if ret_dict[key]['count'] > 1:
+        if ret_dict[key]['count'] > 0 or ret_dict[key]['polarity'] < 0:
             ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
             final_ret.append(ret_dict[key])
 
