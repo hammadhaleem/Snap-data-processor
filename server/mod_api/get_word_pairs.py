@@ -201,14 +201,11 @@ def create_groups(data_types):
     ret_dict = {}
     nouns = []
     for key in data_types.keys():
-
         obj = data_types[key]
         noun_key = obj['noun']
-        print(noun_key)
-        if noun in ret_dict.keys():
+        if noun_key in ret_dict.keys():
             ret_dict[noun_key]['count'] += obj['noun_frequency']
             ret_dict[noun_key]['objects'].append(obj)
-            print("-----")
         else:
             ret_dict[noun_key] = {
                 'count': obj['noun_frequency'],
@@ -219,12 +216,12 @@ def create_groups(data_types):
 
         nouns.append(obj['noun'])
 
+
     final_ret = []
     for key in ret_dict.keys():
-        if ret_dict[key]['count'] > 0 or ret_dict[key]['polarity'] < 0:
+        if (ret_dict[key]['count'] > 1) or (ret_dict[key]['polarity'] < -0.1):
             ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
             final_ret.append(ret_dict[key])
-            print(key, len(ret_dict[key]['objects']))
 
     final_ret = sorted(final_ret, key=lambda x: x['count'], reverse=True)
     return final_ret
