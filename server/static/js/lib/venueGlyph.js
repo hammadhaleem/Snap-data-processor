@@ -322,7 +322,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                         }
                         else if (selected_glyphs_counting.length < 2) {
                             console.log('remove common customer comparison view!');
-                            pipService.emitRemoveCommonCustomerCompView('remove');
+                            pipService.emitRemoveCommonCustomerCompView(selected_glyphs_counting);
                         }
 
                     }

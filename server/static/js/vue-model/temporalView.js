@@ -176,6 +176,74 @@ var temporalView = new Vue({
 
             return bs_max_num_of_each_rating_accumulated;
         },
+
+        processEventOfClickingOnRectsOrCircles: function (clicking_pos) {
+            var x = clicking_pos[0], y = clicking_pos[1];
+
+            //bs1
+            d3.select(this.$el).selectAll('g.bs1_temporal_rects')
+                .selectAll('rect')
+                .filter(function (item, i) {
+                    var flag = x >= item['pos_x'] && y >= (item['pos_y'])
+                        && x <= (item['pos_x'] + item['rect_w_h'])
+                        && y <= (item['pos_y'] + item['rect_w_h']);
+
+                    //clear all the other possible selections
+                    if (!flag) {
+                        d3.select(this).attr('fill', item['original_fill']);
+                        item['selection_flag'] = false;
+                    }
+
+                    return flag;
+                })
+                .each(function (item, i) {
+                    item['selection_flag'] = !item['selection_flag'];
+                    if (item['selection_flag']) { //selected
+                        d3.select(this).attr('fill', 'black');
+
+                        //load detailed review data
+                        var review_id = item['review_id'];
+                        dataService.getDetailedContentOfOneReview(review_id);
+                    }
+                    else { //de-selection
+                        d3.select(this).attr('fill', item['original_fill']);
+                    }
+                    console.log('===========item=========== ', item);
+                });
+
+            //bs2
+            d3.select(this.$el).selectAll('g.bs2_temporal_rects')
+                .selectAll('rect')
+                .filter(function (item, i) {
+                    var flag = x >= item['pos_x'] && y >= (item['pos_y'])
+                        && x <= (item['pos_x'] + item['rect_w_h'])
+                        && y <= (item['pos_y'] + item['rect_w_h']);
+
+                    //clear all the other possible selections
+                    if (!flag) {
+                        d3.select(this).attr('fill', item['original_fill']);
+                        item['selection_flag'] = false;
+                    }
+
+                    return flag;
+                })
+                .each(function (item, i) {
+                    item['selection_flag'] = !item['selection_flag'];
+                    if (item['selection_flag']) { //selected
+                        d3.select(this).attr('fill', 'black');
+
+                        //load detailed review data
+                        var review_id = item['review_id'];
+                        dataService.getDetailedContentOfOneReview(review_id);
+                    }
+                    else { //de-selection
+                        d3.select(this).attr('fill', item['original_fill']);
+                    }
+                    console.log('===========item=========== ', item);
+                });
+
+        },
+
         drawAxisAndLabelsForTemporalView: function (bs_temporal_view, layout_config, bs_mode_str) { //bs_mode_str: 'bs1' or 'bs2'
             var _this = this;
 
@@ -271,6 +339,12 @@ var temporalView = new Vue({
         drawStackedRectsForTemporalView: function (bs_review_ratings, bs_temporal_view, layout_config, bs_mode_str) {
             var _this = this;
 
+            //parse the bs_temporal_view positions
+            var bs_delta_x = d3.transform(d3.select(bs_temporal_view[0][0]).attr('transform')).translate[0],
+                bs_delta_y = d3.transform(d3.select(bs_temporal_view[0][0]).attr('transform')).translate[1];
+            bs_delta_x = parseInt(bs_delta_x);
+            bs_delta_y = parseInt(bs_delta_y);
+
             bs_temporal_view.append('g')
                 .attr('class', bs_mode_str + '_temporal_rects')
                 .selectAll('g')
@@ -290,10 +364,14 @@ var temporalView = new Vue({
                         + ',' + (-layout_config.each_axis_label_height) + ')';
                 })
                 .each(function (d, i) {
-                    console.log('draw rectangles: ', d, i);
+                    // console.log('draw rectangles: ', d, i);
                     if (d.length == 0) {
                         return;
                     }
+
+                    //get the quarter year position
+                    var bs_quarter_delta_x = bs_delta_x + (i * (layout_config.padding_w + layout_config.rect_size) + layout_config.rect_size / 2);
+                    var bs_quarter_delta_y = bs_delta_y + (-layout_config.each_axis_label_height);
 
                     //draw rectangles
                     d3.select(this).selectAll('rect')
@@ -302,17 +380,36 @@ var temporalView = new Vue({
                         .append('rect')
                         .attr('width', layout_config.rect_size)
                         .attr('height', layout_config.rect_size)
-                        .attr('x', 0)
+                        .attr('x', function (item, j) {
+                            item['pos_x'] = bs_quarter_delta_x + 0;
+                            item['rect_w_h'] = layout_config.rect_size;
+                            item['selection_flag'] = false;
+                            return 0;
+                        })
                         .attr('y', function (item, j) {
+                            item['pos_y'] = bs_quarter_delta_y + -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
                             return -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
                         })
                         .attr('fill', function (item, j) {
                             var rating = item['stars'];
-                            if(bs_mode_str == 'bs1')
+                            if (bs_mode_str == 'bs1') {
+                                item['original_fill'] = _this.first_venue_color_mapping[rating - 1];
                                 return _this.first_venue_color_mapping[rating - 1];
-                            else{
+                            }
+                            else {
+                                item['original_fill'] = _this.second_venue_color_mapping[rating - 1];
                                 return _this.second_venue_color_mapping[rating - 1];
                             }
+                        })
+                        //not working
+                        .on('mouseover', function (d, k) { //not working
+                            d3.select(this).style('cursor', 'pointer');
+                        })
+                        .on('mouseout', function (d, k) {
+                            d3.select(this).style('cursor', 'pointer');
+                        })
+                        .on('click', function (d, k) {
+                            console.log('The selected text of stacked reviews: ', d);
                         });
                 });
 
@@ -775,7 +872,7 @@ var temporalView = new Vue({
 
             //remove previous svg and append a new one
             d3.select(this.$el).select('svg').remove();
-            d3.select(this.$el).select('section')
+            d3.select(this.$el)
                 .style('overflow', 'auto')
                 .append('svg')
                 .attr('width', layout_config.w_tentative)
@@ -818,6 +915,7 @@ var temporalView = new Vue({
             + layout_config.padding_h) + layout_config.each_axis_label_height);
             var selection_start_pos = [0, 0];
 
+            //drag event for selection
             var bs1_selection_handler = undefined, bs2_selection_handler = undefined;
             var bs_drag = d3.behavior.drag()
                 .on('dragstart', function (d, i) {
@@ -825,14 +923,12 @@ var temporalView = new Vue({
 
                     //set mouse pointer
                     d3.select(_this.$el)
-                        .select('section')
                         .classed('areaSelectionPointer', true);
 
                     selection_start_pos = d3.mouse(this);
                     if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
                         bs1_selection_rect = [selection_start_pos, selection_start_pos]; //init
                         bs1_selection_handler = d3.select(_this.$el)
-                            .select('section')
                             .select('svg')
                             .append('rect')
                             .attr('class', 'bs1_selection_rect')
@@ -847,7 +943,6 @@ var temporalView = new Vue({
                     else { //bs2
                         bs2_selection_rect = [selection_start_pos, selection_start_pos]; //init
                         bs2_selection_handler = d3.select(_this.$el)
-                            .select('section')
                             .select('svg')
                             .append('rect')
                             .attr('class', 'bs2_selection_rect')
@@ -880,7 +975,6 @@ var temporalView = new Vue({
 
                     //set mouse pointer
                     d3.select(_this.$el)
-                        .select('section')
                         .classed('areaSelectionPointer', false);
 
                     var pos = d3.mouse(this);
@@ -902,10 +996,112 @@ var temporalView = new Vue({
                         }
                         updateHorizontalBarCharts();
                     }
+
+                    //if start == end, then it may be a click event on rectangle 非常重要!!
+                    if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
+                        _this.processEventOfClickingOnRectsOrCircles(pos);
+                    }
+
                 });
-            d3.select(this.$el).select('section')
+            d3.select(this.$el)
                 .select('svg')
                 .call(bs_drag);
+
+            // //use mousedown, mousemove and mouseup event instead of drag event for selection
+            // var bs1_selection_handler = undefined, bs2_selection_handler = undefined;
+            // var bs_selection_flag = false;
+            // var bs_selection_drawing = d3.select(this.$el)
+            //     .select('svg')
+            //     .on('mousedown', function (d, i) {
+            //         console.log('mousedown: ', d3.mouse(this));
+            //         bs_selection_flag = true;
+            //
+            //         //set mouse pointer
+            //         d3.select(_this.$el)
+            //             .classed('areaSelectionPointer', true);
+            //
+            //         selection_start_pos = d3.mouse(this);
+            //         if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
+            //             bs1_selection_rect = [selection_start_pos, selection_start_pos]; //init
+            //             bs1_selection_handler = d3.select(_this.$el)
+            //                 .select('svg')
+            //                 .append('rect')
+            //                 .attr('class', 'bs1_selection_rect')
+            //                 .attr('x', selection_start_pos[0])
+            //                 .attr('y', selection_start_pos[1])
+            //                 .attr('width', 0)
+            //                 .attr('height', 0)
+            //                 .attr('fill', 'none')
+            //                 .attr('stroke', 'red')
+            //                 .attr('stroke-width', 2);
+            //         }
+            //         else { //bs2
+            //             bs2_selection_rect = [selection_start_pos, selection_start_pos]; //init
+            //             bs2_selection_handler = d3.select(_this.$el)
+            //                 .select('svg')
+            //                 .append('rect')
+            //                 .attr('class', 'bs2_selection_rect')
+            //                 .attr('x', selection_start_pos[0])
+            //                 .attr('y', selection_start_pos[1])
+            //                 .attr('width', 0)
+            //                 .attr('height', 0)
+            //                 .attr('fill', 'none')
+            //                 .attr('stroke', 'red')
+            //                 .attr('stroke-width', 2);
+            //         }
+            //     })
+            //     .on('mousemove', function (d, i) {
+            //         if (!bs_selection_flag) {
+            //             return;
+            //         }
+            //
+            //         console.log('mousemove: ', d3.mouse(this));
+            //         var pos = d3.mouse(this);
+            //
+            //         if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
+            //             bs1_selection_rect[1] = pos;
+            //             bs1_selection_handler.attr('width', pos[0] - selection_start_pos[0])
+            //                 .attr('height', pos[1] - selection_start_pos[1]);
+            //         }
+            //         else { //bs2
+            //             bs2_selection_rect[1] = pos;
+            //             bs2_selection_handler.attr('width', pos[0] - selection_start_pos[0])
+            //                 .attr('height', pos[1] - selection_start_pos[1]);
+            //         }
+            //     })
+            //     .on('mouseup', function (d, i) {
+            //         console.log('mouseup: ', d3.mouse(this));
+            //         bs_selection_flag = false;
+            //
+            //         //set mouse pointer
+            //         d3.select(_this.$el)
+            //             .classed('areaSelectionPointer', false);
+            //
+            //         var pos = d3.mouse(this);
+            //         if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
+            //             bs1_selection_rect[1] = pos;
+            //             var remove_flag = (bs1_selection_rect[1][0] == bs1_selection_rect[0][0])
+            //                 && bs1_selection_rect[1][1] == bs1_selection_rect[0][1];
+            //             if (remove_flag) {
+            //                 d3.select(_this.$el).selectAll('rect.bs1_selection_rect').remove();
+            //             }
+            //             updateHorizontalBarCharts();
+            //         }
+            //         else { //bs2
+            //             bs2_selection_rect[1] = pos;
+            //             var remove_flag = (bs2_selection_rect[1][0] == bs2_selection_rect[0][0])
+            //                 && bs2_selection_rect[1][1] == bs2_selection_rect[0][1];
+            //             if (remove_flag) {
+            //                 d3.select(_this.$el).selectAll('rect.bs2_selection_rect').remove();
+            //             }
+            //             updateHorizontalBarCharts();
+            //         }
+            //
+            //         // d3.select(this).trigger('click');
+            //     })
+            //     .on('click', function () {
+            //         console.log('svg is clicked!!!========');
+            //     });
 
 
             //draw the rectangles
@@ -923,6 +1119,13 @@ var temporalView = new Vue({
         drawStackedRectsForTemporalViewWithLayers: function (bs_review_ratings, bs_temporal_view, layout_config,
                                                              bs_mode_str, bs_max_num_of_each_rating_accumulated) {
             var _this = this;
+
+            //parse the bs_temporal_view positions
+            var bs_delta_x = d3.transform(d3.select(bs_temporal_view[0][0]).attr('transform')).translate[0],
+                bs_delta_y = d3.transform(d3.select(bs_temporal_view[0][0]).attr('transform')).translate[1];
+            bs_delta_x = parseInt(bs_delta_x);
+            bs_delta_y = parseInt(bs_delta_y);
+
             bs_temporal_view.append('g')
                 .attr('class', bs_mode_str + '_temporal_rects')
                 .selectAll('g')
@@ -942,10 +1145,14 @@ var temporalView = new Vue({
                         + ',' + (-layout_config.each_axis_label_height) + ')';
                 })
                 .each(function (d, i) {
-                    console.log('draw rectangles: ', d, i);
+                    // console.log('draw rectangles: ', d, i);
                     if (d.length == 0) {
                         return;
                     }
+
+                    //get the quarter year position
+                    var bs_quarter_delta_x = bs_delta_x + (i * (layout_config.padding_w + layout_config.rect_size) + layout_config.rect_size / 2);
+                    var bs_quarter_delta_y = bs_delta_y + (-layout_config.each_axis_label_height);
 
                     //get review num of each rating in this time slot
                     var rating_num_of_one_slot = [0, 0, 0, 0, 0];
@@ -967,22 +1174,47 @@ var temporalView = new Vue({
                         .append('rect')
                         .attr('width', layout_config.rect_size)
                         .attr('height', layout_config.rect_size)
-                        .attr('x', 0)
+                        .attr('x', function (item, j) {
+                            item['pos_x'] = bs_quarter_delta_x + 0;
+                            item['rect_w_h'] = layout_config.rect_size;
+                            item['selection_flag'] = false;
+
+                            return 0;
+                        })
                         .attr('y', function (item, j) {
                             var rating = item['stars'];
                             var layer_start_y = bs_max_num_of_each_rating_accumulated[rating - 1],
                                 layer_h_padding = (rating - 1) * layout_config.layer_h_padding;
+
+                            item['pos_y'] = bs_quarter_delta_y
+                                - ( layout_config.rect_size
+                                + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
+                                + layer_h_padding);
+
                             return -( layout_config.rect_size
                             + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
                             + layer_h_padding);
                         })
                         .attr('fill', function (item, j) {
                             var rating = item['stars'];
-                            if(bs_mode_str == 'bs1')
+                            if (bs_mode_str == 'bs1') {
+                                item['original_fill'] = _this.first_venue_color_mapping[rating - 1];
                                 return _this.first_venue_color_mapping[rating - 1];
-                            else{
+                            }
+                            else {
+                                item['original_fill'] = _this.second_venue_color_mapping[rating - 1];
                                 return _this.second_venue_color_mapping[rating - 1];
                             }
+                        })
+                        //not working
+                        .on('mouseover', function (d, k) {
+                            d3.select(this).style('cursor', 'pointer');
+                        })
+                        .on('mouseout', function (d, k) {
+                            d3.select(this).style('cursor', 'pointer');
+                        })
+                        .on('click', function (d, k) {
+                            console.log('The selected text of layered reviews: ', d);
                         });
                 });
 
@@ -1034,7 +1266,7 @@ var temporalView = new Vue({
 
             //remove previous svg and append a new one
             d3.select(this.$el).select('svg').remove();
-            d3.select(this.$el).select('section')
+            d3.select(this.$el)
                 .style('overflow', 'auto')
                 .append('svg')
                 .attr('width', layout_config.w_tentative)
@@ -1089,14 +1321,12 @@ var temporalView = new Vue({
 
                     //set mouse pointer
                     d3.select(_this.$el)
-                        .select('section')
                         .classed('areaSelectionPointer', true);
 
                     selection_start_pos = d3.mouse(this);
                     if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
                         bs1_selection_rect = [selection_start_pos, selection_start_pos]; //init
                         bs1_selection_handler = d3.select(_this.$el)
-                            .select('section')
                             .select('svg')
                             .append('rect')
                             .attr('class', 'bs1_selection_rect')
@@ -1111,7 +1341,6 @@ var temporalView = new Vue({
                     else { //bs2
                         bs2_selection_rect = [selection_start_pos, selection_start_pos]; //init
                         bs2_selection_handler = d3.select(_this.$el)
-                            .select('section')
                             .select('svg')
                             .append('rect')
                             .attr('class', 'bs2_selection_rect')
@@ -1144,7 +1373,6 @@ var temporalView = new Vue({
 
                     //set mouse pointer
                     d3.select(_this.$el)
-                        .select('section')
                         .classed('areaSelectionPointer', false);
 
                     var pos = d3.mouse(this);
@@ -1167,7 +1395,7 @@ var temporalView = new Vue({
                         updateHorizontalBarCharts();
                     }
                 });
-            d3.select(this.$el).select('section')
+            d3.select(this.$el)
                 .select('svg')
                 .call(bs_drag);
 
@@ -1221,7 +1449,7 @@ var temporalView = new Vue({
                     return 'translate(' + (i * padding_column + rect_size / 2) + ',0)';
                 })
                 .each(function (d, i) {
-                    console.log('draw rectangles: ', d, i);
+                    // console.log('draw rectangles: ', d, i);
                     //draw rectangles
                     d3.select(this).selectAll('rect')
                         .data(d)
@@ -1242,6 +1470,15 @@ var temporalView = new Vue({
 
 
         },
+        getReviewIdsList: function (review_rating_list) {
+            var review_id_list = [];
+            for (var i = 0; i < review_rating_list.length; i++) {
+                var review_id = review_rating_list[i]['review_id'];
+                review_id_list.push(review_id);
+            }
+
+            return review_id_list;
+        }
     },
     created: function () {
         console.log('Temporal View is Created!');
@@ -1264,6 +1501,17 @@ var temporalView = new Vue({
 
                     //draw the view
                     if (_this.two_venue_review_rating != undefined) {
+                        //notifying word cloud view to update the data
+                        var review_ids_list = {
+                            'business_ids': [_this.bs1_id, _this.bs2_id],
+                            'bs1_review_ids': [],
+                            'bs2_review_ids': []
+                        };
+                        review_ids_list['bs1_review_ids'] = _this.getReviewIdsList(_this.two_venue_review_rating.data[_this.bs1_id]);
+                        review_ids_list['bs2_review_ids'] = _this.getReviewIdsList(_this.two_venue_review_rating.data[_this.bs2_id]);
+                        pipService.emitUpdateWordCloudViewData(review_ids_list);
+
+                        //draw temporal view
                         if (_this.cur_processing_mode == _this.data_processing_mode[0]) {
                             var review_rating_by_year = _this.processDataByYear(_this.two_venue_review_rating);
                             _this.drawTemporalViewByYear(review_rating_by_year);
@@ -1286,7 +1534,7 @@ var temporalView = new Vue({
         });
 
         pipService.onTemporalViewLayoutIsChanged(function (layout_str) {
-            if(_this.two_venue_review_rating == undefined){
+            if (_this.two_venue_review_rating == undefined) {
                 return;
             }
 

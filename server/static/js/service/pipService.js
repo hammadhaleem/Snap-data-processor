@@ -18,6 +18,9 @@ var pipService = new Vue({
         VENUE_SELECTION_LIST_IS_READY: 'venue_selection_list_is_ready',
         REMOVE_COMMON_CUSTOMER_VIEW: 'remove_common_customer_view',
         TEMPORAL_VIEW_LAYOUT_IS_CHANGED: 'temporal_view_layout_is_changed',
+        UPDATE_WORD_CLOUD_VIEW_DATA: 'update_word_cloud_view_data',
+        LOAD_DETAILED_REVIEW_CONTENT: 'load_detailed_review_content',
+
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -156,5 +159,23 @@ var pipService = new Vue({
             });
         },
 
+        emitUpdateWordCloudViewData: function (msg) {
+            this.$emit(this.UPDATE_WORD_CLOUD_VIEW_DATA, msg);
+        },
+        onUpdateWordCloudViewData: function (callback) {
+            this.$on(this.UPDATE_WORD_CLOUD_VIEW_DATA, function (msg) {
+                callback(msg);
+            });
+        },
+
+
+        emitLoadDetailedReviewContent: function (msg) {
+            this.$emit(this.LOAD_DETAILED_REVIEW_CONTENT, msg);
+        },
+        onLoadDetailedReviewContent: function (callback) {
+            this.$on(this.LOAD_DETAILED_REVIEW_CONTENT, function (msg) {
+                callback(msg);
+            });
+        },
     }
 })

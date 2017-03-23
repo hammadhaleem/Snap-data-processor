@@ -12,16 +12,18 @@ var commonCustomerView = new Vue({
         l_color_mapping: ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'], //light blue to dark blue
         r_color_mapping: ['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'], //light yellow to dark yellow
         m_color_no_diff: '#cccccc',
+
+        svg_w: 680,
+        svg_h: 390,
     },
     methods: {
         initDrawing: function () {
-            var width = 770, height = 400;
+            var width = this.svg_w, height = this.svg_h;
             var svg_tmp = d3.select('#commonCustomerComparisonView').select('svg');
             if (svg_tmp[0][0] != null){
                 svg_tmp.remove();
             }
             d3.select('#commonCustomerComparisonView')
-                .select('section')
                 .append("svg")
                 .attr('width', width)
                 .attr('height', height);
@@ -140,10 +142,15 @@ var commonCustomerView = new Vue({
         },
         drawSankeyDiagram: function (nodes, links) {
             var _this = this;
-            var width = 770, height = 400;
+            var width = this.svg_w, height = this.svg_h;
+            var sanky_padding_w = 50, sanky_padding_h = 30;
             var view_svg_handler = d3.select('#commonCustomerComparisonView')
-                .select('section')
-                .select("svg");
+                .select("svg")
+                .append('g')
+                .attr('class', 'sanky-diagrams')
+                .attr('transform', function () {
+                    return 'translate(' + sanky_padding_w/2 + ',' + (sanky_padding_h * 0.8) + ')';
+                 });
                 // .attr('width', width)
                 // .attr('height', height);
 
@@ -158,8 +165,8 @@ var commonCustomerView = new Vue({
             var sankey = d3.sankey()
                 .nodeWidth(20)
                 .nodePadding(10)
-                .width(760)
-                .size([760, 420]); // width,height
+                .width(width - sanky_padding_w)
+                .size([width -sanky_padding_w, height - sanky_padding_h]); // width,height
             var path = sankey.link();
 
             sankey

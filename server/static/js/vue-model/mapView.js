@@ -3,7 +3,7 @@
  */
 
 var navbar = new Vue({
-    el: '#mapView',
+    el: '#mapViewRealMap',
     delimiters: ['{{', '}}'],
     data: {
         my_map: undefined, //the map
@@ -211,6 +211,8 @@ var navbar = new Vue({
             _this.glyph_items = undefined;
             _this.link_items = undefined;
             _this.drawGraph(dataService.business_of_one_city_type, _this.focus_location);
+
+            console.log('business_of_one_city_type: ', dataService.business_of_one_city_type);
 
             //monitor the selection of a region
             if (_this.counter_of_mouse_event_adding < 1) {
