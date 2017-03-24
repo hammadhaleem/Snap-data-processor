@@ -219,7 +219,7 @@ def create_groups(data_types):
 
     final_ret = []
     for key in ret_dict.keys():
-        if (ret_dict[key]['count'] > 1) and (ret_dict[key]['polarity'] < -0.1 or ret_dict[key]['polarity'] > 0.1):
+        # if (ret_dict[key]['count'] > 1) and (ret_dict[key]['polarity'] < -0.1 or ret_dict[key]['polarity'] > 0.1):
             ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
             ret_dict[key]['polarity'] = ret_dict[key]['polarity'] / len(ret_dict[key]['objects'])
 
