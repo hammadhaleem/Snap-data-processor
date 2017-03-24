@@ -12,15 +12,16 @@ var commonCustomerView = new Vue({
         l_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'], //light blue to dark blue
         r_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'], //light yellow to dark yellow
         m_color_no_diff: '#cccccc',
+        m_color_with_diff: ['#969696', '#636363', '#252525', '#000000'], //sequential color
 
-        svg_w: 680,
+        svg_w: 750,
         svg_h: 390,
     },
     methods: {
         initDrawing: function () {
             var width = this.svg_w, height = this.svg_h;
             var svg_tmp = d3.select('#commonCustomerComparisonView').select('svg');
-            if (svg_tmp[0][0] != null){
+            if (svg_tmp[0][0] != null) {
                 svg_tmp.remove();
             }
             d3.select('#commonCustomerComparisonView')
@@ -44,11 +45,11 @@ var commonCustomerView = new Vue({
                 }
                 else if (idx > 0) {
                     idx = idx - 1;
-                    return this.l_color_mapping[idx];
+                    return this.m_color_with_diff[idx];
                 }
                 else if (idx < 0) {
                     idx = Math.abs(idx) - 1;
-                    return this.r_color_mapping[idx];
+                    return this.m_color_with_diff[idx];
                 }
             }
             else {
@@ -140,19 +141,53 @@ var commonCustomerView = new Vue({
 
             return {'nodes': nodes, 'links': links};
         },
-        drawSankeyDiagram: function (nodes, links) {
+        drawSankeyDiagram: function (nodes, links, nm1, nm2) {
             var _this = this;
             var width = this.svg_w, height = this.svg_h;
-            var sanky_padding_w = 50, sanky_padding_h = 30;
+            var sanky_padding_w = 160, sanky_padding_h = 30;
             var view_svg_handler = d3.select('#commonCustomerComparisonView')
                 .select("svg")
                 .append('g')
                 .attr('class', 'sanky-diagrams')
                 .attr('transform', function () {
-                    return 'translate(' + sanky_padding_w/2 + ',' + (sanky_padding_h * 0.8) + ')';
-                 });
-                // .attr('width', width)
-                // .attr('height', height);
+                    return 'translate(' + sanky_padding_w / 2 + ',' + (sanky_padding_h) + ')';
+                });
+            // .attr('width', width)
+            // .attr('height', height);
+
+            //append the names of businesses
+            var bs_label_handler = d3.select('#commonCustomerComparisonView')
+                .select("svg")
+                .append('g')
+                .attr('class', 'label_names');
+            bs_label_handler.append('g') //bs1
+                .attr('transform', function () {
+                    return 'translate(20,' + sanky_padding_h * 0.8 + ')';
+                })
+                .append('text')
+                .attr("text-anchor", "start")
+                .text(function () {
+                    return nm1;
+                });
+            bs_label_handler.append('g') //bs2
+                .attr('transform', function () {
+                    return 'translate(' + (width - 40) + ',' + sanky_padding_h *0.8 + ')';
+                })
+                .append('text')
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return nm2;
+                });
+            bs_label_handler.append('g') //difference
+                .attr('transform', function () {
+                    return 'translate(' + (width/2 - 10) + ',' + sanky_padding_h * 0.8 + ')';
+                })
+                .append('text')
+                .attr("text-anchor", "start")
+                .text(function () {
+                    return 'Difference';
+                });
+
 
             var units = "Customers";
             var formatNumber = d3.format(",.0f"), // zero decimal places
@@ -166,7 +201,7 @@ var commonCustomerView = new Vue({
                 .nodeWidth(20)
                 .nodePadding(10)
                 .width(width - sanky_padding_w)
-                .size([width -sanky_padding_w, height - sanky_padding_h]); // width,height
+                .size([width - sanky_padding_w, height - sanky_padding_h]); // width,height
             var path = sankey.link();
 
             sankey
@@ -255,6 +290,15 @@ var commonCustomerView = new Vue({
                 });
 
             // add the link titles
+            var nameRemapping = function (_input_nm) {
+                var mapping_lable_to_name = {
+                    'l': 'Rating: ',
+                    'm': 'Diff: ',
+                    'r': 'Rating: '
+                };
+                var tmp = mapping_lable_to_name[_input_nm[0]] + _input_nm.substring(1);
+                return tmp;
+            };
             link.append("title")
                 .text(function (d) {
                     var src_name = d.source.name, target_name = d.target.name;
@@ -262,14 +306,14 @@ var commonCustomerView = new Vue({
                         var related_target = src_name.substring(1) - target_name.substring(1);
                         var related_target_name = 'r' + related_target;
 
-                        return src_name + " → " + target_name + " → " + related_target_name +
+                        return nameRemapping(src_name) + " → " + nameRemapping(target_name) + " → " + nameRemapping(related_target_name) +
                             "\n" + format(d.value);
                     }
                     else if (src_name[0] == 'm') {
                         var related_src = src_name.substring(1) + target_name.substring(1);
                         var related_src_name = 'l' + related_src;
 
-                        return related_src_name + " → " + src_name + " → " + target_name +
+                        return nameRemapping(related_src_name) + " → " + nameRemapping(src_name) + " → " + nameRemapping(target_name) +
                             "\n" + format(d.value);
                     }
                     else {
@@ -330,33 +374,62 @@ var commonCustomerView = new Vue({
             });
 
 
+            // // add in the title for the nodes
+            // node.append("text")
+            //     .attr("x", -6)
+            //     .attr("y", function (d) {
+            //         return d.dy / 2;
+            //     })
+            //     .attr("dy", ".35em")
+            //     .attr("text-anchor", "end")
+            //     .attr("transform", null)
+            //     .text(function (d) {
+            //         // return d.name;
+            //         if(d.name[0] == 'r' || d.name[0] == 'l'){
+            //             return 'Rating: ' + d.name.substring(1);
+            //         }
+            //         else{
+            //             return 'Diff: ' + d.name.substring(1);
+            //         }
+            //     })
+            //     .filter(function (d) {
+            //         return d.x < width / 2;
+            //     })
+            //     .attr("x", 6 + sankey.nodeWidth())
+            //     .attr("text-anchor", "start")
+            //     .filter(function (d) {
+            //         var nm = d.name[0];
+            //         return nm == 'm';
+            //     })
+            //     .attr('x', 6 + sankey.nodeWidth() * mid_rect_rate);
             // add in the title for the nodes
             node.append("text")
-                .attr("x", -6)
+                .attr("x", 6 + sankey.nodeWidth())
                 .attr("y", function (d) {
                     return d.dy / 2;
                 })
                 .attr("dy", ".35em")
-                .attr("text-anchor", "end")
+                .attr("text-anchor", "start")
                 .attr("transform", null)
                 .text(function (d) {
                     // return d.name;
-                    if(d.name[0] == 'r' || d.name[0] == 'l'){
+                    if (d.name[0] == 'r' || d.name[0] == 'l') {
                         return 'Rating: ' + d.name.substring(1);
                     }
-                    else{
+                    else {
                         return 'Diff: ' + d.name.substring(1);
                     }
                 })
                 .filter(function (d) {
                     return d.x < width / 2;
                 })
-                .attr("x", 6 + sankey.nodeWidth())
-                .attr("text-anchor", "start")
+                .attr("x", -sankey.nodeWidth() + 4)
+                .attr("text-anchor", "end")
                 .filter(function (d) {
                     var nm = d.name[0];
                     return nm == 'm';
                 })
+                .attr("text-anchor", "start")
                 .attr('x', 6 + sankey.nodeWidth() * mid_rect_rate);
 
             // the function for moving the nodes
@@ -382,6 +455,7 @@ var commonCustomerView = new Vue({
         pipService.onVenueSelectionIsReady(function (selected_glyphs) {
             console.log('selected glyph list: ', selected_glyphs);
             var bs_id1 = selected_glyphs[0]['business_id'], bs_id2 = selected_glyphs[1]['business_id'];
+            var bs_nm1 = selected_glyphs[0]['name'], bs_nm2 = selected_glyphs[1]['name'];
             var data_getter_handler = dataService.getCommonCustomerInfoOfTwoVenues(bs_id1, bs_id2);
             data_getter_handler.then(function (resp) {
                 console.log('Common Customer Info: ', resp.data);
@@ -393,7 +467,7 @@ var commonCustomerView = new Vue({
                 var processed_nodes_links = _this.processNodeList(nodes_list);
 
                 _this.initDrawing();
-                _this.drawSankeyDiagram(processed_nodes_links['nodes'], processed_nodes_links['links']);
+                _this.drawSankeyDiagram(processed_nodes_links['nodes'], processed_nodes_links['links'], bs_nm1, bs_nm2);
             }, function (error) {
                 console.log('Error in getting common customer information!', error);
             });

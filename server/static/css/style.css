@@ -140,7 +140,8 @@ label {
 /***************************Added by Yong***************************/
 .singleViewHeader {
     border: 1px solid #aaa;
-    background-color: #ccc;
+    /*background-color: #ccc;*/
+    background-color: #6baed6;
     padding-top: 3px;
     padding-bottom: 3px;
 }
