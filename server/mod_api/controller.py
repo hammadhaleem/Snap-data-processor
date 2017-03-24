@@ -599,7 +599,7 @@ def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
 @mod_api.route('/get_review_information/<business_id1>/<business_id2>')
 def review_information_agg(business_id1, business_id2):
     business_ids = sorted([business_id1, business_id2])
-    yelp_business_information = mongo_connection.db.yelp_reviews
+    yelp_business_information = mongo_connection.db.yelp_review_scored
 
     query = {
         'business_id': {
@@ -612,7 +612,9 @@ def review_information_agg(business_id1, business_id2):
         'review_id': 1,
         'date': 1,
         'user_id': 1,
-        'stars': 1
+        'stars': 1,
+        'score': 1,
+        'scaled_score': 1
     }
 
     user_list = {
@@ -664,7 +666,7 @@ def review_by_id(review_id):
 
     user_name = list(mongo_connection.db.yelp_users.find({'user_id': review['user_id']}, {'name': 1}))[0]
     business_name = \
-    list(mongo_connection.db.yelp_business_information.find({'business_id': review['business_id']}, {'name': 1}))[0]
+        list(mongo_connection.db.yelp_business_information.find({'business_id': review['business_id']}, {'name': 1}))[0]
 
     del user_name['_id']
     del business_name['_id']
