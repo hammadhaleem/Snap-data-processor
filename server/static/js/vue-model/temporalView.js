@@ -13,8 +13,8 @@ var temporalView = new Vue({
         bs2_id: undefined,
         data_processing_mode: ['by_year', 'by_quarter_year'],
         cur_processing_mode: 'by_quarter_year',
-        first_venue_color_mapping: ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'],
-        second_venue_color_mapping: ['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'],
+        first_venue_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],// ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'],
+        second_venue_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'],
         h_scale: undefined, //scale function for horizontal bars on the right in temporal view
 
         layered_layout_flag: false, //default is stacked layout, instead of layered layou

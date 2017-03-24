@@ -9,8 +9,8 @@ var commonCustomerView = new Vue({
         // view_svg_handler: undefined,
         // selected_venue_info: [],
         common_customer_rating_reviews: [],
-        l_color_mapping: ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'], //light blue to dark blue
-        r_color_mapping: ['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'], //light yellow to dark yellow
+        l_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'], //light blue to dark blue
+        r_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'], //light yellow to dark yellow
         m_color_no_diff: '#cccccc',
 
         svg_w: 680,

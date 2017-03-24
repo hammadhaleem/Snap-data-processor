@@ -72,7 +72,7 @@ var dataService = new Vue({
         },
 
         getDetailedContentOfOneReview: function (_review_id) {
-            var url = '/api/'; //写到这
+            var url = '/api/get_review_by_id/' + _review_id; //写到这
 
             this.$http.get(url).then(function (resp) {
                 console.log('Content of one review: ', resp.data);

@@ -16,13 +16,11 @@ var detailedReviewContentView = new Vue({
 
     },
     mounted: function () {
+        var _this = this;
 
         pipService.onLoadDetailedReviewContent(function (one_review_content) {
             console.log('one review content:', one_review_content);
-            
-
-
+            _this.curent_review_content = one_review_content;
         });
-
     }
 });
