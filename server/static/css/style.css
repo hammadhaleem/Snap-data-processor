@@ -138,7 +138,21 @@ label {
 }
 
 /***************************Added by Yong***************************/
-#mapView section {
+.singleViewHeader {
+    border: 1px solid #aaa;
+    /*background-color: #ccc;*/
+    background-color: #6baed6;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.singleViewBorder {
+    border-radius: 5px;
+    border: 2px solid #bdbdbd;
+    margin-bottom: 15px;
+}
+
+#mapViewRealMap {
     width: 770px;
     height: 400px;
 }
@@ -148,7 +162,7 @@ label {
 }
 
 div#control_pannel {
-    height: 300px;
+    height: 280px;
     /*border:1px solid #808080;*/
 }
 
@@ -198,10 +212,85 @@ div#control_pannel {
 .bs1_x_axis,
 .bs2_x_axis,
 .bs1_y_axis,
-.bs2_y_axis{
+.bs2_y_axis {
     fill: none;
     stroke: black;
     shape-rendering: crispEdges;
+}
+
+.info-header {
+    border-bottom: 1px solid #636363;
+    margin-top: 40px;
+    margin-bottom: 3px;
+}
+
+/*.table-bordered {*/
+/*border: 1px solid #dddddd;*/
+/*font-size: 16px;*/
+/*}*/
+
+.table-cell-mid-align {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.table-cell-mid-align td,
+th.table-cell-mid-align {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.table-cell-font {
+    font-size: 13px;
+}
+
+.main-column {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.selected_table_row {
+    background-color: #bdbdbd;
+    /*background-color: #4292c6;*/
+}
+
+.review_content {
+    padding-top: 10px;
+    padding-left: 5px;
+    padding-bottom: 10px;
+    padding-right: 5px;
+    text-align: left;
+    font-size: 17px;
+}
+
+.review_attr_name {
+    font-weight: bold;
+}
+
+/*hide the legend of leaflet*/
+.leaflet-control-attribution.leaflet-control {
+    opacity: 0;
+}
+
+#control_pannel {
+    text-align: left;
+    padding-left: 10px;
+}
+
+.control_pannel_attr_name {
+    font-size: 16px;
+    /*padding-top: 4px;*/
+    /*font-weight: bold;*/
+}
+.control_pannel_row{
+    padding-top: 4px;
+    padding-bottom: 2px;
+}
+
+.control_pannel_sub_section{
+    border-bottom: 1px solid #636363;
+    padding-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 /***************************Added by Yong***************************/

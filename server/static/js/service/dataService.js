@@ -69,7 +69,19 @@ var dataService = new Vue({
         getReviewRatingTemporalInfo: function (bs_id1, bs_id2) {
             var url = '/api/get_review_information/' + bs_id1 + '/' + bs_id2;
             return this.$http.get(url);
-        }
+        },
+
+        getDetailedContentOfOneReview: function (_review_id) {
+            var url = '/api/get_review_by_id/' + _review_id; //写到这
+
+            this.$http.get(url).then(function (resp) {
+                console.log('Content of one review: ', resp.data);
+                var one_review_content = resp.data;
+                pipService.emitLoadDetailedReviewContent(one_review_content);
+            }, function (error) {
+                console.log('Error existing in loading detailed content of one review!', error);
+            });
+        },
 
     },
     created: function () {

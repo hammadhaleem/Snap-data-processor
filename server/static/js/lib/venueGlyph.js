@@ -2,7 +2,7 @@
  * Created by wangyong on 2/3/2017.
  */
 
-d3.myLink = function (outer_leaflet_map) {
+d3.myLink = function (outer_leaflet_map, link_color_config) {
     var init_zoom_level = 15;
     var zoom_scale = Math.pow(1.3, init_zoom_level - outer_leaflet_map.getZoom()); //zoom scaling
 
@@ -28,8 +28,8 @@ d3.myLink = function (outer_leaflet_map) {
             element.append('line')
                 .attr(line_attributes)
                 .classed('start_' + d['start'] + ' end_' + d['end'], true)
-                .style('stroke', '#de2d26')
-                .style('opacity', 0.4)
+                .style('stroke', link_color_config.link_color)
+                .style('opacity', link_color_config.link_opacity)
                 .style('stroke-width', d['weight'] / (3 * zoom_scale)); //zoom scaling
 
         });
@@ -38,12 +38,18 @@ d3.myLink = function (outer_leaflet_map) {
     return my;
 }
 
-d3.myGlyph = function (outer_leaflet_map) {
-    // var my_color = ['#0571b0', '#92c5de', '#f7f7f7', '#f4a582', '#ca0020']; //diverging
-    var my_color = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];//sequential
-    var min_r = 1.5, max_r = 6;
-    var outer_radius_scale = d3.scale.linear().domain([40, 200]).range([min_r, max_r]);
-    var central_color_scale = d3.scale.linear().domain([1.0, 5.0]).range([my_color[0], my_color[my_color.length - 1]]);
+d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
+    var my_color = glyph_color_config.glyph_color_list;
+    // var my_color = ['#fc8d59', '#fee090', '#ffffbf', '#e0f3f8', '#91bfdb'];// so so
+    // var my_color = ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'];  //looks good
+    // var my_color = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']; //so so
+    // var my_color = [ '#fc8d59', '#fee08b', '#ffffbf', '#d9ef8b', '#91cf60']; //looks good
+    // var my_color = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];//sequential/
+    var min_r = 1.5, max_r = 8;
+    // var outer_radius_scale = d3.scale.linear().domain([40, 200]).range([min_r, max_r]);
+    // var central_color_scale = d3.scale.linear().domain([1.0, 5.0]).range([my_color[0], my_color[my_color.length - 1]]);
+    var central_color_scale = d3.scale.ordinal().domain([1, 2, 3, 4, 5]).range(my_color);
+
 
     //handle the zoom-in/out operation
     var init_zoom_level = 15;
@@ -54,26 +60,55 @@ d3.myGlyph = function (outer_leaflet_map) {
     var selected_glyphs_counting = [];
 
     function my(selection) {
+        //find the max and min review number
+        var max_review_num = -1, min_review_num = 1000000000;
+        selection.each(function (d, i) {
+            var review_counter = 0;
+            for (var k = 0; k < d.rating.length; k++) {
+                review_counter += d.rating[k];
+            }
+
+            if (review_counter > max_review_num)
+                max_review_num = review_counter;
+            if (review_counter < min_review_num)
+                min_review_num = review_counter;
+        });
+
+        //draw the glyphs
         selection.each(function (d, i) {
             // console.log('d,i', d, i);
             var element = d3.select(this).attr('class', 'glyph_group');
+            var outer_radius_scale = d3.scale.linear().domain([min_review_num, max_review_num]).range([min_r+1, max_r]);
 
             //calculate params
             var outer_radius = 0, inner_radius = min_r;
             inner_radius = inner_radius / zoom_scale; //zoom scaling
             for (var k = 0; k < d.rating.length; k++) {
-                outer_radius += d.rating[k]; //待修改
-                // d.rating[k] = 40; //待修改
-                // outer_radius += 40;
+                outer_radius += d.rating[k];
             }
             outer_radius = outer_radius_scale(outer_radius);
             outer_radius = outer_radius / zoom_scale; //zoom scaling
+            if(outer_radius < inner_radius + 5){
+                console.log('outer, inner radius: ', outer_radius, inner_radius);
+                console.log('radius is too small!');
+            }
 
             //central circle
             element.append('circle')
                 .attr('r', inner_radius)
                 .style('fill', function () {
-                    return central_color_scale(d.stars);
+                    var rating = d.stars;
+                    if (rating >= 4)
+                        rating = 5;
+                    else if (rating >= 3.5 && rating < 4)
+                        rating = 4;
+                    else if (rating >= 2.5 && rating < 3.5)
+                        rating = 3;
+                    else if (rating >= 1.5 && rating < 2.5)
+                        rating = 2;
+                    else
+                        rating = 1;
+                    return central_color_scale(rating);
                 });
 
             //pie chart
@@ -95,8 +130,9 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .style('fill', function (item, j) {
                     return my_color[j];
                 })
-                .style('stroke', 'black')
-                .style('stroke-width', '2px');
+                .style('stroke', glyph_color_config.pie_stroke_color)
+                .style('stroke-width', glyph_color_config.pie_stroke_width)
+                .style('opacity', glyph_color_config.pie_stroke_opacity);
 
             //draw price bar
             var rect_size = 3, l_shift = 0, bars = [1, 1, 1, 1];
@@ -117,14 +153,15 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .attr('height', rect_size)
                 .style('fill', function (item, j) {
                     if (j < d.price_range) {
-                        return 'green';
+                        return glyph_color_config.price_rect_fill;
                     }
                     else {
                         return 'white';
                     }
                 })
-                .style('stroke', 'brown')
-                .style('stroke-width', '2px');
+                .style('stroke', glyph_color_config.price_rect_stroke_color)
+                .style('stroke-width', glyph_color_config.price_rect_stroke_width)
+                .style('opacity', glyph_color_config.price_rect_opacity);
 
             //draw the arrow pointing to the price bars
             var arrow = [[0, -inner_radius / 2 - 1 / zoom_scale], [0, -(outer_radius + padding_bar_to_circle)]]; //need to scale the padding
@@ -142,10 +179,11 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .enter()
                 .append('path')
                 .attr('d', line)
-                .style('stroke', 'black')
-                .style('stroke-width', '2px');
+                .style('stroke', glyph_color_config.arrow_stroke_color)
+                .style('stroke-width', glyph_color_config.arrow_stroke_width)
+                .style('opacity', glyph_color_config.arrow_stroke_opacity);
 
-            var triangle_size = 10;
+            var triangle_size = glyph_color_config.arrow_triangle_size;
             triangle_size = triangle_size / zoom_scale; //zoom scaling
             var triangle = d3.svg.symbol().type('triangle-up').size(triangle_size);
             var g_triangle = element.append('g') //triangle
@@ -158,7 +196,8 @@ d3.myGlyph = function (outer_leaflet_map) {
                 .enter()
                 .append('path')
                 .attr('d', triangle)
-                .style('fill', 'black');
+                .style('fill', glyph_color_config.arrow_triangle_fill)
+                .style('opacity', glyph_color_config.arrow_triangle_opacity);
 
             // //drag event that works on a transparent circle
             // var active_class_name = 'active_d3_item';
@@ -289,8 +328,9 @@ d3.myGlyph = function (outer_leaflet_map) {
 
                             //otherwise
                             var highlight_group = d3.select(glyph_group).append('g').classed('highlight_rectangles', true);
-                            var r = d3.select(glyph_group).select('circle.hidden_circle').attr('r') + 5;
-                            var d = 'M' + (-r) + ' ' + (-r)
+                            var r = d3.select(glyph_group).select('circle.hidden_circle').attr('r');
+                            r = parseInt(r) + 1;
+                            var d = 'M' + (-r-2) + ' ' + (-r)
                                 + ' L' + (r) + ' ' + (-r)
                                 + ' L' + (r) + ' ' + (r)
                                 + ' L' + (-r) + ' ' + (r)
@@ -322,7 +362,7 @@ d3.myGlyph = function (outer_leaflet_map) {
                         }
                         else if (selected_glyphs_counting.length < 2) {
                             console.log('remove common customer comparison view!');
-                            pipService.emitRemoveCommonCustomerCompView('remove');
+                            pipService.emitRemoveCommonCustomerCompView(selected_glyphs_counting);
                         }
 
                     }
