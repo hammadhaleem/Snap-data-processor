@@ -186,7 +186,7 @@ def get_word_pairs(review_list, mongo_connection):
             dict_[word[0]] = word[1]
     # pp.pprint(dict_)
 
-    processed = list(mongo_connection.db.yelp_review_scored_pair_all_truncated_reduced_n.find(query, what))
+    processed = list(mongo_connection.db.yelp_review_scored_pair_all_not.find(query, what))
 
     ret_list = {}
     for review in processed:
