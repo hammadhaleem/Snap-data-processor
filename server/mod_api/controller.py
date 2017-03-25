@@ -679,17 +679,11 @@ def review_by_id(review_id):
 
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
-    # http://localhost:5002/api/nlp/review_analysis/UvcH52d-FQ3waD5Z0LmFCQ/
-
-    # http://localhost:5002/api/nlp/review_analysis/
-    #           ['1o0g0ymmHl6HRgrg3KEM5w',
-    #            '1nJaL6VBUHR1DlErpnsIBQ',
-    #            '4cDrkvLInTuSlBU9zNOi8Q',
-    #            '4cCxazHh5DfWJ9eOcfvlSA',
-    #            'nslcUj3coPzFFzeSYrkqrQ',
-    #            '4cOrGZfCKbhhdjZohhBkPQ']/
+    # http://localhost:5002/api/nlp/review_analysis/['1o0g0ymmHl6HRgrg3KEM5w',
+    #            '1nJaL6VBUHR1DlErpnsIBQ', '4cDrkvLInTuSlBU9zNOi8Q',
+    #            '4cCxazHh5DfWJ9eOcfvlSA',  'nslcUj3coPzFFzeSYrkqrQ', '4cOrGZfCKbhhdjZohhBkPQ']/
     #
-    # bit better?
+    #  bit better?
     #
     # review_list = mongo_connection.db.yelp_reviews.find(
     #     {'business_id':
