@@ -1,29 +1,23 @@
 from __future__ import print_function
 
-import pprint
-import re
-import string
-
 import enchant
 import inflect
 import nltk
-import numpy as np
+import pprint
+import re
+import string
 from __builtin__ import len
 from __builtin__ import list
-
 from textblob import TextBlob
 
 english = enchant.Dict("en_US")
 
 inflect_engine = inflect.engine()
 
-# nltk.download('punkt')
-# nltk.download('averaged_perceptron_tagger')
-
-
 noun = ['NN', 'NNS', 'NNP', 'NNPS']
 adj = ['JJ', 'JJR', 'JJS']
-stopwords = ["i", "s", 'able']
+
+stopwords = ['i', 's', 'able', 'isn', 'doesn', 'only', 'sa', 'mom', 'other', 'man', 'more']
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -50,20 +44,29 @@ def for_each_review_(review, ret_data_dict, dict_):
         t_list = []
         l_list = []
         nn_count = 0
-
+        aa_count = 0
         term = term.lower().strip().replace("  ", " ")
         term_list = term.split(" ")
         list_words = []  # nltk.pos_tag(term_list)
         try:
             for word in term_list:
+                if word in stopwords:
+                    skip = True
                 list_words.append((word, dict_[word]))
 
         except Exception as e:
             # print("not in sentence : " + str(e) + " : " + str(term_list))
             skip = True
 
-        for elem in list_words:
+        if len(list_words) > 2:
 
+            if dict_[term_list[2]] in noun and dict_[term_list[1]] in adj:
+                skip = False
+            else:
+                print(list_words)
+                skip = True
+
+        for elem in list_words:
             if len(elem[0]) < 3:
                 skip = True
 
@@ -73,9 +76,13 @@ def for_each_review_(review, ret_data_dict, dict_):
                 item = inflect_engine.singular_noun(elem[0])
                 if not item:
                     item = elem[0]
-
                 nn = item
                 l_list.append(item)
+
+            elif elem[1] in adj:
+                aa_count += 1
+
+                l_list.append(elem[0])
             else:
                 l_list.append(elem[0])
 
@@ -105,7 +112,7 @@ def for_each_review_(review, ret_data_dict, dict_):
 
         # print (object,skip)
 
-        if nn_count == 1 and skip is False and nn is not None:
+        if nn_count == 1 and aa_count > 0 and skip is False and nn is not None:
             try:
                 obj = ret_data_dict[object['business_id']][object_type][term_mod]
                 object['polarity'] = TextBlob(term_mod).sentiment.polarity
@@ -220,10 +227,10 @@ def create_groups(data_types):
     final_ret = []
     for key in ret_dict.keys():
         # if (ret_dict[key]['count'] > 1) and (ret_dict[key]['polarity'] < -0.1 or ret_dict[key]['polarity'] > 0.1):
-            ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
-            ret_dict[key]['polarity'] = ret_dict[key]['polarity'] / len(ret_dict[key]['objects'])
+        ret_dict[key]['objects'] = sorted(ret_dict[key]['objects'], key=lambda x: x['noun_frequency'], reverse=True)
+        ret_dict[key]['polarity'] = ret_dict[key]['polarity'] / len(ret_dict[key]['objects'])
 
-            final_ret.append(ret_dict[key])
+        final_ret.append(ret_dict[key])
 
     final_ret = sorted(final_ret, key=lambda x: x['count'], reverse=True)
     return final_ret

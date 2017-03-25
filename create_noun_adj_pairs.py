@@ -339,7 +339,7 @@ print("[Info] First phase completed", (time.time() - start_time))
 
 import re
 
-negation = ['not', 'don', 'cannot', 'wont', 'never', 'none']
+negation = ['not', 'never' , 'nothing']
 stopwords_set = set(stopwords.words('english'))
 
 
