@@ -17,7 +17,10 @@ inflect_engine = inflect.engine()
 noun = ['NN', 'NNS', 'NNP', 'NNPS']
 adj = ['JJ', 'JJR', 'JJS']
 
-stopwords = ['i', 's', 'able', 'isn', 'doesn', 'only', 'sa', 'mom', 'other', 'man', 'more']
+stopwords = ['i', 's', 'able', 'isn', \
+             'doesn', 'only', 'sa', 'mom', 'other', \
+             'man', 'more', 'months', 'years', \
+             'weeks', 'week', 'year', 'month']
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -61,7 +64,9 @@ def for_each_review_(review, ret_data_dict, dict_):
         if len(list_words) > 2:
 
             if dict_[term_list[2]] in noun and dict_[term_list[1]] in adj:
-                skip = False
+                '''
+                    Let it be !
+                '''
             else:
                 print(list_words)
                 skip = True
@@ -162,7 +167,6 @@ def get_word_pairs(review_list, mongo_connection):
     }
 
     reviews_text = [x['text'] for x in list(mongo_connection.db.yelp_reviews.find(query))]
-    data_dict = {}
 
     final_para = []
     for text in reviews_text:
@@ -193,7 +197,7 @@ def get_word_pairs(review_list, mongo_connection):
             dict_[word[0]] = word[1]
     # pp.pprint(dict_)
 
-    processed = list(mongo_connection.db.yelp_review_scored_pair_all_not.find(query, what))
+    processed = list(mongo_connection.db.yelp_review_scored_pair_all_not_final.find(query, what))
 
     ret_list = {}
     for review in processed:

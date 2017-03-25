@@ -151,12 +151,12 @@ def function_to_run(review):
         ret_list.append(row)
         if len(ret_list) > 10000:
             df = pd.DataFrame(ret_list)
-            to_mongo_db(df, 'yelp_review_scored_pair_all_not')
+            to_mongo_db(df, 'yelp_review_scored_pair_all_not_final')
             print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
             ret_list = []
 
     df = pd.DataFrame(ret_list)
-    to_mongo_db(df, 'yelp_review_scored_pair_all_not')
+    to_mongo_db(df, 'yelp_review_scored_pair_all_not_final')
     print ("Written to DB", len(ret_list), 'time from start', (time.time() - start_time))
 
 
