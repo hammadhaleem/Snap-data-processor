@@ -26,7 +26,7 @@ var augmentedWordCloudView = new Vue({
 
         pipService.onUpdateWordCloudViewData(function (review_id_list) {
             console.log('new review ids:', review_id_list);
-
+            
 
 
         });

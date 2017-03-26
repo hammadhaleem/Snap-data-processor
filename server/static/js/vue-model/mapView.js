@@ -24,15 +24,15 @@ var navbar = new Vue({
 
             //color for glyphs
             glyph_color_config:{
-                glyph_color_list: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'], //['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'],
+                glyph_color_list: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],
                 pie_stroke_color: '#4d4d4d',
                 pie_stroke_width: '1px',
-                pie_stroke_opacity: 0.9,
+                pie_stroke_opacity: 1.0,
 
-                price_rect_fill: '#f0027f', //考虑灰一点的颜色,'#F0C1FF'
+                price_rect_fill: '#c994c7',//'#f0027f', //考虑灰一点的颜色,'#F0C1FF'
                 price_rect_stroke_color: '#4d4d4d',
                 price_rect_stroke_width: '1px',
-                price_rect_opacity: 0.9,
+                price_rect_opacity: 1.0,
 
                 arrow_stroke_color: '#4d4d4d',
                 arrow_stroke_width: '1px',
@@ -42,7 +42,8 @@ var navbar = new Vue({
                 arrow_triangle_fill: '#4d4d4d',
                 arrow_triangle_opacity: 0.9,
             },
-            // ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'] //改变下一行选择的颜色的纯度,根据qing的建议
+            // ['#fc8d59', '#fee090', '#ffffbf', '#e0f3f8', '#91bfdb'],延宏推荐用至少看起来像diverging的颜色,但是我感觉看上去太淡了一点
+            // ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'] //改变下一行选择的颜色的纯度,根据qing的建议,延宏觉得颜色像categorical, link颜色 '#39C664'
             // ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'];  //looks good, Qing suggested.
             // ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#39C664'] //looks better, green color. Improved based on Qing's suggestion, blue for links
             // ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'] //Qing suggested, blue for links, but too much green
@@ -53,7 +54,7 @@ var navbar = new Vue({
             // ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];//sequential
 
             link_color_config: {
-                link_color: '#39C664',
+                link_color: '#969696', //'#39C664',
                 link_opacity: 0.4
             },
             // '#39C664', looks good by Qing, ranking second for links
