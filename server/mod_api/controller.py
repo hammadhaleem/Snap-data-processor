@@ -618,7 +618,9 @@ def review_information_agg(business_id1, business_id2):
         'cool': 1,
         'user_votes': 1,
         'funny': 1,
-        'useful': 1
+        'useful': 1,
+        'sc_word_count':1,
+        'word_count':1
     }
 
     user_list = {
