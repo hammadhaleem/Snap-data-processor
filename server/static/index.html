@@ -120,6 +120,18 @@
                             </option>
                         </select>
                     </div>
+
+                    <div class="control_pannel_row">
+                        <span style="display: inline-block; width: 40%;"
+                              class="control_pannel_attr_name">Text Feature:</span>
+                        <select v-model="selected_text_feature" style="display: inline; width: 50%;"
+                                v-on:change="onSelectedTextFeatureChanged" class="control_pannel_row">
+                            <option v-for="text_feature in text_feature_options" v-bind:value="text_feature">
+                                {{ text_feature }}
+                            </option>
+                        </select>
+                    </div>
+
                 </div>
             </section>
             <section>
@@ -223,6 +235,7 @@
 <script src="js/vue2.js"></script>
 <script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="js/lib/d3.layout.cloud.js"></script>
 
 <!--<script src="js/lib/vuejs-slider.min.js"></script>-->
 

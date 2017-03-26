@@ -72,7 +72,7 @@ var dataService = new Vue({
         },
 
         getDetailedContentOfOneReview: function (_review_id) {
-            var url = '/api/get_review_by_id/' + _review_id; //写到这
+            var url = '/api/get_review_by_id/' + _review_id;
 
             this.$http.get(url).then(function (resp) {
                 console.log('Content of one review: ', resp.data);
@@ -82,6 +82,25 @@ var dataService = new Vue({
                 console.log('Error existing in loading detailed content of one review!', error);
             });
         },
+
+        getGroupedWordPairsFromReviewList: function (_review_id_list) {
+            var str = '';
+            str += '[';
+            for(var i = 0; i < _review_id_list.length; i++){
+                str = str + "'" + _review_id_list[i] + "'" + ",";
+            }
+            str[str.length - 1] = ''; //remove the last comma
+            str += ']';
+
+            var url = '/api/nlp/review_analysis/' + str;
+            this.$http.get(url).then(function (resp) {
+                var word_pairs_list = resp.data;
+                console.log('Content of the word pairs: ', word_pairs_list);
+                pipService.emitGroupedWordPairsAreReady(word_pairs_list);
+            }, function (error) {
+                console.log('Error in getting word pairs information: ', error);
+            });
+        }
 
     },
     created: function () {

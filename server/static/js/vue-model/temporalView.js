@@ -177,6 +177,37 @@ var temporalView = new Vue({
             return bs_max_num_of_each_rating_accumulated;
         },
 
+        getSelectedReviewIds: function (review_rating_arr1, review_rating_arr2) {
+            var review_id_obj = {'business_ids': [], 'bs1_review_ids': [], 'bs2_review_ids': []};
+            var bs1_id = '', bs2_id = '', bs1_rev_ids = [], bs2_rev_ids = [];
+
+            for (var i = 0; i < review_rating_arr1.length; i++) {
+                var g_rating = review_rating_arr1[i];
+                for (var j = 0; j < g_rating.length; j++) {
+                    var rev = g_rating[j];
+                    bs1_id = rev['business_id'];
+                    bs1_rev_ids.push(rev['review_id']);
+                }
+            }
+
+            for (var i = 0; i < review_rating_arr2.length; i++) {
+                var g_rating = review_rating_arr2[i];
+                for (var j = 0; j < g_rating.length; j++) {
+                    var rev = g_rating[j];
+                    bs2_id = rev['business_id'];
+                    bs2_rev_ids.push(rev['review_id']);
+                }
+            }
+
+            review_id_obj['business_ids'] = [bs1_id, bs2_id];
+            review_id_obj['bs1_review_ids'] = bs1_rev_ids;
+            review_id_obj['bs2_review_ids'] = bs2_rev_ids;
+
+            console.log('User brushed a new region, here is the review ids: ', review_id_obj);
+
+            return review_id_obj;
+        },
+
         processEventOfClickingOnRectsOrCircles: function (clicking_pos) {
             var x = clicking_pos[0], y = clicking_pos[1];
 
@@ -1111,6 +1142,11 @@ var temporalView = new Vue({
             function updateHorizontalBarCharts() {
                 bs1_selected_five_rating_arr = _this.getBs1HorizontalBarChartData(bs1_selection_rect, bs1_review_ratings, layout_config);
                 bs2_selected_five_rating_arr = _this.getBs2HorizontalBarChartData(bs2_selection_rect, bs2_review_ratings, layout_config);
+                console.log('Selected review ratings: ', bs1_selected_five_rating_arr, bs2_selected_five_rating_arr);
+
+                var selected_reviews_obj = _this.getSelectedReviewIds(bs1_selected_five_rating_arr, bs2_selected_five_rating_arr);
+                pipService.emitUpdateWordCloudViewData(selected_reviews_obj); //update the word cloud view
+
                 _this.drawTwoHorizontalBarCharts(bs1_temporal_view, bs2_temporal_view,
                     bs1_selected_five_rating_arr, bs2_selected_five_rating_arr, layout_config);
             }
@@ -1409,6 +1445,11 @@ var temporalView = new Vue({
                     bs1_review_ratings, layout_config, bs1_max_num_of_each_rating_accumulated);
                 bs2_selected_five_rating_arr = _this.getBs2HorizontalBarChartDataInLayeredLayout(bs2_selection_rect,
                     bs2_review_ratings, layout_config, bs2_max_num_of_each_rating_accumulated);
+
+                //update selected review objects
+                var selected_reviews_obj = _this.getSelectedReviewIds(bs1_selected_five_rating_arr, bs2_selected_five_rating_arr);
+                pipService.emitUpdateWordCloudViewData(selected_reviews_obj); //update the word cloud view
+
                 _this.drawTwoHorizontalBarCharts(bs1_temporal_view, bs2_temporal_view,
                     bs1_selected_five_rating_arr, bs2_selected_five_rating_arr, layout_config);
             }

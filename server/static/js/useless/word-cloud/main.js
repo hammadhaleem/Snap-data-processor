@@ -17,7 +17,7 @@
         // dataList.push(data.service);
         var fill = d3.scale.category20();
         var fontRatio = 15;
-        var width = w * 1;
+        var width = w * 0.8;
         var height = h * 1;
         var xRatio = 2.3;
         var yRatio = 1.45;

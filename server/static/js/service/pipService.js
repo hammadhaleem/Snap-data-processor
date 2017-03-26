@@ -20,7 +20,8 @@ var pipService = new Vue({
         TEMPORAL_VIEW_LAYOUT_IS_CHANGED: 'temporal_view_layout_is_changed',
         UPDATE_WORD_CLOUD_VIEW_DATA: 'update_word_cloud_view_data',
         LOAD_DETAILED_REVIEW_CONTENT: 'load_detailed_review_content',
-
+        GROUPED_WORD_PAIRS_ARE_READY: 'grouped_word_pairs_are_ready',
+        TEXT_FEATURE_IS_CHANGED: 'text_feature_is_changed',
     },
     methods: {
         emitChangeAttributes: function (msg) {
@@ -177,5 +178,25 @@ var pipService = new Vue({
                 callback(msg);
             });
         },
+
+        emitGroupedWordPairsAreReady: function (msg) {
+            this.$emit(this.GROUPED_WORD_PAIRS_ARE_READY, msg);
+        },
+        onGroupedWordPairsAreReady: function (callback) {
+            this.$on(this.GROUPED_WORD_PAIRS_ARE_READY, function (msg) {
+                callback(msg);
+            });
+        },
+
+
+        emitTextFeatureIsChanged: function (msg) {
+            this.$emit(this.TEXT_FEATURE_IS_CHANGED, msg);
+        },
+        onTextFeatureIsChanged: function (callback) {
+            this.$on(this.TEXT_FEATURE_IS_CHANGED, function (msg) {
+                callback(msg);
+            });
+        },
+
     }
 })

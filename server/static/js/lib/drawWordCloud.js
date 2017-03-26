@@ -42,8 +42,8 @@ var drawAugmentedWordCloud = function () {
             })
             .on("end", function () {
                 // var scaleStr = 'scale(0.5, 0.5)';
-                var translateX = (i % 2) * width / 2;
-                var translateY = (Math.floor(i / 2)) * height / 2;
+                var translateX = 0; //(i % 2) * width / 2;
+                var translateY = 0; //(Math.floor(i / 2)) * height / 2;
                 var group = svg.append('g')
                     .attr('transform', function () {
                         return 'translate(' + translateX + ', ' + translateY + ')' // + scaleStr;
@@ -202,7 +202,7 @@ var drawAugmentedWordCloud = function () {
             }
 
         }
-    }
+    };
 
     return drawWordCloud;
 };

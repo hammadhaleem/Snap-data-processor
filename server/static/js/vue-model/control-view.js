@@ -25,6 +25,9 @@ var controlModel = new Vue({
         layout_options: ['Stacked', 'Layered'],
         selected_temporal_layout: 'Stacked',
 
+        text_feature_options: ['food', 'service', 'price', 'atmosphere'], //'atmosphere' -> 'place'
+        selected_text_feature: 'food',
+
         area_selection: false,
         area_selection_flag: false, //since some posts say that event response and value change may not happen simultaneously
         area_selection_button_mode: false, //false: you can brush a region to select now; true: you can re-load all the red circles now
@@ -50,6 +53,15 @@ var controlModel = new Vue({
 
     },
     methods: {
+        onSelectedTextFeatureChanged: function () {
+            console.log('selected text feature is changed!', this.selected_text_feature);
+            var tmp = this.selected_text_feature;
+            if(tmp == 'atmosphere'){
+                tmp = 'place';
+            }
+
+            pipService.emitTextFeatureIsChanged(tmp);
+        },
         onAreaSelectionChange: function () {
             console.log('area_selection_flag is changed! ', this.area_selection);
             this.area_selection_flag = !this.area_selection_flag;

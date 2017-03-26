@@ -78,7 +78,7 @@ d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
         selection.each(function (d, i) {
             // console.log('d,i', d, i);
             var element = d3.select(this).attr('class', 'glyph_group');
-            var outer_radius_scale = d3.scale.linear().domain([min_review_num, max_review_num]).range([min_r+1, max_r]);
+            var outer_radius_scale = d3.scale.linear().domain([min_review_num, max_review_num]).range([min_r + 1, max_r]);
 
             //calculate params
             var outer_radius = 0, inner_radius = min_r;
@@ -88,7 +88,7 @@ d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
             }
             outer_radius = outer_radius_scale(outer_radius);
             outer_radius = outer_radius / zoom_scale; //zoom scaling
-            if(outer_radius < inner_radius + 5){
+            if (outer_radius < inner_radius + 5) {
                 console.log('outer, inner radius: ', outer_radius, inner_radius);
                 console.log('radius is too small!');
             }
@@ -293,32 +293,15 @@ d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
             }).call(drag);
 
             //handle the event of clicking
-            //click circles to delete glyph
+            //click circles to select glyph
             element.select('circle.hidden_circle')
                 .on('click', function (item, j) {
-                    if (d3.event.defaultPrevented == false) { //it is click event
-                        console.log('let us remove this glyph!');
-                        console.log('clicked glyph-circle: ', item, j);
 
-                        //remove the glyph
-                        d3.select(this.parentNode).remove();
-                        //remove the links
-                        var start_class = 'start_' + item['business_id'], end_class = 'end_' + item['business_id'];
-                        d3.selectAll('line.' + start_class).remove();
-                        d3.selectAll('line.' + end_class).remove();
-                    }
-                });
-
-            //click price rectangles to select a glyph
-            var glyph_data_item = d;
-            element.select('g.price_bars')
-                .selectAll('rect')
-                .on('click', function (item, j) {
                     if (d3.event.defaultPrevented == false) { //it is click event
                         console.log('let us select this glyph!');
-                        console.log('clicked glyph-price_rectangles: ', glyph_data_item);
+                        console.log('clicked hidden_circles: ', item, j);
 
-                        var glyph_group = this.parentNode.parentNode;
+                        var glyph_group = this.parentNode;
                         if (d3.select(glyph_group).select('g.highlight_rectangles')[0][0] == null) { //we need to highlight it
                             //check if we have selected two venues or not
                             if (selected_glyphs_counting.length >= 2) {
@@ -330,7 +313,7 @@ d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
                             var highlight_group = d3.select(glyph_group).append('g').classed('highlight_rectangles', true);
                             var r = d3.select(glyph_group).select('circle.hidden_circle').attr('r');
                             r = parseInt(r) + 1;
-                            var d = 'M' + (-r-2) + ' ' + (-r)
+                            var d = 'M' + (-r - 2) + ' ' + (-r)
                                 + ' L' + (r) + ' ' + (-r)
                                 + ' L' + (r) + ' ' + (r)
                                 + ' L' + (-r) + ' ' + (r)
@@ -368,6 +351,104 @@ d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
                     }
 
                 });
+
+            //click price rectangles to delete a glyph
+            var glyph_data_item = d;
+            element.select('g.price_bars')
+                .selectAll('rect')
+                .on('click', function (item, j) {
+                    if (d3.event.defaultPrevented == false) { //it is click event
+                        console.log('let us remove this glyph!');
+                        console.log('clicked glyph-price-rects: ', glyph_data_item, j);
+
+                        //remove the glyph
+                        d3.select(this.parentNode.parentNode).remove();
+                        //remove the links
+                        var start_class = 'start_' + glyph_data_item['business_id'], end_class = 'end_' + glyph_data_item['business_id'];
+                        d3.selectAll('line.' + start_class).remove();
+                        d3.selectAll('line.' + end_class).remove();
+                    }
+
+
+                });
+
+
+            // //click circles to delete glyph
+            // element.select('circle.hidden_circle')
+            //     .on('click', function (item, j) {
+            //         if (d3.event.defaultPrevented == false) { //it is click event
+            //             console.log('let us remove this glyph!');
+            //             console.log('clicked glyph-circle: ', item, j);
+            //
+            //             //remove the glyph
+            //             d3.select(this.parentNode).remove();
+            //             //remove the links
+            //             var start_class = 'start_' + item['business_id'], end_class = 'end_' + item['business_id'];
+            //             d3.selectAll('line.' + start_class).remove();
+            //             d3.selectAll('line.' + end_class).remove();
+            //         }
+            //     });
+            //
+            // //click price rectangles to select a glyph
+            // var glyph_data_item = d;
+            // element.select('g.price_bars')
+            //     .selectAll('rect')
+            //     .on('click', function (item, j) {
+            //         if (d3.event.defaultPrevented == false) { //it is click event
+            //             console.log('let us select this glyph!');
+            //             console.log('clicked glyph-price_rectangles: ', glyph_data_item);
+            //
+            //             var glyph_group = this.parentNode.parentNode;
+            //             if (d3.select(glyph_group).select('g.highlight_rectangles')[0][0] == null) { //we need to highlight it
+            //                 //check if we have selected two venues or not
+            //                 if (selected_glyphs_counting.length >= 2) {
+            //                     alert('You have already selected two venues! Please de-select one!');
+            //                     return;
+            //                 }
+            //
+            //                 //otherwise
+            //                 var highlight_group = d3.select(glyph_group).append('g').classed('highlight_rectangles', true);
+            //                 var r = d3.select(glyph_group).select('circle.hidden_circle').attr('r');
+            //                 r = parseInt(r) + 1;
+            //                 var d = 'M' + (-r-2) + ' ' + (-r)
+            //                     + ' L' + (r) + ' ' + (-r)
+            //                     + ' L' + (r) + ' ' + (r)
+            //                     + ' L' + (-r) + ' ' + (r)
+            //                     + ' L' + (-r) + ' ' + (-r);
+            //                 highlight_group.append('path').attr('d', d)
+            //                     .attr('stroke', 'blue')
+            //                     .attr('stroke-width', '3px')
+            //                     .attr('fill', 'none');
+            //
+            //                 //save it
+            //                 selected_glyphs_counting.push(glyph_data_item);
+            //             }
+            //             else {
+            //                 d3.select(glyph_group).select('g.highlight_rectangles').remove(); //we need to remove it
+            //
+            //                 var tmp = []; //update the selection list
+            //                 for (var k = 0; k < selected_glyphs_counting.length; k++) {
+            //                     if (selected_glyphs_counting[k]['business_id'] != glyph_data_item['business_id']) {
+            //                         tmp.push(selected_glyphs_counting[k]);
+            //                     }
+            //                 }
+            //                 selected_glyphs_counting = tmp;
+            //             }
+            //
+            //             //check the number of selected glyphs
+            //             if (selected_glyphs_counting.length == 2) {
+            //                 console.log('Selection is done! ', selected_glyphs_counting);
+            //                 pipService.emitVenueSelectionIsReady(selected_glyphs_counting);
+            //             }
+            //             else if (selected_glyphs_counting.length < 2) {
+            //                 console.log('remove common customer comparison view!');
+            //                 pipService.emitRemoveCommonCustomerCompView(selected_glyphs_counting);
+            //             }
+            //
+            //         }
+            //
+            //     });
+
 
         });
     }
