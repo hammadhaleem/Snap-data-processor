@@ -1430,6 +1430,11 @@ var temporalView = new Vue({
                         }
                         updateHorizontalBarCharts();
                     }
+
+                    //if start == end, then it may be a click event on rectangle 非常重要!!
+                    if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
+                        _this.processEventOfClickingOnRectsOrCircles(pos);
+                    }
                 });
             d3.select(this.$el)
                 .select('svg')
