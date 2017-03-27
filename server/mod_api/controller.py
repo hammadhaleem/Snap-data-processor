@@ -15,6 +15,14 @@ from server.mod_api.utils import get_user_information_from_mongo, \
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
+global_timeout = 400
+
+
+def make_cache_key(*args, **kwargs):
+    path = request.path
+    args = str(hash(frozenset(request.args.items())))
+    lang = get_locale()
+    return (path + args + lang).encode('utf-8')
 
 
 @mod_api.route('/')
@@ -489,7 +497,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
 
     return jsonify(polygon=polygon, data=output)
 
-
+@cache.cached(timeout=global_timeout, key_prefix='get_competition_graph')
 @mod_api.route('/get_competition_graph/<business_id>/')
 @mod_api.route('/get_competition_graph/<business_id>/<distance_meters>')
 def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000):
@@ -577,7 +585,7 @@ def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
     nodes, link = graph_in_box(city=None, type=None, polygon=polygon)
     return jsonify(nodes=nodes, links=link)
 
-
+@cache.cached(timeout=global_timeout, key_prefix='get_business_graph_box')
 @mod_api.route('/get_business_graph_box/<city>/<type>/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
     """ Example queries
@@ -595,7 +603,7 @@ def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
     nodes, link = graph_in_box(city, type, polygon)
     return jsonify(nodes=nodes, links=link)
 
-
+@cache.cached(timeout=global_timeout, key_prefix='get_review_information')
 @mod_api.route('/get_review_information/<business_id1>/<business_id2>')
 def review_information_agg(business_id1, business_id2):
     business_ids = sorted([business_id1, business_id2])
@@ -619,8 +627,8 @@ def review_information_agg(business_id1, business_id2):
         'user_votes': 1,
         'funny': 1,
         'useful': 1,
-        'sc_word_count':1,
-        'word_count':1
+        'sc_word_count': 1,
+        'word_count': 1
     }
 
     user_list = {
@@ -665,6 +673,7 @@ def review_information_agg(business_id1, business_id2):
     return jsonify(data=data_dict, max_date=max_date, min_date=min_date)
 
 
+@cache.cached(timeout=global_timeout, key_prefix='get_review_by_id')
 @mod_api.route('/get_review_by_id/<review_id>')
 def review_by_id(review_id):
     review = list(mongo_connection.db.yelp_reviews.find({'review_id': review_id}))[0]
@@ -683,6 +692,7 @@ def review_by_id(review_id):
     return jsonify(review)
 
 
+@cache.cached(timeout=global_timeout, key_prefix='nlp_review_analysis')
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
     # http://localhost:5002/api/nlp/review_analysis/['1o0g0ymmHl6HRgrg3KEM5w',
