@@ -11,6 +11,8 @@ var temporalView = new Vue({
         two_venue_review_rating: undefined,
         bs1_id: undefined,
         bs2_id: undefined,
+        bs1_name: undefined,
+        bs2_name: undefined,
         data_processing_mode: ['by_year', 'by_quarter_year'],
         cur_processing_mode: 'by_quarter_year',
         first_venue_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],// ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'],
@@ -1106,6 +1108,34 @@ var temporalView = new Vue({
                     return 'translate(0,' + layout_config.h_tentative + ')';
                 });
 
+            //append the business names for both venues
+            bs1_temporal_view.append('g')
+                .attr('class', 'bs1_name')
+                .attr('transform', function () {
+                    return 'translate(200,' + ( -(layout_config.bs1_max_h * (layout_config.rect_size + layout_config.padding_h) ) ) + ')';
+                })
+                .append('text')
+                .attr("text-anchor", "start")
+                .attr('font-size', '15px')
+                .text(function () {
+                    return _this.bs1_name;
+                });
+
+            bs2_temporal_view.append('g')
+                .attr('class', 'bs2_name')
+                .attr('transform', function () {
+                    return 'translate(200,' + ( (-layout_config.bs2_max_h) * (layout_config.rect_size + layout_config.padding_h) - layout_config.each_axis_label_height ) + ')';
+                })
+                .append('text')
+                .attr("text-anchor", "start")
+                .attr('font-size', '15px')
+                .text(function () {
+                    return _this.bs2_name;
+                });
+
+
+            //写到这
+
 
             //append axis and labels for bs1 and bs2
             var bs_mode = ['bs1', 'bs2'];
@@ -1743,6 +1773,8 @@ var temporalView = new Vue({
         pipService.onVenueSelectionIsReady(function (selected_two_venues) {
             console.log('Selected two venues:', selected_two_venues);
             _this.bs1_id = selected_two_venues[0]['business_id'], _this.bs2_id = selected_two_venues[1]['business_id'];
+            _this.bs1_name = selected_two_venues[0]['name'], _this.bs2_name = selected_two_venues[1]['name'];
+
             dataService.getReviewRatingTemporalInfo(_this.bs1_id, _this.bs2_id)
                 .then(function (resp) {
                     console.log('response review ratings: ', resp.data);
