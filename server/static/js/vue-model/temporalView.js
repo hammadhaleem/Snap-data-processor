@@ -22,6 +22,9 @@ var temporalView = new Vue({
         rect_size: 12,
         rect_size_scale: undefined, //scale function for the size of rectangles on temporal view
 
+        click_on_circle_rect_flag: false, //a flag for clicking on circle or rectangle
+        highlight_color: 'black',
+
     },
     methods: {
         init: function () {
@@ -212,9 +215,10 @@ var temporalView = new Vue({
         },
 
         processEventOfClickingOnRectsOrCircles: function (clicking_pos) {
+            var _this = this;
             var x = clicking_pos[0], y = clicking_pos[1];
 
-            //bs1
+            //bs1: rect
             d3.select(this.$el).selectAll('g.bs1_temporal_rects')
                 .selectAll('rect')
                 .filter(function (item, i) {
@@ -231,9 +235,43 @@ var temporalView = new Vue({
                     return flag;
                 })
                 .each(function (item, i) {
+                    _this.click_on_circle_rect_flag = true;
+
                     item['selection_flag'] = !item['selection_flag'];
                     if (item['selection_flag']) { //selected
-                        d3.select(this).attr('fill', 'black');
+                        d3.select(this).attr('fill', _this.highlight_color);
+
+                        //load detailed review data
+                        var review_id = item['review_id'];
+                        dataService.getDetailedContentOfOneReview(review_id);
+                    }
+                    else { //de-selection
+                        d3.select(this).attr('fill', item['original_fill']);
+                    }
+                    console.log('===========item=========== ', item);
+                });
+            //bs1: circle
+            d3.select(this.$el).selectAll('g.bs1_temporal_rects')
+                .selectAll('circle')
+                .filter(function (item, i) {
+                    var flag = x >= item['pos_x'] && y >= (item['pos_y'])
+                        && x <= (item['pos_x'] + item['rect_w_h'])
+                        && y <= (item['pos_y'] + item['rect_w_h']);
+
+                    //clear all the other possible selections
+                    if (!flag) {
+                        d3.select(this).attr('fill', item['original_fill']);
+                        item['selection_flag'] = false;
+                    }
+
+                    return flag;
+                })
+                .each(function (item, i) {
+                    _this.click_on_circle_rect_flag = true;
+
+                    item['selection_flag'] = !item['selection_flag'];
+                    if (item['selection_flag']) { //selected
+                        d3.select(this).attr('fill', _this.highlight_color);
 
                         //load detailed review data
                         var review_id = item['review_id'];
@@ -245,7 +283,8 @@ var temporalView = new Vue({
                     console.log('===========item=========== ', item);
                 });
 
-            //bs2
+
+            //bs2: rect
             d3.select(this.$el).selectAll('g.bs2_temporal_rects')
                 .selectAll('rect')
                 .filter(function (item, i) {
@@ -262,9 +301,11 @@ var temporalView = new Vue({
                     return flag;
                 })
                 .each(function (item, i) {
+                    _this.click_on_circle_rect_flag = true;
+
                     item['selection_flag'] = !item['selection_flag'];
                     if (item['selection_flag']) { //selected
-                        d3.select(this).attr('fill', 'black');
+                        d3.select(this).attr('fill', _this.highlight_color);
 
                         //load detailed review data
                         var review_id = item['review_id'];
@@ -275,6 +316,39 @@ var temporalView = new Vue({
                     }
                     console.log('===========item=========== ', item);
                 });
+            //bs2: circle
+            d3.select(this.$el).selectAll('g.bs2_temporal_rects')
+                .selectAll('circle')
+                .filter(function (item, i) {
+                    var flag = x >= item['pos_x'] && y >= (item['pos_y'])
+                        && x <= (item['pos_x'] + item['rect_w_h'])
+                        && y <= (item['pos_y'] + item['rect_w_h']);
+
+                    //clear all the other possible selections
+                    if (!flag) {
+                        d3.select(this).attr('fill', item['original_fill']);
+                        item['selection_flag'] = false;
+                    }
+
+                    return flag;
+                })
+                .each(function (item, i) {
+                    _this.click_on_circle_rect_flag = true;
+
+                    item['selection_flag'] = !item['selection_flag'];
+                    if (item['selection_flag']) { //selected
+                        d3.select(this).attr('fill', _this.highlight_color);
+
+                        //load detailed review data
+                        var review_id = item['review_id'];
+                        dataService.getDetailedContentOfOneReview(review_id);
+                    }
+                    else { //de-selection
+                        d3.select(this).attr('fill', item['original_fill']);
+                    }
+                    console.log('===========item=========== ', item);
+                });
+
 
         },
 
@@ -407,65 +481,79 @@ var temporalView = new Vue({
                     var bs_quarter_delta_x = bs_delta_x + (i * (layout_config.padding_w + layout_config.rect_size) + layout_config.rect_size / 2);
                     var bs_quarter_delta_y = bs_delta_y + (-layout_config.each_axis_label_height);
 
-                    //draw rectangles
-                    d3.select(this).selectAll('rect')
+                    //draw rectangles or circles
+                    d3.select(this).selectAll('g.rects_or_circles')
                         .data(d)
                         .enter()
-                        .append('rect')
-                        .attr('width', function (item, j) {
-                            // return layout_config.rect_size;
-                            if (item['common'] == 'false') {
-                                item['rect_w_h'] = _this.rect_size_scale(item['scaled_score']);
-                                return item['rect_w_h'];
-                            }
-                            else {
-                                item['rect_w_h'] = 0;
-                                return 0;
-                            }
-                        })
-                        .attr('height', function (item, j) {
-                            // return layout_config.rect_size;
-                            if (item['common'] == 'false') {
-                                return item['rect_w_h'];
-                            }
-                            else {
-                                return 0;
-                            }
-                        })
-                        .attr('x', function (item, j) {
+                        .append('g')
+                        .attr('class', 'rects_or_circles')
+                        .each(function (item, j) {
+                            item['rect_w_h'] = _this.rect_size_scale(item['scaled_score']);
                             item['selection_flag'] = false;
                             item['pos_x'] = bs_quarter_delta_x + (layout_config.rect_size - item['rect_w_h']) / 2;
-
-                            return (layout_config.rect_size - item['rect_w_h']) / 2;
-                        })
-                        .attr('y', function (item, j) {
-                            // item['pos_y'] = bs_quarter_delta_y  -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
-                            // return -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
-
                             item['pos_y'] = bs_quarter_delta_y - ( (layout_config.rect_size / 2 + item['rect_w_h'] / 2) + j * (layout_config.padding_h + layout_config.rect_size));
-                            return -( (layout_config.rect_size / 2 + item['rect_w_h'] / 2) + j * (layout_config.padding_h + layout_config.rect_size));
-                        })
-                        .attr('fill', function (item, j) {
                             var rating = item['stars'];
-                            if (bs_mode_str == 'bs1') {
-                                item['original_fill'] = _this.first_venue_color_mapping[rating - 1];
-                                return _this.first_venue_color_mapping[rating - 1];
+                            item['original_fill'] = _this.first_venue_color_mapping[rating - 1];
+
+                            //append rectangles or circles
+                            if (item['common'] == 'false') {
+                                d3.select(this).append('rect')
+                                    .attr('width', function () {
+                                        return item['rect_w_h'];
+                                    })
+                                    .attr('height', function () {
+                                        return item['rect_w_h'];
+                                    })
+                                    .attr('x', function () {
+                                        return (layout_config.rect_size - item['rect_w_h']) / 2;
+                                    })
+                                    .attr('y', function () {
+                                        return -( (layout_config.rect_size / 2 + item['rect_w_h'] / 2) + j * (layout_config.padding_h + layout_config.rect_size));
+                                    })
+                                    .attr('fill', function () {
+                                        return item['original_fill'];
+                                    })
+                                    .on('mouseover', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('mouseout', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('click', function () { //not working
+                                        console.log('The selected text of stacked reviews: ', d);
+                                    });
+
                             }
-                            else {
-                                item['original_fill'] = _this.second_venue_color_mapping[rating - 1];
-                                return _this.second_venue_color_mapping[rating - 1];
+                            else { //append circles
+                                //draw circles
+                                d3.select(this)
+                                    .append('circle')
+                                    .attr('cx', function () {
+                                        return layout_config.rect_size / 2;
+                                    })
+                                    .attr('cy', function () {
+                                        return -( layout_config.rect_size / 2 + j * (layout_config.padding_h + layout_config.rect_size) );
+                                        // return (item['pos_y'] + item['rect_w_h']/2);
+                                    })
+                                    .attr('r', function () {
+                                        return item['rect_w_h'] / 2;
+                                    })
+                                    .attr('fill', function () {
+                                        return item['original_fill'];
+                                    })
+                                    .on('mouseover', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('mouseout', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('click', function () { //not working
+                                        console.log('The selected text of stacked reviews: ', item);
+                                    });
                             }
-                        })
-                        //not working
-                        .on('mouseover', function (d, k) { //not working
-                            d3.select(this).style('cursor', 'pointer');
-                        })
-                        .on('mouseout', function (d, k) {
-                            d3.select(this).style('cursor', 'pointer');
-                        })
-                        .on('click', function (d, k) {
-                            console.log('The selected text of stacked reviews: ', d);
                         });
+
+
                 });
 
         },
@@ -1033,6 +1121,16 @@ var temporalView = new Vue({
                         .classed('areaSelectionPointer', false);
 
                     var pos = d3.mouse(this);
+
+                    //if start == end, then it may be a click event on rectangle 非常重要!!
+                    if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
+                        _this.processEventOfClickingOnRectsOrCircles(pos);
+                        if (_this.click_on_circle_rect_flag) { //if it is really a click on circle or rectangles, then return
+                            _this.click_on_circle_rect_flag = false;
+                            return;   //do not execute the remaining code
+                        }
+                    }
+
                     if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
                         bs1_selection_rect[1] = pos;
                         var remove_flag = (bs1_selection_rect[1][0] == bs1_selection_rect[0][0])
@@ -1041,6 +1139,11 @@ var temporalView = new Vue({
                             d3.select(_this.$el).selectAll('rect.bs1_selection_rect').remove();
                         }
                         updateHorizontalBarCharts();
+
+                        //highlight the selected circles and rectangles and remove highlighting of un-selected rectangles
+                        var bs1_svg_handler = d3.select(_this.$el).select('g.bs1_temporal_rects');
+                        _this.highlightBrushedCircleAndRect(bs1_svg_handler, bs1_selection_rect);
+                        // 写到这
                     }
                     else { //bs2
                         bs2_selection_rect[1] = pos;
@@ -1050,114 +1153,17 @@ var temporalView = new Vue({
                             d3.select(_this.$el).selectAll('rect.bs2_selection_rect').remove();
                         }
                         updateHorizontalBarCharts();
+
+                        //highlight the selected circles and rectangles and remove highlighting of un-selected rectangles
+                        var bs2_svg_handler = d3.select(_this.$el).select('g.bs2_temporal_rects');
+                        _this.highlightBrushedCircleAndRect(bs2_svg_handler, bs2_selection_rect);
                     }
 
-                    //if start == end, then it may be a click event on rectangle 非常重要!!
-                    if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
-                        _this.processEventOfClickingOnRectsOrCircles(pos);
-                    }
 
                 });
             d3.select(this.$el)
                 .select('svg')
                 .call(bs_drag);
-
-            // //use mousedown, mousemove and mouseup event instead of drag event for selection
-            // var bs1_selection_handler = undefined, bs2_selection_handler = undefined;
-            // var bs_selection_flag = false;
-            // var bs_selection_drawing = d3.select(this.$el)
-            //     .select('svg')
-            //     .on('mousedown', function (d, i) {
-            //         console.log('mousedown: ', d3.mouse(this));
-            //         bs_selection_flag = true;
-            //
-            //         //set mouse pointer
-            //         d3.select(_this.$el)
-            //             .classed('areaSelectionPointer', true);
-            //
-            //         selection_start_pos = d3.mouse(this);
-            //         if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
-            //             bs1_selection_rect = [selection_start_pos, selection_start_pos]; //init
-            //             bs1_selection_handler = d3.select(_this.$el)
-            //                 .select('svg')
-            //                 .append('rect')
-            //                 .attr('class', 'bs1_selection_rect')
-            //                 .attr('x', selection_start_pos[0])
-            //                 .attr('y', selection_start_pos[1])
-            //                 .attr('width', 0)
-            //                 .attr('height', 0)
-            //                 .attr('fill', 'none')
-            //                 .attr('stroke', 'red')
-            //                 .attr('stroke-width', 2);
-            //         }
-            //         else { //bs2
-            //             bs2_selection_rect = [selection_start_pos, selection_start_pos]; //init
-            //             bs2_selection_handler = d3.select(_this.$el)
-            //                 .select('svg')
-            //                 .append('rect')
-            //                 .attr('class', 'bs2_selection_rect')
-            //                 .attr('x', selection_start_pos[0])
-            //                 .attr('y', selection_start_pos[1])
-            //                 .attr('width', 0)
-            //                 .attr('height', 0)
-            //                 .attr('fill', 'none')
-            //                 .attr('stroke', 'red')
-            //                 .attr('stroke-width', 2);
-            //         }
-            //     })
-            //     .on('mousemove', function (d, i) {
-            //         if (!bs_selection_flag) {
-            //             return;
-            //         }
-            //
-            //         console.log('mousemove: ', d3.mouse(this));
-            //         var pos = d3.mouse(this);
-            //
-            //         if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
-            //             bs1_selection_rect[1] = pos;
-            //             bs1_selection_handler.attr('width', pos[0] - selection_start_pos[0])
-            //                 .attr('height', pos[1] - selection_start_pos[1]);
-            //         }
-            //         else { //bs2
-            //             bs2_selection_rect[1] = pos;
-            //             bs2_selection_handler.attr('width', pos[0] - selection_start_pos[0])
-            //                 .attr('height', pos[1] - selection_start_pos[1]);
-            //         }
-            //     })
-            //     .on('mouseup', function (d, i) {
-            //         console.log('mouseup: ', d3.mouse(this));
-            //         bs_selection_flag = false;
-            //
-            //         //set mouse pointer
-            //         d3.select(_this.$el)
-            //             .classed('areaSelectionPointer', false);
-            //
-            //         var pos = d3.mouse(this);
-            //         if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
-            //             bs1_selection_rect[1] = pos;
-            //             var remove_flag = (bs1_selection_rect[1][0] == bs1_selection_rect[0][0])
-            //                 && bs1_selection_rect[1][1] == bs1_selection_rect[0][1];
-            //             if (remove_flag) {
-            //                 d3.select(_this.$el).selectAll('rect.bs1_selection_rect').remove();
-            //             }
-            //             updateHorizontalBarCharts();
-            //         }
-            //         else { //bs2
-            //             bs2_selection_rect[1] = pos;
-            //             var remove_flag = (bs2_selection_rect[1][0] == bs2_selection_rect[0][0])
-            //                 && bs2_selection_rect[1][1] == bs2_selection_rect[0][1];
-            //             if (remove_flag) {
-            //                 d3.select(_this.$el).selectAll('rect.bs2_selection_rect').remove();
-            //             }
-            //             updateHorizontalBarCharts();
-            //         }
-            //
-            //         // d3.select(this).trigger('click');
-            //     })
-            //     .on('click', function () {
-            //         console.log('svg is clicked!!!========');
-            //     });
-
 
             //draw the rectangles
             // var h_scale = undefined; //will store the scale when use this for the first time
@@ -1174,6 +1180,53 @@ var temporalView = new Vue({
                 _this.drawTwoHorizontalBarCharts(bs1_temporal_view, bs2_temporal_view,
                     bs1_selected_five_rating_arr, bs2_selected_five_rating_arr, layout_config);
             }
+        },
+
+        highlightBrushedCircleAndRect: function (svg_circle_rect, rect_region) {
+            var _this = this;
+
+            //rect
+            svg_circle_rect.selectAll('rect')
+                .filter(function (item, i) {
+                    var flag = item['pos_x'] >= rect_region[0][0] && item['pos_y'] >= rect_region[0][1] &&
+                        item['pos_x'] <= rect_region[1][0] && item['pos_y'] <= rect_region[1][1];
+                    return flag;
+                })
+                .each(function (item, i) {
+                    d3.select(this).attr('fill', _this.highlight_color); //highlight
+                });
+
+            svg_circle_rect.selectAll('rect')
+                .filter(function (item, i) {
+                    var flag = item['pos_x'] >= rect_region[0][0] && item['pos_y'] >= rect_region[0][1] &&
+                        item['pos_x'] <= rect_region[1][0] && item['pos_y'] <= rect_region[1][1];
+                    return !flag;
+                })
+                .each(function (item, i) {
+                    d3.select(this).attr('fill', item['original_fill']); //remove highlight
+                });
+
+            //circle
+            svg_circle_rect.selectAll('circle')
+                .filter(function (item, i) {
+                    var flag = item['pos_x'] >= rect_region[0][0] && item['pos_y'] >= rect_region[0][1] &&
+                        item['pos_x'] <= rect_region[1][0] && item['pos_y'] <= rect_region[1][1];
+                    return flag;
+                })
+                .each(function (item, i) {
+                    d3.select(this).attr('fill', _this.highlight_color); //highlight
+                });
+
+            svg_circle_rect.selectAll('circle')
+                .filter(function (item, i) {
+                    var flag = item['pos_x'] >= rect_region[0][0] && item['pos_y'] >= rect_region[0][1] &&
+                        item['pos_x'] <= rect_region[1][0] && item['pos_y'] <= rect_region[1][1];
+                    return !flag;
+                })
+                .each(function (item, i) {
+                    d3.select(this).attr('fill', item['original_fill']); //remove highlight
+                });
+
         },
 
         drawStackedRectsForTemporalViewWithLayers: function (bs_review_ratings, bs_temporal_view, layout_config,
@@ -1227,85 +1280,87 @@ var temporalView = new Vue({
                         accumulated_rating_num_of_one_slot.push(tmp);
                     }
 
-                    //draw rectangles
-                    d3.select(this).selectAll('rect')
+
+                    //draw rectangles or circles
+                    d3.select(this).selectAll('g.rects_or_circles')
                         .data(d)
                         .enter()
-                        .append('rect')
-                        .attr('width', function (item, j) {
-                            // return layout_config.rect_size;
-                            if (item['common'] == 'false') {
-                                item['rect_w_h'] = _this.rect_size_scale(item['scaled_score']);
-                                return item['rect_w_h'];
-                            }
-                            else {
-                                item['rect_w_h'] = 0;
-                                return 0;
-                            }
-                        })
-                        .attr('height', function (item, j) {
-                            // return layout_config.rect_size;
-                            if (item['common'] == 'false') {
-                                return item['rect_w_h'];
-                            }
-                            else {
-                                return 0;
-                            }
-                        })
-                        .attr('x', function (item, j) {
-                            // item['pos_x'] = bs_quarter_delta_x + 0;
-                            // item['rect_w_h'] = layout_config.rect_size;
-                            // item['selection_flag'] = false;
-                            //
-                            // return 0;
+                        .append('g')
+                        .attr('class', 'rects_or_circles')
+                        .each(function (item, j) {
+                            item['rect_w_h'] = _this.rect_size_scale(item['scaled_score']);
                             item['selection_flag'] = false;
                             item['pos_x'] = bs_quarter_delta_x + (layout_config.rect_size - item['rect_w_h']) / 2;
-
-                            return (layout_config.rect_size - item['rect_w_h']) / 2;
-                        })
-                        .attr('y', function (item, j) {
                             var rating = item['stars'];
                             var layer_start_y = bs_max_num_of_each_rating_accumulated[rating - 1],
                                 layer_h_padding = (rating - 1) * layout_config.layer_h_padding;
-
-                            // item['pos_y'] = bs_quarter_delta_y
-                            //     - ( layout_config.rect_size
-                            //     + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
-                            //     + layer_h_padding);
-                            //
-                            // return -( layout_config.rect_size
-                            // + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
-                            // + layer_h_padding);
-
                             item['pos_y'] = bs_quarter_delta_y
                                 - ( (layout_config.rect_size / 2 + item['rect_w_h'] / 2)
                                 + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
                                 + layer_h_padding);
-                            return -( (layout_config.rect_size / 2 + item['rect_w_h'] / 2)
-                            + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
-                            + layer_h_padding);
-                        })
-                        .attr('fill', function (item, j) {
-                            var rating = item['stars'];
-                            if (bs_mode_str == 'bs1') {
-                                item['original_fill'] = _this.first_venue_color_mapping[rating - 1];
-                                return _this.first_venue_color_mapping[rating - 1];
+                            item['original_fill'] = _this.first_venue_color_mapping[rating - 1];
+
+                            //draw rectangle
+                            if (item['common'] == 'false') {
+                                d3.select(this).append('rect')
+                                    .attr('width', function () {
+                                        return item['rect_w_h'];
+                                    })
+                                    .attr('height', function () {
+                                        return item['rect_w_h'];
+                                    })
+                                    .attr('x', function () {
+                                        return (layout_config.rect_size - item['rect_w_h']) / 2;
+                                    })
+                                    .attr('y', function () {
+                                        return -( (layout_config.rect_size / 2 + item['rect_w_h'] / 2)
+                                        + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
+                                        + layer_h_padding);
+                                    })
+                                    .attr('fill', function () {
+                                        return item['original_fill'];
+                                    })
+                                    .on('mouseover', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('mouseout', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('click', function () { //not working
+                                        console.log('The selected text of layered reviews: ', d);
+                                    });
                             }
                             else {
-                                item['original_fill'] = _this.second_venue_color_mapping[rating - 1];
-                                return _this.second_venue_color_mapping[rating - 1];
+                                //draw circles
+                                d3.select(this)
+                                    .append('circle')
+                                    .attr('cx', function () {
+                                        return layout_config.rect_size / 2;
+                                    })
+                                    .attr('cy', function () {
+                                        return -( (layout_config.rect_size / 2)
+                                        + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
+                                        + layer_h_padding);
+                                    })
+                                    .attr('r', function () {
+                                        return item['rect_w_h'] / 2;
+                                    })
+                                    .attr('fill', function () {
+                                        return item['original_fill'];
+                                    })
+                                    .on('mouseover', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('mouseout', function () {
+                                        d3.select(this).style('cursor', 'pointer');
+                                    })
+                                    .on('click', function () { //not working
+                                        console.log('The selected text of stacked reviews: ', item);
+                                    });
                             }
-                        })
-                        //not working
-                        .on('mouseover', function (d, k) {
-                            d3.select(this).style('cursor', 'pointer');
-                        })
-                        .on('mouseout', function (d, k) {
-                            d3.select(this).style('cursor', 'pointer');
-                        })
-                        .on('click', function (d, k) {
-                            console.log('The selected text of layered reviews: ', d);
+
                         });
+
                 });
 
         },
@@ -1466,6 +1521,16 @@ var temporalView = new Vue({
                         .classed('areaSelectionPointer', false);
 
                     var pos = d3.mouse(this);
+
+                    //if start == end, then it may be a click event on rectangle 非常重要!!
+                    if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
+                        _this.processEventOfClickingOnRectsOrCircles(pos);
+                        if (_this.click_on_circle_rect_flag) { //if it is really a click on circle or rectangles, then return
+                            _this.click_on_circle_rect_flag = false;
+                            return;   //do not execute the remaining code
+                        }
+                    }
+
                     if (selection_start_pos[1] < two_bs_dividing_y) { //bs1
                         bs1_selection_rect[1] = pos;
                         var remove_flag = (bs1_selection_rect[1][0] == bs1_selection_rect[0][0])
@@ -1474,6 +1539,11 @@ var temporalView = new Vue({
                             d3.select(_this.$el).selectAll('rect.bs1_selection_rect').remove();
                         }
                         updateHorizontalBarCharts();
+
+                        //highlight the selected circles and rectangles and remove highlighting of un-selected rectangles
+                        var bs1_svg_handler = d3.select(_this.$el).select('g.bs1_temporal_rects');
+                        _this.highlightBrushedCircleAndRect(bs1_svg_handler, bs1_selection_rect);
+
                     }
                     else { //bs2
                         bs2_selection_rect[1] = pos;
@@ -1483,7 +1553,12 @@ var temporalView = new Vue({
                             d3.select(_this.$el).selectAll('rect.bs2_selection_rect').remove();
                         }
                         updateHorizontalBarCharts();
+
+                        //highlight the selected circles and rectangles and remove highlighting of un-selected rectangles
+                        var bs2_svg_handler = d3.select(_this.$el).select('g.bs2_temporal_rects');
+                        _this.highlightBrushedCircleAndRect(bs2_svg_handler, bs2_selection_rect);
                     }
+
                 });
             d3.select(this.$el)
                 .select('svg')
