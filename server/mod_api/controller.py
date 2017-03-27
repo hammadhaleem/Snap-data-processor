@@ -15,7 +15,7 @@ from server.mod_api.utils import get_user_information_from_mongo, \
 
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
-global_timeout = 400
+global_timeout = 4000000
 
 
 def make_cache_key(*args, **kwargs):
@@ -265,7 +265,7 @@ def business_graph(business_id=None):
         return jsonify(data=None)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_social_graph_common')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_social_graph_common/<business_id1>/<business_id2>')
 def get_business_graph_two_common(business_id1, business_id2):
     business_id1, business_id2 = sorted([business_id1, business_id2])
@@ -328,7 +328,7 @@ def get_business_graph_two_common(business_id1, business_id2):
     return jsonify(nodes=list_output, links=edge_output)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_social_graph_of_two_business')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_social_graph_of_two_business/<business_id1>/<business_id2>')
 def business_graph_two(business_id1, business_id2):
     business_id1, business_id2 = sorted([business_id1, business_id2])
@@ -438,7 +438,7 @@ def business_graph_two(business_id1, business_id2):
     return jsonify(nodes=list_output, links=edge_output)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_business_information_lat_lon')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_business_information_lat_lon/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
     ''' Example queries
@@ -501,7 +501,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
     return jsonify(polygon=polygon, data=output)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_competition_graph')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_competition_graph/<business_id>/')
 @mod_api.route('/get_competition_graph/<business_id>/<distance_meters>')
 def competition_graph(business_id, distance_meters=1000):
@@ -572,7 +572,7 @@ def competition_graph(business_id, distance_meters=1000):
     return jsonify(all=data_query, data=business_data, common_graph=connections)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_business_graph_box')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_business_graph_box/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
     """ Example queries
@@ -591,7 +591,7 @@ def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
     return jsonify(nodes=nodes, links=link)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_business_graph_box')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_business_graph_box/<city>/<type>/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
     """ Example queries
@@ -610,7 +610,7 @@ def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
     return jsonify(nodes=nodes, links=link)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_review_information')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_review_information/<business_id1>/<business_id2>')
 def review_information_agg(business_id1, business_id2):
     business_ids = sorted([business_id1, business_id2])
@@ -680,7 +680,7 @@ def review_information_agg(business_id1, business_id2):
     return jsonify(data=data_dict, max_date=max_date, min_date=min_date)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='get_review_by_id')
+@cache.cached(timeout=global_timeout, key_prefix=make_cache_key)
 @mod_api.route('/get_review_by_id/<review_id>')
 def review_by_id(review_id):
     review = list(mongo_connection.db.yelp_reviews.find({'review_id': review_id}))[0]
@@ -699,7 +699,6 @@ def review_by_id(review_id):
     return jsonify(review)
 
 
-@cache.cached(timeout=global_timeout, key_prefix='nlp_review_analysis')
 @mod_api.route('/nlp/review_analysis/<review_list>/')
 def get_review_analysis(review_list):
     # http://localhost:5002/api/nlp/review_analysis/['1o0g0ymmHl6HRgrg3KEM5w',
@@ -707,7 +706,6 @@ def get_review_analysis(review_list):
     #            '4cCxazHh5DfWJ9eOcfvlSA',  'nslcUj3coPzFFzeSYrkqrQ', '4cOrGZfCKbhhdjZohhBkPQ']/
     #
     #  bit better?
-    #
     # review_list = mongo_connection.db.yelp_reviews.find(
     #     {'business_id':
     #          {'$in':
@@ -722,11 +720,17 @@ def get_review_analysis(review_list):
     # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
     # # print(len(review_list))
 
-    nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
-    final_result_ = {'business_es': sorted(nlp_analysis_res['business_es'])}
-    for bid in final_result_['business_es']:
-        final_result_[bid] = {}
-        for obj_type in nlp_analysis_res[bid].keys():
-            final_result_[bid][obj_type] = create_groups(nlp_analysis_res[bid][obj_type])
+    cache_key = 'review_analysis_' + str(review_list)
+    dt = cache.get(cache_key)
+    if dt is None:
+        nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
+        final_result_ = {'business_es': sorted(nlp_analysis_res['business_es'])}
+        for bid in final_result_['business_es']:
+            final_result_[bid] = {}
+            for obj_type in nlp_analysis_res[bid].keys():
+                final_result_[bid][obj_type] = create_groups(nlp_analysis_res[bid][obj_type])
 
-    return jsonify(final_result_)
+        cache.set(cache_key, final_result_, timeout=3000)
+        return jsonify(final_result_)
+
+    return jsonify(dt)

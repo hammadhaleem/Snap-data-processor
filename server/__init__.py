@@ -9,18 +9,11 @@ from flask_pymongo import PyMongo
 
 app = Flask(__name__, static_url_path='')
 
-
 app.config['MONGO_DBNAME'] = 'yelp_comparative_analytics'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/yelp_comparative_analytics'
 
 mongo_connection = PyMongo(app)
-
-bcrypt = Bcrypt()
-
-app.secret_key = "\x9b\x00\xdf\xc8xb_\xa2U\r\x8cp\xfas'y\xc32>\xe6f\xb8\x03*"
 cache = Cache(app, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': '_flask_cache_tmp_'})
-babel = Babel(app)
-
 
 @app.errorhandler(404)
 def not_found(error):
@@ -41,3 +34,4 @@ app.register_blueprint(mod_api)
 app.register_blueprint(mod_client)
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '0'
+
