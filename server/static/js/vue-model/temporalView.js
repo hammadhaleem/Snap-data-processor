@@ -273,12 +273,22 @@ var temporalView = new Vue({
                     if (item['selection_flag']) { //selected
                         d3.select(this).attr('fill', _this.highlight_color);
 
+                        //select the other review by the same customer
+                        var bs_other_view_g = d3.select('g.bs2_temporal_rects'),
+                            svg_all_handler = d3.select(_this.$el).select('svg');
+                        _this.highlightOrDehighlightCommonCustomerReviews(item, bs_other_view_g, svg_all_handler);
+
                         //load detailed review data
                         var review_id = item['review_id'];
                         dataService.getDetailedContentOfOneReview(review_id);
                     }
                     else { //de-selection
                         d3.select(this).attr('fill', item['original_fill']);
+
+                        //select the other review by the same customer
+                        var bs_other_view_g = d3.select('g.bs2_temporal_rects'),
+                            svg_all_handler = d3.select(_this.$el).select('svg');
+                        _this.highlightOrDehighlightCommonCustomerReviews(item, bs_other_view_g, svg_all_handler);
                     }
                     console.log('===========item=========== ', item);
                 });
@@ -339,17 +349,74 @@ var temporalView = new Vue({
                     if (item['selection_flag']) { //selected
                         d3.select(this).attr('fill', _this.highlight_color);
 
+                        //select the other review by the same customer
+                        var bs_other_view_g = d3.select('g.bs1_temporal_rects'),
+                            svg_all_handler = d3.select(_this.$el).select('svg');
+                        _this.highlightOrDehighlightCommonCustomerReviews(item, bs_other_view_g, svg_all_handler);
+
                         //load detailed review data
                         var review_id = item['review_id'];
                         dataService.getDetailedContentOfOneReview(review_id);
                     }
                     else { //de-selection
                         d3.select(this).attr('fill', item['original_fill']);
+
+                        //select the other review by the same customer
+                        var bs_other_view_g = d3.select('g.bs1_temporal_rects'),
+                            svg_all_handler = d3.select(_this.$el).select('svg');
+                        _this.highlightOrDehighlightCommonCustomerReviews(item, bs_other_view_g, svg_all_handler);
                     }
                     console.log('===========item=========== ', item);
                 });
 
+        },
 
+        highlightOrDehighlightCommonCustomerReviews: function (cur_item, other_g_handler, svg_handler) {
+            var _this = this;
+
+            if (cur_item['selection_flag'] == true) { //highlighting
+                other_g_handler.selectAll('circle')
+                    .filter(function (item, i) {
+                        var flag = cur_item['user_id'] == item['user_id'];
+                        return flag;
+                    })
+                    .each(function (item, i) {
+                        // d3.select(this).attr('fill', _this.highlight_color);
+
+                        //draw line
+                        var line_attributes = {
+                            'x1': cur_item['pos_x'] + cur_item['rect_w_h'] / 2,
+                            'y1': cur_item['pos_y'] + cur_item['rect_w_h'] / 2,
+                            'x2': item['pos_x'] + item['rect_w_h'] / 2,
+                            'y2': item['pos_y'] + item['rect_w_h'] / 2,
+                        };
+
+                        //add a highlighting line
+                        svg_handler.append('g')
+                            .attr('class', 'common_customer_highlighting_link')
+                            .append('line')
+                            .attr(line_attributes)
+                            .style('stroke', '#969696')
+                            .style('opacity', 0.8)
+                            .style('stroke-width', 2);
+
+                    });
+
+            }
+            else { //not true: remove highlighting
+                other_g_handler.selectAll('circle')
+                    .filter(function (item, i) {
+                        var flag = cur_item['user_id'] == item['user_id'];
+                        return flag;
+                    })
+                    .each(function (item, i) {
+                        // d3.select(this).attr('fill', item['original_fill']);
+
+                        //remove highlighting line
+                        svg_handler.selectAll('g.common_customer_highlighting_link').remove();
+                    });
+            }
+            
         },
 
         drawAxisAndLabelsForTemporalView: function (bs_temporal_view, layout_config, bs_mode_str) { //bs_mode_str: 'bs1' or 'bs2'
@@ -1122,6 +1189,11 @@ var temporalView = new Vue({
 
                     var pos = d3.mouse(this);
 
+                    //remove the common customer line whatever
+                    d3.select(_this.$el)
+                        .select('g.common_customer_highlighting_link')
+                        .remove();
+
                     //if start == end, then it may be a click event on rectangle 非常重要!!
                     if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
                         _this.processEventOfClickingOnRectsOrCircles(pos);
@@ -1143,7 +1215,7 @@ var temporalView = new Vue({
                         //highlight the selected circles and rectangles and remove highlighting of un-selected rectangles
                         var bs1_svg_handler = d3.select(_this.$el).select('g.bs1_temporal_rects');
                         _this.highlightBrushedCircleAndRect(bs1_svg_handler, bs1_selection_rect);
-                        // 写到这
+
                     }
                     else { //bs2
                         bs2_selection_rect[1] = pos;
@@ -1521,6 +1593,11 @@ var temporalView = new Vue({
                         .classed('areaSelectionPointer', false);
 
                     var pos = d3.mouse(this);
+
+                    //remove the common customer line whatever
+                    d3.select(_this.$el)
+                        .select('g.common_customer_highlighting_link')
+                        .remove();
 
                     //if start == end, then it may be a click event on rectangle 非常重要!!
                     if (selection_start_pos[0] == pos[0] && selection_start_pos[1] == pos[1]) {
