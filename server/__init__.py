@@ -1,8 +1,5 @@
 import os
-
 from flask import Flask, render_template
-from flask_babel import Babel
-from flask_bcrypt import Bcrypt
 from flask_cache import Cache
 
 from flask_pymongo import PyMongo

@@ -13,6 +13,8 @@ from server.mod_api.graph_get import graph_in_box
 from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
 
+import hashlib
+
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
 global_timeout = 4000000
@@ -22,7 +24,9 @@ def make_cache_key(*args, **kwargs):
     path = request.path
     args = str(hash(frozenset(request.args.items())))
     lang = get_locale()
-    return (path + args + lang).encode('utf-8')
+    str = (path + args + lang).encode('utf-8')
+    str = hashlib.md5(str).hexdigest()
+    return str
 
 
 @mod_api.route('/')
@@ -721,6 +725,8 @@ def get_review_analysis(review_list):
     # # print(len(review_list))
 
     cache_key = 'review_analysis_' + str(review_list)
+    cache_key = hashlib.md5(cache_key).hexdigest()
+
     dt = cache.get(cache_key)
     if dt is None:
         nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
