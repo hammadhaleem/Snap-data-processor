@@ -497,6 +497,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
 
     return jsonify(polygon=polygon, data=output)
 
+
 @cache.cached(timeout=global_timeout, key_prefix='get_competition_graph')
 @mod_api.route('/get_competition_graph/<business_id>/')
 @mod_api.route('/get_competition_graph/<business_id>/<distance_meters>')
@@ -585,6 +586,7 @@ def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
     nodes, link = graph_in_box(city=None, type=None, polygon=polygon)
     return jsonify(nodes=nodes, links=link)
 
+
 @cache.cached(timeout=global_timeout, key_prefix='get_business_graph_box')
 @mod_api.route('/get_business_graph_box/<city>/<type>/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
@@ -602,6 +604,7 @@ def get_business_graph_box(city, type, lat1, lon1, lat2, lon2):
 
     nodes, link = graph_in_box(city, type, polygon)
     return jsonify(nodes=nodes, links=link)
+
 
 @cache.cached(timeout=global_timeout, key_prefix='get_review_information')
 @mod_api.route('/get_review_information/<business_id1>/<business_id2>')
