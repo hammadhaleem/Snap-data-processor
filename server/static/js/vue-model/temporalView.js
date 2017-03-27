@@ -416,7 +416,7 @@ var temporalView = new Vue({
                         svg_handler.selectAll('g.common_customer_highlighting_link').remove();
                     });
             }
-            
+
         },
 
         drawAxisAndLabelsForTemporalView: function (bs_temporal_view, layout_config, bs_mode_str) { //bs_mode_str: 'bs1' or 'bs2'
@@ -1737,7 +1737,7 @@ var temporalView = new Vue({
         var _this = this;
         this.init();
 
-        this.rect_size_scale = d3.scale.linear().domain([0, 10]).range([6, this.rect_size]);//init the function for scaling rect_size based on helpfulness
+        this.rect_size_scale = d3.scale.linear().domain([0, 10]).range([5, this.rect_size * 1.3]);//init the function for scaling rect_size based on helpfulness
 
         //two venue are selected
         pipService.onVenueSelectionIsReady(function (selected_two_venues) {
