@@ -17,7 +17,10 @@ var temporalView = new Vue({
         second_venue_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'],
         h_scale: undefined, //scale function for horizontal bars on the right in temporal view
 
-        layered_layout_flag: false, //default is stacked layout, instead of layered layou
+        layered_layout_flag: false, //default is stacked layout, instead of layered layout
+
+        rect_size: 12,
+        rect_size_scale: undefined, //scale function for the size of rectangles on temporal view
 
     },
     methods: {
@@ -409,17 +412,38 @@ var temporalView = new Vue({
                         .data(d)
                         .enter()
                         .append('rect')
-                        .attr('width', layout_config.rect_size)
-                        .attr('height', layout_config.rect_size)
+                        .attr('width', function (item, j) {
+                            // return layout_config.rect_size;
+                            if (item['common'] == 'false') {
+                                item['rect_w_h'] = _this.rect_size_scale(item['scaled_score']);
+                                return item['rect_w_h'];
+                            }
+                            else {
+                                item['rect_w_h'] = 0;
+                                return 0;
+                            }
+                        })
+                        .attr('height', function (item, j) {
+                            // return layout_config.rect_size;
+                            if (item['common'] == 'false') {
+                                return item['rect_w_h'];
+                            }
+                            else {
+                                return 0;
+                            }
+                        })
                         .attr('x', function (item, j) {
-                            item['pos_x'] = bs_quarter_delta_x + 0;
-                            item['rect_w_h'] = layout_config.rect_size;
                             item['selection_flag'] = false;
-                            return 0;
+                            item['pos_x'] = bs_quarter_delta_x + (layout_config.rect_size - item['rect_w_h']) / 2;
+
+                            return (layout_config.rect_size - item['rect_w_h']) / 2;
                         })
                         .attr('y', function (item, j) {
-                            item['pos_y'] = bs_quarter_delta_y + -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
-                            return -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
+                            // item['pos_y'] = bs_quarter_delta_y  -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
+                            // return -(layout_config.rect_size + j * (layout_config.padding_h + layout_config.rect_size));
+
+                            item['pos_y'] = bs_quarter_delta_y - ( (layout_config.rect_size / 2 + item['rect_w_h'] / 2) + j * (layout_config.padding_h + layout_config.rect_size));
+                            return -( (layout_config.rect_size / 2 + item['rect_w_h'] / 2) + j * (layout_config.padding_h + layout_config.rect_size));
                         })
                         .attr('fill', function (item, j) {
                             var rating = item['stars'];
@@ -860,7 +884,7 @@ var temporalView = new Vue({
                 'padding_h': 2,
                 'extra_padding_w': 50,
                 'extra_padding_h': 15,
-                'rect_size': 12,
+                'rect_size': _this.rect_size,
                 'each_axis_label_height': 45,
                 'horizontal_bar_chart_width': 150,
                 'max_w': undefined,
@@ -1208,26 +1232,56 @@ var temporalView = new Vue({
                         .data(d)
                         .enter()
                         .append('rect')
-                        .attr('width', layout_config.rect_size)
-                        .attr('height', layout_config.rect_size)
+                        .attr('width', function (item, j) {
+                            // return layout_config.rect_size;
+                            if (item['common'] == 'false') {
+                                item['rect_w_h'] = _this.rect_size_scale(item['scaled_score']);
+                                return item['rect_w_h'];
+                            }
+                            else {
+                                item['rect_w_h'] = 0;
+                                return 0;
+                            }
+                        })
+                        .attr('height', function (item, j) {
+                            // return layout_config.rect_size;
+                            if (item['common'] == 'false') {
+                                return item['rect_w_h'];
+                            }
+                            else {
+                                return 0;
+                            }
+                        })
                         .attr('x', function (item, j) {
-                            item['pos_x'] = bs_quarter_delta_x + 0;
-                            item['rect_w_h'] = layout_config.rect_size;
+                            // item['pos_x'] = bs_quarter_delta_x + 0;
+                            // item['rect_w_h'] = layout_config.rect_size;
+                            // item['selection_flag'] = false;
+                            //
+                            // return 0;
                             item['selection_flag'] = false;
+                            item['pos_x'] = bs_quarter_delta_x + (layout_config.rect_size - item['rect_w_h']) / 2;
 
-                            return 0;
+                            return (layout_config.rect_size - item['rect_w_h']) / 2;
                         })
                         .attr('y', function (item, j) {
                             var rating = item['stars'];
                             var layer_start_y = bs_max_num_of_each_rating_accumulated[rating - 1],
                                 layer_h_padding = (rating - 1) * layout_config.layer_h_padding;
 
+                            // item['pos_y'] = bs_quarter_delta_y
+                            //     - ( layout_config.rect_size
+                            //     + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
+                            //     + layer_h_padding);
+                            //
+                            // return -( layout_config.rect_size
+                            // + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
+                            // + layer_h_padding);
+
                             item['pos_y'] = bs_quarter_delta_y
-                                - ( layout_config.rect_size
+                                - ( (layout_config.rect_size / 2 + item['rect_w_h'] / 2)
                                 + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
                                 + layer_h_padding);
-
-                            return -( layout_config.rect_size
+                            return -( (layout_config.rect_size / 2 + item['rect_w_h'] / 2)
                             + ((j - accumulated_rating_num_of_one_slot[rating - 1]) + layer_start_y) * (layout_config.padding_h + layout_config.rect_size)
                             + layer_h_padding);
                         })
@@ -1266,7 +1320,7 @@ var temporalView = new Vue({
                 'padding_h': 2,
                 'extra_padding_w': 50,
                 'extra_padding_h': 15,
-                'rect_size': 12,
+                'rect_size': _this.rect_size,
                 'each_axis_label_height': 45,
                 'horizontal_bar_chart_width': 150,
                 'max_w': undefined,
@@ -1530,6 +1584,8 @@ var temporalView = new Vue({
         console.log('Temporal View is mounted!');
         var _this = this;
         this.init();
+
+        this.rect_size_scale = d3.scale.linear().domain([0, 10]).range([6, this.rect_size]);//init the function for scaling rect_size based on helpfulness
 
         //two venue are selected
         pipService.onVenueSelectionIsReady(function (selected_two_venues) {
