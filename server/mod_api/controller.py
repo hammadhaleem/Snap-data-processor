@@ -265,6 +265,7 @@ def business_graph(business_id=None):
         return jsonify(data=None)
 
 
+@cache.cached(timeout=global_timeout, key_prefix='get_social_graph_common')
 @mod_api.route('/get_social_graph_common/<business_id1>/<business_id2>')
 def get_business_graph_two_common(business_id1, business_id2):
     business_id1, business_id2 = sorted([business_id1, business_id2])
@@ -327,6 +328,7 @@ def get_business_graph_two_common(business_id1, business_id2):
     return jsonify(nodes=list_output, links=edge_output)
 
 
+@cache.cached(timeout=global_timeout, key_prefix='get_social_graph_of_two_business')
 @mod_api.route('/get_social_graph_of_two_business/<business_id1>/<business_id2>')
 def business_graph_two(business_id1, business_id2):
     business_id1, business_id2 = sorted([business_id1, business_id2])
@@ -436,6 +438,7 @@ def business_graph_two(business_id1, business_id2):
     return jsonify(nodes=list_output, links=edge_output)
 
 
+@cache.cached(timeout=global_timeout, key_prefix='get_business_information_lat_lon')
 @mod_api.route('/get_business_information_lat_lon/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
     ''' Example queries
@@ -501,7 +504,7 @@ def get_business_information_lat_lon(lat1, lon1, lat2, lon2):
 @cache.cached(timeout=global_timeout, key_prefix='get_competition_graph')
 @mod_api.route('/get_competition_graph/<business_id>/')
 @mod_api.route('/get_competition_graph/<business_id>/<distance_meters>')
-def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000):
+def competition_graph(business_id, distance_meters=1000):
     distance_meters = float(distance_meters)
 
     yelp_business_information = mongo_connection.db.yelp_business_information_processed_all
@@ -569,6 +572,7 @@ def competition_graph(business_id='mmKrNeBIIevuNljAWVNgXg', distance_meters=1000
     return jsonify(all=data_query, data=business_data, common_graph=connections)
 
 
+@cache.cached(timeout=global_timeout, key_prefix='get_business_graph_box')
 @mod_api.route('/get_business_graph_box/<lat1>/<lon1>/<lat2>/<lon2>')
 def get_business_graph_box_no_city(lat1, lon1, lat2, lon2):
     """ Example queries
