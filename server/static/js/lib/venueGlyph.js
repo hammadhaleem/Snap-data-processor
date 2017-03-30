@@ -319,7 +319,9 @@ d3.myGlyph = function (outer_leaflet_map, glyph_color_config) {
                                 + ' L' + (-r) + ' ' + (r)
                                 + ' L' + (-r) + ' ' + (-r);
                             highlight_group.append('path').attr('d', d)
-                                .attr('stroke', 'blue')
+                            .attr('stroke', 'blue')
+                            //     .attr('stroke', '#d73027')
+                            //     .attr('stroke', '#4575b4')
                                 .attr('stroke-width', '3px')
                                 .attr('fill', 'none');
 

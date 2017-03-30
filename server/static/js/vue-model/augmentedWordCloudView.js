@@ -118,5 +118,14 @@ var augmentedWordCloudView = new Vue({
             _this.drawTwoWordCloudOfTheSameFeatures();
         });
 
+        //remove the whole view when the venue is small
+        pipService.onRemoveCommonCustomerCompView(function (cur_venues) {
+            console.log('Need to remove augmented word cloud view!');
+            //remove
+            d3.select(_this.$el).select('svg').select('g.bs1_augmented_word_cloud').remove();
+            d3.select(_this.$el).select('svg').select('g.bs2_augmented_word_cloud').remove();
+            d3.select(_this.$el).select('svg').select('g.bs_middle_dividing_line').remove();
+        });
+
     }
 });

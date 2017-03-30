@@ -22,5 +22,9 @@ var detailedReviewContentView = new Vue({
             console.log('one review content:', one_review_content);
             _this.curent_review_content = one_review_content;
         });
+
+        pipService.onRemoveCommonCustomerCompView(function (cur_review_content) {
+            _this.curent_review_content = '';
+        });
     }
 });

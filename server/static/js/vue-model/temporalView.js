@@ -15,8 +15,8 @@ var temporalView = new Vue({
         bs2_name: undefined,
         data_processing_mode: ['by_year', 'by_quarter_year'],
         cur_processing_mode: 'by_quarter_year',
-        first_venue_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],// ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'],
-        second_venue_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'],
+        first_venue_color_mapping: ['#d73027', '#fdae61', '#EFFF9A', '#abd9e9', '#4575b4'],
+        second_venue_color_mapping: ['#d73027', '#fdae61', '#EFFF9A', '#abd9e9', '#4575b4'],
         h_scale: undefined, //scale function for horizontal bars on the right in temporal view
 
         layered_layout_flag: false, //default is stacked layout, instead of layered layout
@@ -25,7 +25,11 @@ var temporalView = new Vue({
         rect_size_scale: undefined, //scale function for the size of rectangles on temporal view
 
         click_on_circle_rect_flag: false, //a flag for clicking on circle or rectangle
-        highlight_color: 'black',
+        highlight_color: '#969696',// 'black', the clicked highlighting color
+        brushing_highlight_color: 'black',
+
+        axis_label_color: '#525252', //'#737373',
+
 
     },
     methods: {
@@ -241,7 +245,8 @@ var temporalView = new Vue({
 
                     item['selection_flag'] = !item['selection_flag'];
                     if (item['selection_flag']) { //selected
-                        d3.select(this).attr('fill', _this.highlight_color);
+                        // d3.select(this).attr('fill', _this.highlight_color);
+                        d3.select(this).attr('fill', _this.brushing_highlight_color);
 
                         //load detailed review data
                         var review_id = item['review_id'];
@@ -273,7 +278,8 @@ var temporalView = new Vue({
 
                     item['selection_flag'] = !item['selection_flag'];
                     if (item['selection_flag']) { //selected
-                        d3.select(this).attr('fill', _this.highlight_color);
+                        // d3.select(this).attr('fill', _this.highlight_color);
+                        d3.select(this).attr('fill', _this.brushing_highlight_color);
 
                         //select the other review by the same customer
                         var bs_other_view_g = d3.select('g.bs2_temporal_rects'),
@@ -317,7 +323,7 @@ var temporalView = new Vue({
 
                     item['selection_flag'] = !item['selection_flag'];
                     if (item['selection_flag']) { //selected
-                        d3.select(this).attr('fill', _this.highlight_color);
+                        d3.select(this).attr('fill', _this.brushing_highlight_color);
 
                         //load detailed review data
                         var review_id = item['review_id'];
@@ -349,7 +355,7 @@ var temporalView = new Vue({
 
                     item['selection_flag'] = !item['selection_flag'];
                     if (item['selection_flag']) { //selected
-                        d3.select(this).attr('fill', _this.highlight_color);
+                        d3.select(this).attr('fill', _this.brushing_highlight_color);
 
                         //select the other review by the same customer
                         var bs_other_view_g = d3.select('g.bs1_temporal_rects'),
@@ -435,7 +441,7 @@ var temporalView = new Vue({
                 .attr('y1', 0)
                 .attr('x2', (layout_config.padding_w + layout_config.rect_size) * layout_config.max_w)
                 .attr('y2', 0)
-                .attr('stroke', 'black')
+                .attr('stroke', _this.axis_label_color)
                 .attr('stroke-width', 1);
             bs_axis_g.append('g')
                 .attr('class', bs_mode_str + '_ticks')
@@ -451,7 +457,7 @@ var temporalView = new Vue({
                     return layout_config.rect_size + i * (layout_config.padding_w + layout_config.rect_size);
                 })
                 .attr('y2', 0)
-                .attr('stroke', 'black')
+                .attr('stroke', _this.axis_label_color)
                 .attr('stroke-width', 1);
             bs_axis_g.append('g')
                 .attr('class', bs_mode_str + '_axis_label')
@@ -477,7 +483,7 @@ var temporalView = new Vue({
                 })
                 .attr('font-family', 'sans-serif')
                 .attr('font-size', '8px')
-                .attr('fill', 'black');
+                .attr('stroke', _this.axis_label_color);
         },
         drawLayerDividingLinesForTemporalView: function (bs_temporal_view, layout_config, bs_mode_str,
                                                          bs_max_num_of_each_rating_accumulated) { //bs_mode_str: 'bs1' or 'bs2'
@@ -1109,10 +1115,11 @@ var temporalView = new Vue({
                 });
 
             //append the business names for both venues
+            var name_padding_left = 100;
             bs1_temporal_view.append('g')
                 .attr('class', 'bs1_name')
                 .attr('transform', function () {
-                    return 'translate(200,' + ( -(layout_config.bs1_max_h * (layout_config.rect_size + layout_config.padding_h) ) ) + ')';
+                    return 'translate(' + name_padding_left + ',' + ( -(layout_config.bs1_max_h * (layout_config.rect_size + layout_config.padding_h) ) ) + ')';
                 })
                 .append('text')
                 .attr("text-anchor", "start")
@@ -1124,7 +1131,7 @@ var temporalView = new Vue({
             bs2_temporal_view.append('g')
                 .attr('class', 'bs2_name')
                 .attr('transform', function () {
-                    return 'translate(200,' + ( (-layout_config.bs2_max_h) * (layout_config.rect_size + layout_config.padding_h) - layout_config.each_axis_label_height ) + ')';
+                    return 'translate(' + name_padding_left + ',' + ( (-layout_config.bs2_max_h) * (layout_config.rect_size + layout_config.padding_h) - 0 ) + ')';
                 })
                 .append('text')
                 .attr("text-anchor", "start")
@@ -1828,6 +1835,18 @@ var temporalView = new Vue({
                 _this.layered_layout_flag = false;
                 _this.drawTemporalViewByQuarterYear(review_rating_by_quarter_year);
             }
+
+        });
+
+        //remove the whole view when the venue is small
+        pipService.onRemoveCommonCustomerCompView(function (cur_venues) {
+            console.log('Need to remove temporal view!');
+            d3.select(_this.$el).select('svg').remove();
+            d3.select(_this.$el)
+                .style('overflow', 'auto')
+                .append('svg')
+                .attr('width', 771)
+                .attr('height', 610);
 
         });
 

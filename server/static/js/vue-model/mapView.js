@@ -23,8 +23,8 @@ var navbar = new Vue({
             link_items: undefined, //the list for all the links between glyphs
 
             //color for glyphs
-            glyph_color_config:{
-                glyph_color_list: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],
+            glyph_color_config: {
+                glyph_color_list: ['#d73027', '#fdae61', '#EFFF9A', '#abd9e9', '#4575b4'],
                 pie_stroke_color: '#4d4d4d',
                 pie_stroke_width: '1px',
                 pie_stroke_opacity: 1.0,
@@ -42,6 +42,7 @@ var navbar = new Vue({
                 arrow_triangle_fill: '#4d4d4d',
                 arrow_triangle_opacity: 0.9,
             },
+            // ['#f46d43', '#fdae61', '#ffffbf', '#abd9e9', '#74add1'], 淡蓝色,看起来稍好点
             // ['#fc8d59', '#fee090', '#ffffbf', '#e0f3f8', '#91bfdb'],延宏推荐用至少看起来像diverging的颜色,但是我感觉看上去太淡了一点
             // ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'] //改变下一行选择的颜色的纯度,根据qing的建议,延宏觉得颜色像categorical, link颜色 '#39C664'
             // ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'];  //looks good, Qing suggested.
@@ -64,13 +65,68 @@ var navbar = new Vue({
         },
         methods: {
             drawInitMap: function () {
-                var init_zoom_level = 16;
+                var init_zoom_level = 18; //16;
+                var map_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+                // var map_url = 'https://api.mapbox.com/styles/v1/jiayouwyhit/cj0v7h4by01112rt841x4wfkw/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiamlheW91d3loaXQiLCJhIjoiaG4waHJqbyJ9.AliGaDqqU-3jDFxsqLljew';
+
                 this.my_map = L.map('mapViewRealMap');
-                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-                    {
-                        maxZoom: 22,
-                        id: 'mapbox.streets'
-                    }).addTo(this.my_map);
+                L.tileLayer(map_url, {
+                    maxZoom: 22,
+                    id: 'mapbox.streets'
+                }).addTo(this.my_map);
+
+                /////////////////===================== First Try ===================== ////////////////////
+                // var streets = L.tileLayer(map_url,
+                //     {
+                //         maxZoom: 22,
+                //         id: 'mapbox.streets'
+                //     });
+                // var grayscale = L.tileLayer(map_url,
+                //     {
+                //         maxZoom: 22,
+                //         id: 'mapbox.light'
+                //     });
+                // var cities = new L.LayerGroup();
+                //
+                // this.my_map = L.map('mapViewRealMap', {
+                //     layers: [grayscale, streets]
+                // });
+                // var baseLayers = {
+                //     "Grayscale": grayscale,
+                //     "Streets": streets
+                // };
+                // var overlays = {
+                //     "Cities": cities
+                // };
+                // L.control.layers(baseLayers, overlays).addTo(this.my_map);
+
+                /////////////////===================== Second Try ===================== ////////////////////
+                // var cities = new L.LayerGroup();
+                // var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                //         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                //         'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                //     mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+                //
+                // var grayscale = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
+                //     streets = L.tileLayer(mbUrl, {id: 'mapbox.streets', attribution: mbAttr});
+                //
+                // this.my_map = L.map('mapViewRealMap', {
+                //     center: [39.73, -104.99],
+                //     zoom: 18,
+                //     layers: [grayscale, cities],
+                //     // layers: [cities]
+                // });
+                //
+                // var baseLayers = {
+                //     // "Grayscale": grayscale,
+                //     "Streets": streets
+                // };
+                //
+                // var overlays = {
+                //     "Cities": cities
+                // };
+                // L.control.layers(baseLayers, overlays).addTo(this.my_map);
+
                 this.my_map.setView([33.4230242165, -111.940247586], init_zoom_level);
             }
             ,
@@ -466,11 +522,65 @@ var navbar = new Vue({
                 }
             });
 
+
+            //highlight the link of two selected venues
+            pipService.onVenueSelectionIsReady(function (_selected_two_venues) {
+                var normal_link_color = _this.link_color_config['link_color'],
+                    normal_link_opacity = _this.link_color_config['link_opacity'];
+
+                // var highlight_link_color = 'blue', highlight_link_opacity = 0.9;
+                var highlight_link_color = _this.link_color_config['link_color'],
+                    highlight_link_opacity = _this.link_color_config['link_opacity'];
+
+                var bs1 = _selected_two_venues[0]['business_id'], bs2 = _selected_two_venues[1]['business_id'];
+                var link_class_str1 = '.start_' + bs1 + '.end_' + bs2, link_class_str2 = '.start_' + bs2 + '.end_' + bs1;
+
+                //make all normal
+                d3.select('#mapViewRealMap').select('svg')
+                    .select('g.linked_glyphs')
+                    .selectAll('g.interLink')
+                    .selectAll('line')
+                    .style('opacity', normal_link_opacity)
+                    .style('stroke', normal_link_color);
+
+                //make the selected highlight
+                d3.select('#mapViewRealMap').select('svg')
+                    .select('g.linked_glyphs')
+                    .selectAll('g.interLink')
+                    .selectAll('line' + link_class_str1)
+                    .style('opacity', highlight_link_opacity)
+                    .style('stroke', highlight_link_color);
+                d3.select('#mapViewRealMap').select('svg')
+                    .select('g.linked_glyphs')
+                    .selectAll('g.interLink')
+                    .selectAll('line' + link_class_str2)
+                    .style('opacity', highlight_link_opacity)
+                    .style('stroke', highlight_link_color);
+
+            });
+
+            //remove the highlighting of the link
+            pipService.onRemoveCommonCustomerCompView(function (_selected_two_venues) {
+                var normal_link_color = _this.link_color_config['link_color'],
+                    normal_link_opacity = _this.link_color_config['link_opacity'];
+                // var highlight_link_color = 'black', highlight_link_opacity = 1.0;
+
+                // var bs1 = _selected_two_venues[0]['business_id'], bs2 = _selected_two_venues[1]['business_id'];
+                // var link_class_str1 = '.start_' + bs1 + '.end_' + bs2, link_class_str2 = '.start_' + bs2 + '.end_' + bs1;
+
+                //make all normal
+                d3.select('#mapViewRealMap').select('svg')
+                    .select('g.linked_glyphs')
+                    .selectAll('g.interLink')
+                    .selectAll('line')
+                    .style('opacity', normal_link_opacity)
+                    .style('stroke', normal_link_color);
+            });
+
             //init the whole map as tempe
             var msg = {'city': _this.current_city, 'type': _this.current_type, 'focus': _this.focus_location};
             pipService.emitCityOrTypeIsChanged(msg);
-        }
-        ,
+        },
 
         watch: {
             area_coordinate: {
@@ -492,6 +602,7 @@ var navbar = new Vue({
                                 .attr('height', height)
                                 .style('fill', 'none')
                                 .style('stroke', 'red')
+                                // .style('stroke', '#737373')
                                 .style('stroke-width', '2px');
                         }
                         else {

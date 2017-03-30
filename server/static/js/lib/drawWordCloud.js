@@ -3,9 +3,22 @@
  */
 
 var drawAugmentedWordCloud = function () {
+    // //yanhong
+    // var colorScale = d3.scale.linear()
+    //     .domain([-1.0, -0.8, -0.6, -0.1, 0, 0.1, 0.6, 0.8, 1.0])
+    //     .range(['#a50026', '#d73027', '#f46d43', '#fdae61', '#555555', '#abd9e9', '#74add1', '#4575b4', '#313695']);
+
+    // try two
     var colorScale = d3.scale.linear()
         .domain([-1.0, -0.8, -0.6, -0.1, 0, 0.1, 0.6, 0.8, 1.0])
-        .range(['#a50026', '#d73027', '#f46d43', '#fdae61', '#555555', '#abd9e9', '#74add1', '#4575b4', '#313695']);
+        .range(['#a50026', '#d73027', '#f46d43', '#fdae61', '#797979', '#abd9e9', '#74add1', '#4575b4', '#313695']);
+
+    // //try 1
+    // var colorScale = d3.scale.linear()
+    //     .domain([-1.0, -0.8, -0.6, -0.1, 0, 0.1, 0.6, 0.8, 1.0])
+    //     .range(['#d73027', '#f46d43', '#fdae61', '#fee090', '#d9d9d9', '#e0f3f8', '#abd9e9', '#74add1', '#4575b4'])
+
+    var adj_num = 4;
 
     var drawWordCloud = function (svg, w, h, data) {
         var dataList = data;
@@ -131,7 +144,7 @@ var drawAugmentedWordCloud = function () {
                         'polarity': d.polarity
                     };
                 });
-                children = children.slice(0, Math.min(5, children.length));
+                children = children.slice(0, Math.min(adj_num, children.length));
                 var drawObj = {
                     'name': word.text.split(' ')[1],
                     'children': children,
@@ -147,6 +160,7 @@ var drawAugmentedWordCloud = function () {
             }
 
             function drawChildren2(obj) {
+                var total_len = obj.children.length;
 
                 svg.append('g')
                     .attr('class', 'class-' + obj.name)
@@ -165,10 +179,18 @@ var drawAugmentedWordCloud = function () {
                     // .style('font-family', 'Serif')
                     .style('font-family', 'Impact')
                     .style('font-size', function (dd, i) {
-                        var fontScale = d3.scale.linear()
-                            .domain([1, 5])
-                            .range([200, 80]);
-                        return fontScale(children.length) + 'px';
+                        var ch_len = obj.children.length;
+
+                        if (ch_len >= 2) {
+                            var fontScale = d3.scale.linear()
+                                .domain([1, adj_num])
+                                .range([200, 80]);
+                            return fontScale(ch_len) + 'px';
+                        }
+                        else {
+                            return '300px';
+                        }
+
                     })
                     .style('fill', function (dd) {
                         return colorScale(dd.polarity);
@@ -178,7 +200,12 @@ var drawAugmentedWordCloud = function () {
                     })
                     .attr('y', function (dd, i) {
                         var len = obj.children.length;
-                        return obj.layoutHeight * 1.0 / (len + 1) * (i + 1);
+                        if (len >= 2) {
+                            return obj.layoutHeight * 1.0 / (len + 1) * (i + 1);
+                        }
+                        else {
+                            return obj.layoutHeight * 0.7;
+                        }
                     })
                     .text(function (dd) {
                         return dd.text;
@@ -192,10 +219,15 @@ var drawAugmentedWordCloud = function () {
                         return obj.layoutWidth / 20 * 17;
                     })
                     .attr('y1', function (dd) {
-                        return 0;
+                        return obj.layoutHeight * 0.05;
                     })
                     .attr('y2', function (dd) {
-                        return obj.layoutHeight / obj.children.length * (obj.children.length - 1);
+                        var ch_len = obj.children.length;
+                        if (ch_len >= 1) {
+                            // return obj.layoutHeight / obj.children.length * (obj.children.length - 1);
+                            return obj.layoutHeight * 0.75;// / obj.children.length * (obj.children.length - 1);
+                        }
+
                     })
                     .style('stroke', '#555555')
                     .style('stroke-width', '10px');

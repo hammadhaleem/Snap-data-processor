@@ -104,7 +104,7 @@ var dataService = new Vue({
 
     },
     created: function () {
-        this.getGraphDataFromBackend();
+        // this.getGraphDataFromBackend();
         // this.getVenueInfoOfOneCity('Tempe');
     },
     watch: {

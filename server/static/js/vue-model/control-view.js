@@ -25,7 +25,10 @@ var controlModel = new Vue({
         layout_options: ['Stacked', 'Layered'],
         selected_temporal_layout: 'Stacked',
 
-        text_feature_options: ['food', 'service', 'price', 'atmosphere'], //'atmosphere' -> 'place'
+        time_unit_options: ['Quarter', 'Month'],
+        selected_time_unit: 'Quarter',
+
+        text_feature_options: ['food', 'service', 'price', 'ambiance'], //'ambiance' -> 'place'
         selected_text_feature: 'food',
 
         area_selection: false,
@@ -56,7 +59,7 @@ var controlModel = new Vue({
         onSelectedTextFeatureChanged: function () {
             console.log('selected text feature is changed!', this.selected_text_feature);
             var tmp = this.selected_text_feature;
-            if(tmp == 'atmosphere'){
+            if(tmp == 'ambiance'){
                 tmp = 'place';
             }
 

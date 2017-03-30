@@ -34,25 +34,34 @@
                 <div id="control_pannel">
                     <div class="control_pannel_sub_section">
                         <div class="control_pannel_row">
-                            <span style="display: inline-block; width: 20%;"
+                            <span style="display: inline-block; width: 12%;"
                                   class="control_pannel_attr_name">City:</span>
-                            <select v-model="selected_city" style="display: inline; width: 50%;"
+                            <select v-model="selected_city" style="display: inline; width: 30%;"
                                     v-on:change="onCityOrTypeChanged">
                                 <option v-for="city in cities" v-bind:value="city">
                                     {{ city }}
                                 </option>
                             </select>
-                        </div>
-                        <div class="control_pannel_row">
-                            <span style="display: inline-block; width: 20%;"
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <span style="display: inline-block; width: 12%;"
                                   class="control_pannel_attr_name">Type:</span>
-                            <select v-model="selected_type" style="display: inline; width: 50%;"
+                            <select v-model="selected_type" style="display: inline; width: 30%;"
                                     v-on:change="onCityOrTypeChanged">
                                 <option v-for="type in types" v-bind:value="type">
                                     {{ type }}
                                 </option>
                             </select>
                         </div>
+                        <!--<div class="control_pannel_row">-->
+                        <!--<span style="display: inline-block; width: 12%;"-->
+                        <!--class="control_pannel_attr_name">Type:</span>-->
+                        <!--<select v-model="selected_type" style="display: inline; width: 30%;"-->
+                        <!--v-on:change="onCityOrTypeChanged">-->
+                        <!--<option v-for="type in types" v-bind:value="type">-->
+                        <!--{{ type }}-->
+                        <!--</option>-->
+                        <!--</select>-->
+                        <!--</div>-->
                     </div>
 
                     <div class="control_pannel_sub_section">
@@ -111,9 +120,18 @@
 
 
                     <div class="control_pannel_row">
-                        <span style="display: inline-block; width: 40%;"
-                              class="control_pannel_attr_name">Temporal Layout:</span>
-                        <select v-model="selected_temporal_layout" style="display: inline; width: 50%;"
+                        <span style="display: inline-block; width: 24%;"
+                              class="control_pannel_attr_name">Time Unit:</span>
+                        <select v-model="selected_time_unit" style="display: inline; width: 26%;"
+                                v-on:change="" class="control_pannel_row">
+                            <option v-for="time_unit in time_unit_options" v-bind:value="time_unit">
+                                {{ time_unit }}
+                            </option>
+                        </select>
+                        &nbsp;
+                        <span style="display: inline-block; width: 17%;"
+                              class="control_pannel_attr_name">Layout:</span>
+                        <select v-model="selected_temporal_layout" style="display: inline; width: 26%;"
                                 v-on:change="onLayoutChanged" class="control_pannel_row">
                             <option v-for="layout in layout_options" v-bind:value="layout">
                                 {{ layout }}
@@ -122,9 +140,9 @@
                     </div>
 
                     <div class="control_pannel_row">
-                        <span style="display: inline-block; width: 40%;"
-                              class="control_pannel_attr_name">Text Feature:</span>
-                        <select v-model="selected_text_feature" style="display: inline; width: 50%;"
+                        <span style="display: inline-block; width: 24%;"
+                              class="control_pannel_attr_name">Feature:</span>
+                        <select v-model="selected_text_feature" style="display: inline; width: 26%;"
                                 v-on:change="onSelectedTextFeatureChanged" class="control_pannel_row">
                             <option v-for="text_feature in text_feature_options" v-bind:value="text_feature">
                                 {{ text_feature }}
@@ -150,7 +168,7 @@
                     <h5 style="text-align: left; font-size: 16px; padding-top: 13px;">Business Table</h5>
                 </div>
                 <div v-if="cur_table_venues.length > 0 && pagination_arr.length > 0">
-                    <table class="table-bordered table-hover" style="cursor: pointer">
+                    <table class="table-bordered table-hover" style="cursor: pointer; border: #929292;">
                         <thead>
                         <th class="table-cell-mid-align" v-for="attr in cur_table_attr">{{attr}}
                         </th>
@@ -188,7 +206,7 @@
                 <!--<section id="mapViewRealMap" class="singleViewBorder">-->
                 <!--</section>-->
             </div>
-            <div id="temporalView" class="singleViewBorder" style="margin-right: 8px">
+            <div id="temporalView" class="singleViewBorder" style="margin-right: 0px">
                 <!--<h3 style="background-color: #aaaaaa; margin-top: 1px; margin-bottom: 0px">Temporal View</h3>-->
             </div>
 
@@ -209,16 +227,36 @@
                      style="width: 758px; height: 200px; margin-bottom: 5px; overflow-y: scroll;"
                      class="singleViewBorder">
                     <div v-if="curent_review_content != '' " class="review_content">
-                        <div><span class="review_attr_name">Business Name: </span> <span>{{curent_review_content.business_name}}</span>
+                        <div>
+                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Business Name: </span> <span>{{curent_review_content.business_name}}</span>
+                            </div>
+                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Customer Name: </span> <span>{{curent_review_content.user_name}}</span>
+                            </div>
                         </div>
-                        <div><span class="review_attr_name">Customer Name: </span> <span>{{curent_review_content.user_name}}</span>
+
+                        <div>
+                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Review Date: </span>
+                                <span>{{curent_review_content.date}}</span></div>
+                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Rating: </span>
+                                <span>{{curent_review_content.stars}}</span>
+                            </div>
                         </div>
-                        <div><span class="review_attr_name">Review Date: </span>
-                            <span>{{curent_review_content.date}}</span></div>
-                        <div><span class="review_attr_name">Rating: </span> <span>{{curent_review_content.stars}}</span>
-                        </div>
+
+                        <div><span class="review_attr_name">User Votes: </span>
+                            <span>{{curent_review_content.funny + curent_review_content.useful + curent_review_content.cool}}</span></div>
                         <div><span class="review_attr_name">Review Text: </span>
                             <span>{{curent_review_content.text}}</span></div>
+
+                        <!--<div><span class="review_attr_name">Business Name: </span> <span>{{curent_review_content.business_name}}</span>-->
+                        <!--</div>-->
+                        <!--<div><span class="review_attr_name">Customer Name: </span> <span>{{curent_review_content.user_name}}</span>-->
+                        <!--</div>-->
+                        <!--<div><span class="review_attr_name">Review Date: </span>-->
+                        <!--<span>{{curent_review_content.date}}</span></div>-->
+                        <!--<div><span class="review_attr_name">Rating: </span> <span>{{curent_review_content.stars}}</span>-->
+                        <!--</div>-->
+                        <!--<div><span class="review_attr_name">Review Text: </span>-->
+                        <!--<span>{{curent_review_content.text}}</span></div>-->
                     </div>
                     <div v-else>
                         No Review is Selected.

@@ -162,7 +162,7 @@ label {
 }
 
 div#control_pannel {
-    height: 300px;
+    height: 285px;
     /*border:1px solid #808080;*/
 }
 
@@ -250,7 +250,10 @@ th.table-cell-mid-align {
 }
 
 .selected_table_row {
-    background-color: #bdbdbd;
+    /*background-color: #e1e1e1;*/
+    /*background-color: #f7f7f7;*/
+    /*background-color: #cccccc;*/
+    background-color: #f1f1f1;
     /*background-color: #4292c6;*/
 }
 
@@ -282,12 +285,13 @@ th.table-cell-mid-align {
     /*padding-top: 4px;*/
     /*font-weight: bold;*/
 }
-.control_pannel_row{
+
+.control_pannel_row {
     padding-top: 4px;
     padding-bottom: 2px;
 }
 
-.control_pannel_sub_section{
+.control_pannel_sub_section {
     border-bottom: 1px solid #636363;
     padding-bottom: 4px;
     margin-bottom: 5px;

@@ -9,10 +9,12 @@ var commonCustomerView = new Vue({
         // view_svg_handler: undefined,
         // selected_venue_info: [],
         common_customer_rating_reviews: [],
-        l_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'], //light blue to dark blue
-        r_color_mapping: ['#E42536', '#FEB169', '#EFFF9A', '#AAD9E9', '#2F7CB7'],//['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'], //['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'], //light yellow to dark yellow
+        l_color_mapping: ['#d73027', '#fdae61', '#EFFF9A', '#abd9e9', '#4575b4'],
+        r_color_mapping:  ['#d73027', '#fdae61', '#EFFF9A', '#abd9e9', '#4575b4'],
         m_color_no_diff: '#cccccc',
-        m_color_with_diff: ['#969696', '#636363', '#252525', '#000000'], //sequential color
+        m_color_with_diff: ['#dadaeb', '#bcbddc', '#9e9ac8', '#807dba'], //紫色
+            //['#d1e5f0', '#92c5de', '#4393c3', '#2166ac'], //blue
+        //['#969696', '#636363', '#252525', '#000000'], //sequential color
 
         svg_w: 750,
         svg_h: 390,
@@ -358,7 +360,7 @@ var commonCustomerView = new Vue({
                 })
                 .append("title")
                 .text(function (d) {
-                    return d.name + "\n" + format(d.value);
+                    return nameRemapping(d.name) + "\n" + format(d.value);
                 });
 
             //change the shape of middle rectangle
