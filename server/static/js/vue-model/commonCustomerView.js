@@ -162,9 +162,10 @@ var commonCustomerView = new Vue({
                 .select("svg")
                 .append('g')
                 .attr('class', 'label_names');
+            var y_padding_sankey = sanky_padding_h * 0.65;
             bs_label_handler.append('g') //bs1
                 .attr('transform', function () {
-                    return 'translate(20,' + sanky_padding_h * 0.8 + ')';
+                    return 'translate(20,' + y_padding_sankey + ')';
                 })
                 .append('text')
                 .attr("text-anchor", "start")
@@ -173,7 +174,7 @@ var commonCustomerView = new Vue({
                 });
             bs_label_handler.append('g') //bs2
                 .attr('transform', function () {
-                    return 'translate(' + (width - 40) + ',' + sanky_padding_h *0.8 + ')';
+                    return 'translate(' + (width - 40) + ',' + y_padding_sankey + ')';
                 })
                 .append('text')
                 .attr("text-anchor", "end")
@@ -182,7 +183,7 @@ var commonCustomerView = new Vue({
                 });
             bs_label_handler.append('g') //difference
                 .attr('transform', function () {
-                    return 'translate(' + (width/2 - 10) + ',' + sanky_padding_h * 0.8 + ')';
+                    return 'translate(' + (width/2 - 25) + ',' + y_padding_sankey + ')';
                 })
                 .append('text')
                 .attr("text-anchor", "start")
@@ -451,7 +452,6 @@ var commonCustomerView = new Vue({
 
     },
     mounted: function () {
-
         var _this = this;
         _this.initDrawing();
         pipService.onVenueSelectionIsReady(function (selected_glyphs) {
