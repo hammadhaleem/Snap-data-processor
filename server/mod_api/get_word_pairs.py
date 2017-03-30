@@ -25,7 +25,7 @@ stopwords = ['i', 's', 'able', 'isn', \
              'thing', 'son', 'bit', 'day', 'sorry', \
              'visit', 'item', 'lil', 'lot', 'eye'\
              'fire', 'jar', 'restriction' , 'norm', 'list',
-             'line', 'shape']
+             'line', 'shape', 'ice', 'nit', 'vist', 'turf']
 pp = pprint.PrettyPrinter(depth=6)
 
 
