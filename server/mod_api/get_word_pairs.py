@@ -20,7 +20,12 @@ adj = ['JJ', 'JJR', 'JJS']
 stopwords = ['i', 's', 'able', 'isn', \
              'doesn', 'only', 'sa', 'mom', 'other', \
              'man', 'more', 'months', 'years', \
-             'weeks', 'week', 'year', 'month']
+             'weeks', 'week', 'year', 'month', 'time', \
+             'one', 'night', 'fav', 'girl', 'bye', 'lol'\
+             'thing', 'son', 'bit', 'day', 'sorry', \
+             'visit', 'item', 'lil', 'lot', 'eye'\
+             'fire', 'jar', 'restriction' , 'norm', 'list',
+             'line', 'shape']
 pp = pprint.PrettyPrinter(depth=6)
 
 
@@ -107,11 +112,13 @@ def for_each_review_(review, ret_data_dict, dict_):
             object['frequency'][item] = 1
             t_list.append(item)
 
-        object['word_pairs'] = term_mod
+        if len(l_list) > 2:
+            # print("--", l_list)
+            term_mod = term_list[0] + "-" + term_list[1] + " " + term_list[2]
 
+        object['word_pairs'] = term_mod
         object['type'], object['type_score'] = get_type(scored_terms[term])
         object['polarity'] = TextBlob(term_mod).sentiment.polarity
-
         object['business_id'] = review['business_id']
         object_type = object['type']
 
@@ -212,21 +219,30 @@ def create_groups(data_types):
     ret_dict = {}
     nouns = []
     for key in data_types.keys():
+
         obj = data_types[key]
         noun_key = obj['noun']
-        if noun_key in ret_dict.keys():
-            ret_dict[noun_key]['count'] += obj['noun_frequency']
-            ret_dict[noun_key]['polarity'] += obj['polarity']
-            ret_dict[noun_key]['objects'].append(obj)
-        else:
-            ret_dict[noun_key] = {
-                'count': obj['noun_frequency'],
-                'objects': [obj],
-                'polarity': obj['polarity'],
-                'noun': noun_key
-            }
 
-        nouns.append(obj['noun'])
+        skip = False
+
+        if noun_key in ret_dict.keys():
+            if ret_dict[noun_key]['count'] > 9:
+                skip = True
+
+        if skip is False:
+            if noun_key in ret_dict.keys():
+                ret_dict[noun_key]['count'] += obj['noun_frequency']
+                ret_dict[noun_key]['polarity'] += obj['polarity']
+                ret_dict[noun_key]['objects'].append(obj)
+            else:
+                ret_dict[noun_key] = {
+                    'count': obj['noun_frequency'],
+                    'objects': [obj],
+                    'polarity': obj['polarity'],
+                    'noun': noun_key
+                }
+
+            nouns.append(obj['noun'])
 
     final_ret = []
     for key in ret_dict.keys():
