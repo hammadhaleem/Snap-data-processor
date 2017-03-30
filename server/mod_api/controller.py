@@ -14,7 +14,9 @@ from server.mod_api.utils import get_user_information_from_mongo, \
     get_business_graph, get_user_information_list, haversine, get_user_business_ratings
 
 import hashlib
+import pprint
 
+pp = pprint.PrettyPrinter(indent=4)
 mod_api = Blueprint('api', __name__, url_prefix='/api')
 app.url_map.strict_slashes = False
 global_timeout = 4000000
@@ -729,7 +731,7 @@ def get_review_analysis(review_list):
     cache_key = 'review_analysis_' + str(review_list)
     cache_key = hashlib.md5(cache_key).hexdigest()
     print("NLP")
-    dt = None #cache.get(cache_key) eval
+    dt = None  # cache.get(cache_key) # eval
     if dt is None:
         # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
         nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
@@ -740,6 +742,8 @@ def get_review_analysis(review_list):
                 final_result_[bid][obj_type] = create_groups(nlp_analysis_res[bid][obj_type])
 
         cache.set(cache_key, final_result_, timeout=3000)
+        pp.pprint(final_result_)
         return jsonify(final_result_)
 
+    pp.pprint(dt)
     return jsonify(dt)
