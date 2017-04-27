@@ -175,10 +175,13 @@
                         </thead>
 
                         <tbody>
+                        <!--旧版本-->
+                        <tr class="table-cell-mid-align" v-for="venue in cur_table_venues" :class="{selected_table_row: venue.selection_flag}">
+
+                        <!--新版本-->
                         <!--<tr class="table-cell-mid-align" v-for="venue in cur_table_venues"-->
-                        <!--:class="{selected_table_row: venue.selection_flag}">-->
-                        <tr class="table-cell-mid-align" v-for="venue in cur_table_venues"
-                            v-bind:id="venue.css3_business_id">
+                            <!--v-bind:id="venue.css3_business_id">-->
+
                             <td style="width: 43%;">{{venue.name}}</td>
                             <!--<td style="width: 18%;">{{venue.price_range}}</td>-->
                             <td style="width: 15%;">{{venue.review_count}}</td>
@@ -295,8 +298,11 @@
 <script src="js/service/dataService.js"></script>
 
 <!--<script src="js/vue-model/graphView.js"></script>-->
-<script src="js/vue-model/control-view.js"></script>
+
 <script src="js/vue-model/mapView.js"></script>
+<script src="js/vue-model/control-view.js"></script>
+
+
 <script src="js/vue-model/commonCustomerView.js"></script>
 <script src="js/vue-model/temporalView.js"></script>
 <script src="js/vue-model/augmentedWordCloudView.js"></script>

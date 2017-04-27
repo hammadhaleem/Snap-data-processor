@@ -59,7 +59,7 @@ var controlModel = new Vue({
         onSelectedTextFeatureChanged: function () {
             console.log('selected text feature is changed!', this.selected_text_feature);
             var tmp = this.selected_text_feature;
-            if(tmp == 'ambiance'){
+            if (tmp == 'ambiance') {
                 tmp = 'place';
             }
 
@@ -407,13 +407,27 @@ var controlModel = new Vue({
             for (var i = 0; i < _this.cur_table_venues.length; i++) {
                 var cur_id = _this.cur_table_venues[i]['business_id'];
                 if (cur_id == selected_two_venues[0]['business_id'] || cur_id == selected_two_venues[1]['business_id']) {
-                    // _this.$set( _this.cur_table_venues[i], 'selection_flag', true); //结果都没有更新table中的绑定的数据
+                    _this.$set(_this.cur_table_venues[i], 'selection_flag', true); //结果都没有更新table中的绑定的数据
                     // _this.cur_table_venues[i]['selection_flag'] = true;
-                    d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', true);
+                    console.log('_this.cur_table_venues[i]: ', _this.cur_table_venues[i]);
+                    _this.$forceUpdate();
+
+                    Vue.nextTick(function () {
+                        console.log('===========================DOM 更新了====================');
+                        console.log(_this.cur_table_venues);
+                        console.log('===========================DOM 更新了====================');
+                    });
+
+                    // d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', true);
                 }
                 else {
+                    _this.$set(_this.cur_table_venues[i], 'selection_flag', false); //结果都没有更新table中的绑定的数据
+                    // _this.cur_table_venues[i]['selection_flag'] = false;
+                    console.log('_this.cur_table_venues[i]: ', _this.cur_table_venues[i]);
+
+
                     // console.log('business false: ', _this.cur_table_venues[i]);
-                    d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', false);
+                    // d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', false);
                 }
             }
 
@@ -430,13 +444,22 @@ var controlModel = new Vue({
                 }
 
                 if (flag) {
-                    // _this.$set( _this.cur_table_venues[i], 'selection_flag', true); //结果都没有更新table中的绑定的数据
+                    _this.$set(_this.cur_table_venues[i], 'selection_flag', true); //结果都没有更新table中的绑定的数据
                     // _this.cur_table_venues[i]['selection_flag'] = true;
-                    d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', true);
+                    console.log('_this.cur_table_venues[i]: ', _this.cur_table_venues[i]);
+
+                    _this.$forceUpdate();
+
+
+                    // d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', true);
                 }
                 else {
+                    _this.$set(_this.cur_table_venues[i], 'selection_flag', false); //结果都没有更新table中的绑定的数据
+                    // _this.cur_table_venues[i]['selection_flag'] = false;
+                    console.log('_this.cur_table_venues[i]: ', _this.cur_table_venues[i]);
+
                     // console.log('business false: ', _this.cur_table_venues[i]);
-                    d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', false);
+                    // d3.select(_this.$el).select('tr#css3_selector_' + _this.cur_table_venues[i]['business_id']).classed('selected_table_row', false);
                 }
             }
 
