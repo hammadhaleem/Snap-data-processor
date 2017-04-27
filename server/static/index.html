@@ -220,30 +220,37 @@
             </div>
             <div style="width: 100%">
                 <div id="wordCloudView" style="width: 758px; height: 400px; margin-bottom: 5px;"
-                     class="singleViewBorder">
-                    <!--Word Cloud View-->
+                class="singleViewBorder">
                 </div>
+                <!--<div id="wordCloudView" style="width: 1600px; height: 800px; margin-bottom: 5px;"-->
+                     <!--class="singleViewBorder">-->
+                <!--</div>-->
                 <div id="detailedReviewContentView"
                      style="width: 758px; height: 200px; margin-bottom: 5px; overflow-y: scroll;"
                      class="singleViewBorder">
                     <div v-if="curent_review_content != '' " class="review_content">
                         <div>
-                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Business Name: </span> <span>{{curent_review_content.business_name}}</span>
+                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Business Name: </span>
+                                <span>{{curent_review_content.business_name}}</span>
                             </div>
-                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Customer Name: </span> <span>{{curent_review_content.user_name}}</span>
+                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Customer Name: </span>
+                                <span>{{curent_review_content.user_name}}</span>
                             </div>
                         </div>
 
                         <div>
-                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Review Date: </span>
+                            <div style="width: 48%; display: inline-block;"><span
+                                    class="review_attr_name">Review Date: </span>
                                 <span>{{curent_review_content.date}}</span></div>
-                            <div style="width: 48%; display: inline-block;"><span class="review_attr_name">Rating: </span>
+                            <div style="width: 48%; display: inline-block;"><span
+                                    class="review_attr_name">Rating: </span>
                                 <span>{{curent_review_content.stars}}</span>
                             </div>
                         </div>
 
                         <div><span class="review_attr_name">User Votes: </span>
-                            <span>{{curent_review_content.funny + curent_review_content.useful + curent_review_content.cool}}</span></div>
+                            <span>{{curent_review_content.funny + curent_review_content.useful + curent_review_content.cool}}</span>
+                        </div>
                         <div><span class="review_attr_name">Review Text: </span>
                             <span>{{curent_review_content.text}}</span></div>
 

@@ -8,6 +8,8 @@ var augmentedWordCloudView = new Vue({
     data: {
         svg_h: 400,
         svg_w: 756,
+        // svg_w: 1600,
+        // svg_h: 800,
         bs1_review_ids: [], //bs1
         bs2_review_ids: [], //bs2
         bs1_id: undefined,  //bs1_id
