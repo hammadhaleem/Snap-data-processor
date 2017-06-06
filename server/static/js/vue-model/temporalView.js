@@ -1852,22 +1852,6 @@ var temporalView = new Vue({
 
     },
     watch: {
-        // two_venue_review_rating: {
-        //     handler: function (new_value, old_value) {
-        //         if (new_value != undefined) {
-        //             if (this.cur_processing_mode == this.data_processing_mode[0]) {
-        //                 var review_rating_by_year = this.processDataByYear(new_value);
-        //                 this.drawTemporalViewByYear(review_rating_by_year);
-        //             }
-        //             else if (this.cur_processing_mode == this.data_processing_mode[1]) {
-        //                 var review_rating_by_quarter_year = this.processDataByQuarterYear(new_value);
-        //                 this.drawTemporalViewByQuarterYear(review_rating_by_quarter_year);
-        //             }
-        //
-        //         }
-        //     },
-        //     deep: false
-        // },
 
     }
 
