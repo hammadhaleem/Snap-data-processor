@@ -731,7 +731,7 @@ def get_review_analysis(review_list):
     cache_key = 'review_analysis_' + str(review_list)
     cache_key = hashlib.md5(cache_key).hexdigest()
     print("NLP")
-    dt = None  # cache.get(cache_key) # eval
+    dt = cache.get(cache_key) # eval
     if dt is None:
         # nlp_analysis_res = get_word_pairs(review_list, mongo_connection)
         nlp_analysis_res = get_word_pairs(eval(review_list), mongo_connection)
